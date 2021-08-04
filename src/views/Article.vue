@@ -1,4 +1,6 @@
+
 <template>
+   <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div">
   <div v-if="model">
       <nav-bar></nav-bar>
       <div class="detailinfo">
@@ -37,12 +39,13 @@
           <div class="detailparent">
           <!-- <cover class="detailitem" v-for="(item,index) in commendList" :key="index"  :detailitem="item"/> -->
       </div>
-      <comment-title :dataLength="lens" @Postcomment="PostSuccess" ref="commentIpt"  />
       <comment @lengthselect="len => lens = len" ref="commentPulish"  @publishClick="PostChildClick" />
 
+	  <comment-title :dataLength="lens" @Postcomment="PostSuccess" ref="commentIpt"  />
       </div>
 
   </div>
+  </v-touch>
 </template>
 
 <script>
@@ -83,33 +86,38 @@ export default {
 		},
 	},
     methods:{
+
+        onSwipeLeft () {
+            // console.log('页面左滑')
+          // this.$router.go(-1)
+        },
+        onSwipeRight(){
+            // console.log('页面右滑')
+            this.$router.go(-1)
+        },
         //获取文章信息
         async articleitemData() {
             // 获取数据类型,判断加载页面
-            let loadMode = this.$route.params.loadMode;
-            if(loadMode == 4){
+            // let loadMode = this.$route.params.loadMode;
+            // if(loadMode == 4){
                const res = await this.$http.get('/webInfoVideo/getVideoMenuDataByWebInfoDetailDataId?webInfoDetailDataId=' + this.$route.params.id)
                // console.log(res)
                this.model = res.data.data
-			   console.log(this.model)
+			   // console.log(this.model)
                // 提取视频地址
                let html = this.model.html
                let start = html.indexOf('src="') + 5
                let end = html.indexOf('" type')
                this.model.content = html.substring(start,end)
                this.model.content = this.model.content.replace('http://121.201.2.228:10824',this.baseURL)
-               console.log(this.model)
+               // console.log(this.model)
                if(this.model) {
                    this.subscritionInit()
                }
                this.$nextTick(()=> {
                  this.play(this.model.content)
                })
-            }else if(loadMode == 3){
-              const res = await this.$http.post('/webInfoDetailData/queryDetailDataDetailDataById',{
-                webInfoDetailDataId: this.$route.params.id
-              })
-            }
+            // }
 
         },
         //获取推荐文章
@@ -118,26 +126,44 @@ export default {
             this.commendList = res.data
         },
         //发送评论
-        async PostSuccess(res) {
+        async PostSuccess(res,parentId) {
+			// console.log(res)
             const date = new Date()
-            let m = date.getMonth() + 1
-            let d = date.getDate()
-            if(m < 10) {
-                m = '0' + m
-            }
-            if(d < 10) {
-                d = '0' + d
-            }
-            let str = `${m}-${d}`
-            this.Postcom.comment_content = res
-            this.Postcom.comment_date = str
-            this.Postcom.article_id = this.$route.params.id
-            const result = await this.$http.post('/comment_post/' + localStorage.getItem('id'),this.Postcom)
-            this.$refs.commentPulish.commentData()
-            this.Postcom.parent_id = null
-            if(result.status == 200) {
-                this.$msg.fail('评论发表成功')
-            }
+            // let m = date.getMonth() + 1
+            // let d = date.getDate()
+            // if(m < 10) {
+            //     m = '0' + m
+            // }
+            // if(d < 10) {
+            //     d = '0' + d
+            // }
+            // let str = `${m}-${d}`
+            // this.Postcom.comment_content = res
+            // this.Postcom.comment_date = str
+            // this.Postcom.article_id = this.$route.params.id
+            // const result = await this.$http.post('/comment_post/' + localStorage.getItem('id'),this.Postcom)
+			if(res){
+				// 保存评论
+				const result = await this.$http.post('/comment/addComment',{
+					workId: this.$route.params.id,
+					commentType:'OTHER',
+					content:res,
+					parentId:parentId
+				})
+				// console.log(result)
+				// this.Postcom.parent_id = null
+				if(result.data.data == '评论成功') {
+				    this.$msg.fail('评论发表成功')
+					this.$refs.commentPulish.commentData()
+					this.$refs.commentIpt.closeUtil()
+				}else{
+					this.$msg.fail('评论失败!')
+				}
+			}else{
+				this.$msg.fail('评论不能为空!')
+				
+			}
+            
         },
         //聚焦输入框
         PostChildClick(id) {
@@ -147,24 +173,36 @@ export default {
         //收藏文章
         async collectionClick() {
            if(localStorage.getItem('token')){
-               const res = await this.$http.post('/collection/' + localStorage.getItem('id'),{article_id:this.$route.params.id})
-               if(res.data.msg == '收藏成功'){
+             // 判断显示状态,是收藏还是取消收藏
+             if(!this.collectionActive){
+               const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id})
+               // console.log(res)
+               if(res.data.data == '收藏成功'){
                    this.collectionActive = true
                }else{
-                   this.collectionActive = false
+                   // this.collectionActive = false
+                   this.$msg.fail(res.data.message)
                }
-                this.$msg.fail(res.data.msg)
+             } else {
+               const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id})
+               if(res.data.data == '取消成功'){
+                 this.collectionActive = false
+               } else {
+                  this.$msg.fail(res.data.message)
+               }
+             }
+
+                // this.$msg.fail(res.data.msg)
            }
         },
         //进入页面获取是否收藏
         async collectionInit() {
             if(localStorage.getItem('token')){
                 const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
-                    params:{
-                        webInfoDetailDataDetailDataId:this.$route.params.id
-                    }
+                    webInfoDetailDataId:this.$route.params.id
                 })
-            this.collectionActive = res.data.success
+                // console.log(res.data)
+            this.collectionActive = res.data.data == '1' ? true : false;
             }
         },
         //点击关注发帖用户
@@ -188,15 +226,15 @@ export default {
                 //         sub_id:this.model.userid
                 //     }
                 // })
-                const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
-                   webInfoDetailDataId:this.$route.params.id
-                })
-                if(res.data.data == '0'){
-                  this.subscritionActive = false;
-                } else {
-                  this.subscritionActive = true;
-                }
-                console.log(res)
+                // const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
+                //    webInfoDetailDataId:this.$route.params.id
+                // })
+                // if(res.data.data == '0'){
+                //   this.subscritionActive = false;
+                // } else {
+                //   this.subscritionActive = true;
+                // }
+                // console.log(res)
             // this.subscritionActive = res.data.success
             // }
         },
@@ -224,7 +262,7 @@ export default {
       }
          this.articleitemData()
          // this.commendData()
-         // this.collectionInit()
+         this.collectionInit()
     },
     watch:{
         'model.content'(){
@@ -234,13 +272,17 @@ export default {
         $route() {
             this.articleitemData()
             // this.commendData()
-            // this.collectionInit()
+            this.collectionInit()
         }
     }
 }
 </script>
 
 <style lang="less">
+.container{
+  width:100vh;
+  height:100vh;
+}
 .detailinfo{
     background-color: white;
     .video{
@@ -306,4 +348,5 @@ export default {
     width: 45%;
   }
 }
+
 </style>

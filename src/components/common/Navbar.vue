@@ -4,12 +4,14 @@
           <img src="@/assets/mzzj120.png" style="height:40px;width:40px" alt="" @click="$router.push('/')">
 		  <span style="font-size:12px">漫宅之家</span>
       </div>
-      <div>
-          <div> <van-icon name="search" class="iconNav"/></div>
+      <div @click="$router.push('/search')">
+          <div> <van-icon name="search"  class="iconNav"/></div>
       </div>
       <div>
-          <img :src="imgUrl" alt="" @click="$router.push('/userinfo')" v-if="imgUrl">
-          <img  src="@/assets/default_img.jpg" alt="" @click="$router.push('/login')"  v-else>
+         <!-- <img style="border-radius:50%" :src="imgUrl" alt="" @click="$router.push('/userinfo')" v-if="imgUrl">
+          <img style="border-radius:50%" src="@/assets/default_img.jpg" alt="" @click="$router.push('/userinfo')"  v-else> -->
+		  <img style="border-radius:50%" :src="imgUrl" alt=""  v-if="imgUrl">
+		  <img style="border-radius:50%" src="@/assets/default_img.jpg" alt=""   v-else>
           <!-- <div>下载App</div> -->
       </div>
   </div>
@@ -19,16 +21,29 @@
 export default {
     data() {
         return {
+            // userInfo:null
             imgUrl:''
         }
     },
     methods:{
         async NavInit() {
-            if(localStorage.getItem('token')){
-            const res = await this.$http.get('/user/' + localStorage.getItem('id'))
-            this.imgUrl = res.data[0].user_img
+          this.getUser().then(response=>{
+            if(response.data.data.icon){
+              this.imgUrl = this.baseURL + '/common/image?imgId=' + response.data.data.icon
             }
-        }
+
+          })
+            // if(localStorage.getItem('token')){
+            // const res = await this.$http.get('/admin/info')
+            // // const res = await this.$http.get('/user/' + localStorage.getItem('id'))
+            // // this.imgUrl = res.data[0].user_img
+            // }
+        },
+		// toSearch(){
+		// 	console.log('...............')
+		// 	// 跳转搜索页面
+		// 	this.$route.push('/search')
+		// }
     },
     mounted() {
         this.NavInit()

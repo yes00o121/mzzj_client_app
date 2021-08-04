@@ -2,8 +2,8 @@
   <div class="userdetail">
     <div>
       <div class="user_img">
-        <img :src="userInfo.user_img" alt="" v-if="userInfo.user_img">
-        <img src="@/assets/default_img.jpg" alt v-else />
+        <img :src="baseURL + '/common/image?imgId=' + userInfo.icon" alt="" v-if="userInfo.icon"  >
+        <img src="@/assets/default_img.jpg" alt v-else  />
       </div>
       <div class="user_edit">
         <div>
@@ -12,7 +12,7 @@
             <span class="user_text">粉丝</span>
           </p>
           <p>
-            <span>54</span>
+            <span>0</span>
             <span class="user_text">关注</span>
           </p>
           <p>
@@ -35,7 +35,12 @@
 
 <script>
 export default {
-    props:['userInfo']
+    props:['userInfo'],
+    methods:{
+      changeUserImg(){
+        this.$router.push('/upload')
+      }
+    }
 };
 </script>
 

@@ -4,8 +4,10 @@
 	  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,viewport-fit=cover">
     <meta charset="utf-8">
     <meta name="referrer" content="no-referrer">
+	<!-- <meta name="viewport" content="width=device-width, viewport-fit=cover"> -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!-- <meta name="viewport" content="width=device-width,initial-scale=1.0"> -->
+	<meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title><%= htmlWebpackPlugin.options.title %></title>
     <script src="./static/plugin/mui/js/mui.min.js"></script>
@@ -21,6 +23,29 @@
     <script src="./static/js/video/hls.js"></script>
     <script src="./static/js/video/html5media.min.js"></script>
     <script src="./static/js/video/html5shiv.min.js"></script>
+	<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+	<style>
+		@media screen and (width: 375px) and (height: 812px){
+		    .button {
+		        padding-bottom: 34px;
+		    }
+		}
+	    /* html,body{
+			padding-bottom: env(safe-area-inset-bottom); 
+			padding-bottom: constant(safe-area-inset-bottom);
+			-webkit-overflow-scrolling: touch;
+			 overflow-scrolling: touch;
+		} */
+		/* @ supports (bottom: env(safe-area-inset-bottom)) {
+		div {
+		margin-bottom:  env(safe-area-inset-bottom);
+		}
+		} */
+/* 		input[type='button']:enabled:active, input[type='button'].mui-active:enabled, input[type='submit']:enabled:active, input[type='submit'].mui-active:enabled, input[type='reset']:enabled:active, input[type='reset'].mui-active:enabled, button:enabled:active, button.mui-active:enabled, .mui-btn:enabled:active, .mui-btn.mui-active:enabled{
+			background-color:white;
+		} */
+		
+	</style>
   </head>
   <body>
     <noscript>

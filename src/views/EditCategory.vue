@@ -30,7 +30,7 @@ export default {
             this.newCat = res.data
         },
         handleCategoryClick(index) {
-           if(this.newCat.length < 4) {   
+           if(this.newCat.length < 4) {
               this.$msg.fail('最少保留三个栏目')
               return
            }
@@ -65,7 +65,7 @@ export default {
     padding: 0 2.778vw;
     display: flex;
     flex-wrap: wrap;
-   p{   
+   p{
         width: 20%;
         text-align: center;
         margin: 1.389vw 1.944vw;

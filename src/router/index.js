@@ -7,10 +7,17 @@ const userinfo = ()=>import('@/views/userinfo.vue')
 const edit = ()=>import('@/views/Edit.vue')
 const article = ()=>import('@/views/Article.vue')
 const editcategory = ()=>import('@/views/EditCategory.vue')
+const upload = ()=>import('@/components/common/upload.vue')
+const manga = ()=>import('@/views/mangaMenu.vue')
+const mangaDetail = ()=>import('@/views/mangaMenuDetail.vue')
+const person = ()=>import('@/views/person.vue')
+const search = ()=>import('@/views/search.vue')
+const video = ()=> import('@/views/video.vue')
+// const dynamic = ()=>import('@/views/dynamic.vue')
 Vue.use(VueRouter)
   const routes = [
      {
-       path:'/',
+       path:'/home',
        component:Home,
        meta:{
          keepalive:true
@@ -21,7 +28,7 @@ Vue.use(VueRouter)
        component:register
      },
      {
-       path:'/login',
+       path:'/',
        component:login
      },
      {
@@ -45,7 +52,38 @@ Vue.use(VueRouter)
     {
       path:'/editcategory',
       component:editcategory
-    }
+    },
+    {
+      path:'/upload',
+      component:upload
+    },
+    {
+      path:'/manga/:id',
+      component:manga
+    },
+	{
+	  path:'/mangaDetail/:id/:pxh',
+	  component:mangaDetail,
+	  meta:{
+	    keepalive:false
+	  }
+	},
+	{
+	  path:'/person/:id',
+	  component:person
+	},
+	{
+		  path:'/search',
+		  component:search
+		},
+		{
+			  path:'/video',
+			  component:video
+			},
+	// {
+	//   path:'/dynamic',
+	//   component:dynamic
+	// }
   ]
 
 const router = new VueRouter({
@@ -55,11 +93,18 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to,from,next) => {
-  if((!localStorage.getItem('token') || !localStorage.getItem('id'))&&to.meta.istoken == true){
-    router.push('/login')
+  if(!localStorage.getItem('token')&&to.meta.istoken == true){
+    router.push('/')
     Vue.prototype.$msg.fail('请重新登录')
     return
   }
+  if (from.meta.keepAlive) {
+      const $content = document.querySelector('.content'); // 列表的外层容器
+      const scrollTop = $content ? $content.scrollTop : 0;
+      console.log('scrollTop', scrollTop)
+      from.meta.scrollTop = scrollTop;
+    }
+	
   next()
 })
 

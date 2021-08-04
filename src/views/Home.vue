@@ -1,19 +1,23 @@
 <template>
   <div class="home" v-if="category">
-    <nav-bar></nav-bar>
-    <div class="categorytab">
-      <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div>
-      <van-tabs v-model="active" swipeable sticky animated>
-        <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME">
+    <nav-bar v-show="tabActive != 2" :style="{height : active == 1 ? '0px' : 'auto'}"></nav-bar>
+	<!-- home -->
+    <div class="categorytab" v-show="tabActive == 0">
+		
+      <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
+      <van-tabs v-model="active" swipeable sticky animated >
+        <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy  >
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-            <van-list
+            <van-list 
+			 v-show="active != 1"
+			  style="padding-bottom: 50px;"
               v-model="item.loading"
               :immediate-check="false"
               :finished="item.finished"
               finished-text="我也是有底线的"
               @load="onLoad"
             >
-              <div class="detailparent">
+              <div class="detailparent" ref="tab">	
                 <cover
                   class="detailitem"
                   :detailitem="categoryitem"
@@ -21,28 +25,63 @@
                   :key="categoryindex"
                 />
               </div>
+			  
             </van-list>
           </van-pull-refresh>
         </van-tab>
       </van-tabs>
+	  <shortvideo v-if="active == 1"></shortvideo>
     </div>
+	<userinfo v-show="tabActive == 3"></userinfo>
+	<dynamic v-if="tabActive == 2"></dynamic>
+	<van-tabbar
+	  v-model="tabActive"
+	  active-color="#07c160"
+	  inactive-color="#000"
+	  v-show="tabbarStatus"
+	>
+	  <van-tabbar-item icon="home-o" @click="home">首页</van-tabbar-item>
+	  <van-tabbar-item icon="fire-o" @click="hit">热门</van-tabbar-item>
+	  
+	  <van-tabbar-item icon="underway-o"  :info="dynamicNum" @click="dynamic">动态</van-tabbar-item>
+	  <van-tabbar-item icon="user-o" @click="my">我的</van-tabbar-item>
+	  <!-- <van-tabbar-item icon="underway-o" v-show="dynamicNum >0" :info="dynamicNum" @click="dynamic">动态</van-tabbar-item> -->
+	</van-tabbar>
   </div>
-</template>
+</template>	
 
 <script>
 import NavBar from "@/components/common/Navbar.vue";
 import cover from "./cover";
+import dynamic from "./dynamic"
+import userinfo from './userinfo'
+import shortvideo from './video'
 export default {
   data() {
     return {
+	  curTableHeight:0, // 当前table高度
+	  tabbarStatus:true, // 底部菜单是否显示
+	  dynamicNum:null, // 动态数量
       category: [],
+	  tabActive:0,// 底部菜单
+	  beforetabActive:0,// 之前选中的底部
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
+	  websocket:null,
+	  normalHead:{
+		  height:'auto'
+	  },
+	  videoHead:{
+		  height:'400px',
+	  }
     };
   },
   components: {
     NavBar,
-    cover
+    cover,
+	userinfo,
+	dynamic,
+	shortvideo
   },
   activated() {
     if(localStorage.getItem('newCat')) {
@@ -50,60 +89,93 @@ export default {
         this.category = this.changeCategory(newCat)
         this.selectArticle();
     }
+	const scrollTop = this.$route.meta.scrollTop;
+	    const $content = document.querySelector('.content');
+	    if (scrollTop && $content) {
+	      $content.scrollTop = scrollTop;
+	    }
   },
   methods: {
+	  hit(){
+		  this.beforetabActive = this.tabActive 
+		  this.$msg('功能开发中')
+	  },
+	  dynamic(){
+		  this.beforetabActive = this.tabActive 
+		  this.$msg('功能开发中')
+	  },
+	  my(){
+		  this.beforetabActive = this.tabActive
+		  // this.$msg('功能开发中')
+	  },
+    onScroll(){
+
+    },
+	home(){
+		if(this.tabActive == 0 && this.beforetabActive == 0){
+			scrollTo(0,0)
+			this.isLoading = true
+			this.onRefresh()
+		}
+		this.beforetabActive = this.tabActive
+	},
     async selectCategory() {
       if(localStorage.getItem('newCat')) {
         return
       }
       const res = await this.$http.get("/webInfoDetailData/queryMenu");
-      console.log(res.data.data)
-      // this.category = res.data.data
       this.category = this.changeCategory(res.data.data);
-      // this.category = [{
-        // title:'测试'
-      // }]
       this.selectArticle();
     },
     changeCategory(data) {
       const category1 = data.map((item, index) => {
-        console.log(item)
+        // console.log(item)
         item.list = [];
-        item.page = 0;
+        item.page = 1;
         item.finished = false;
         item.loading = true;
-        item.pagesize = 10;
+        item.pagesize = 20;
         return item;
       });
       return category1;
     },
     async selectArticle() {
       const categoryitem = this.categoryItem();
-      console.log(categoryitem)
-      const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
-        typeId: categoryitem.CODE_VALUE,
-        pageNum: categoryitem.page,
-        pageSize: categoryitem.pagesize,
-        search: ''
-      })
-      console.log(res)
+		// 如果categoryitem.CODE_VALUE等于9,但是查询女优数据
+		if(categoryitem.CODE_VALUE == 9){
+			const res = await this.$http.post("/person/queryPerson", {
+			  pageNum: categoryitem.page,
+			  pageSize: categoryitem.pagesize,
+			  personType:'SEX'
+			})
+			for(let i =0;i<res.data.data.list.length;i++){
+				res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
+				res.data.data.list[i].previewImg = '/common/image?imgId=' + res.data.data.list[i].person_photp
+				res.data.data.list[i].title = res.data.data.list[i].person_name
+			}
+			// console.log(res)
+			categoryitem.list.push(...res.data.data.list);
+			categoryitem.loading = false;
+			if (res.data.length < categoryitem.pagesize) {
+			  categoryitem.finished = true;
+			}
+		}
+		if(categoryitem.CODE_VALUE != 4){
+			const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
+			  typeId: categoryitem.CODE_VALUE,
+			  pageNum: categoryitem.page,
+			  pageSize: categoryitem.pagesize,
+			  search: ''
+			})
+			
+			categoryitem.list.push(...res.data.data.list);
+			categoryitem.loading = false;
+			if (res.data.length < categoryitem.pagesize) {
+			  categoryitem.finished = true;
+			}
+		}
+       
 
-      // const res = await this.$http.get("/detail/" + categoryitem._id, {
-      //   params: {
-      //     page: categoryitem.page,
-      //     pagesize: categoryitem.pagesize
-      //   }
-      // });
-	  if(res.data.data.list.length == 0){
-		  // this.category = [{
-			 //  finished: true
-		  // }]
-	  }
-      categoryitem.list.push(...res.data.data.list);
-      categoryitem.loading = false;
-      if (res.data.length < categoryitem.pagesize) {
-        categoryitem.finished = true;
-      }
     },
     onRefresh() {       //下拉刷新
                 setTimeout(() => {
@@ -118,7 +190,7 @@ export default {
             },
     onLoad() {
       const categoryitem = this.categoryItem();
-	  console.log(categoryitem)
+	  // console.log(categoryitem)
 	  if(categoryitem.list.length == 0){
 		  categoryitem.finished = true
 	  }
@@ -129,20 +201,89 @@ export default {
     },
     categoryItem() {
       const categoryitem = this.category[this.active];
-      console.log(categoryitem)
+      // console.log(categoryitem)
       return categoryitem;
-    }
+    },
+	// 记录列表滚动位置
+    recordScroll(active){
+		const categoryitem = this.category[active];
+		
+		let rect = document.body.getBoundingClientRect()
+		categoryitem.scroll = Math.abs(rect.top)
+	}
   },
   watch: {
-    active() {
+    active(current,before) {
+		// 视频下隐藏头部和table
+		if(current == 1){
+			// 记录头部高度
+			if(this.curTableHeight == 0) {
+				this.curTableHeight = $('.van-tabs__wrap').height()
+			}
+			// 隐藏头部
+			$('.van-tabs__wrap').height(0)
+			this.tabbarStatus = false;
+		} else {
+			// alert(this.curTableHeight)
+			$('.van-tabs__wrap').height(this.curTableHeight) // 显示头部
+			this.tabbarStatus = true;
+		}
+		// console.log(e,a)
+		// 		// console.log('qieh....')
+		// 		console.log(document.body.getBoundingClientRect())
       const categoryitem = this.categoryItem();
+	  // 切换时候记录之前位置
+	  this.recordScroll(before)
+	  // console.log(categoryitem)
       if (!categoryitem.list.length) {
         this.selectArticle();
+        // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
       }
+	  // 定位指定位置
+	  if(categoryitem.scroll){
+	  	// console.log('开始定位...' + categoryitem.scroll)
+		setTimeout(()=>{
+			scrollTo(0,categoryitem.scroll)
+		},50)
+	  	
+	  }
     }
   },
   created() {
-    this.selectCategory();
+
+      this.selectCategory();
+	  // 建立websocket连接
+	  let websocketUrl = this.baseURL.replace('http','ws') + '/websocket?token=' + localStorage.getItem('token')
+	  // let websocketUrl = 'ws://192.168.1.113:8095/websocket?token='
+	  this.websocket = new WebSocket(websocketUrl);
+	  
+	  this.websocket.onclose=function(){//连接关闭监听
+	      console.log('websocket连接关闭');
+	  }
+	  this.websocket.onmessage = (event=>{
+		  //接收消息方法
+		  console.log(event)
+		  console.log('websocket接收消息');
+		  console.log(this.dynamicNum)
+		  if(this.dynamicNum == null){
+		  	this.dynamicNum = 1
+		  } else {
+		  	this.dynamicNum += 1;
+		  }
+		   console.log(this.dynamicNum)
+	  })
+	  //连接响应
+	  this.websocket.onopen = function(){
+	    console.log('websocket连接达成');
+	  }
+	  this.websocket.onerror = function(){
+	    console.log('websocket错误');
+	  }
+	  window.onbeforeunload = ()=>{
+	     if(this.websocket != null){
+	         this.websocket.close();
+	     }
+	  }
   }
 };
 </script>

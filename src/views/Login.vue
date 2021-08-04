@@ -4,15 +4,15 @@
             <!-- <div slot="right" style="font-size:3.611vw" @click="$router.push('/register')">用户注册</div> -->
       </login-top>
 
-        <login-text label="账号" 
+        <login-text label="账号"
         placeholder="请输入账号"
          @contentWatch="res => model.username = res"
          style="margin:4.167vw 0"
          >
         </login-text>
 
-       <!-- <login-text label="密码" 
-            placeholder="请输入密码" 
+       <!-- <login-text label="密码"
+            placeholder="请输入密码"
             type="password"
             @contentWatch="res => model.password = res"
         >
@@ -20,7 +20,7 @@
 
         <login-btn BtnText="登录" @TextClick="AjaxInsert"></login-btn>
 		<div v-if="uuidShow">{{uuid}}</div>
-		
+
   </div>
 </template>
 
@@ -49,11 +49,11 @@ export default {
 			}
 			if(this.model.username == '漫宅之家'){
 				this.uuidShow = true
-				return 
+				return
 			}
-            let rulg = /^.{6,16}$/
+            let rulg = /^.{3,16}$/
             if(rulg.test(this.model.username)/*&&rulg.test(this.model.password)*/){
-                const res =  await this.$http.post('/admin/login',this.model)
+                const res =  await this.$http.post('/admin/login',this.model,{timeout:5000})
                 if(res.data.code == 404 || res.data.code == 401){
 					this.$msg.fail(res.data.message)
 					return
@@ -62,14 +62,21 @@ export default {
                 localStorage.setItem('token',res.data.data.token)
                 // localStorage.setItem('id',res.data.userinfo.id)
 				this.$msg.success();
-                setTimeout(() => {  
+                setTimeout(() => {
                     // this.$router.push('/userinfo')
-					this.$router.push('/')
+					this.$router.push('/home')
                 },1000)
             }else{
                 this.$msg.fail('格式不正确,请重新输入!')
             }
         }
+    },
+    created(){
+      // 判断用户是否登陆,登陆跳转首页
+      const token = localStorage.getItem('token')
+      if(token){
+        this.$router.push('/home')
+      }
     }
 }
 </script>

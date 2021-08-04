@@ -6,11 +6,38 @@ import {Toast} from 'vant'
 import 'vant/lib/index.css';
 import http from '../http'
 import '@/assets/style.css'
+import VueTouch from 'vue-touch' // 提示框
+import { Uploader } from 'vant'; // 附件上传
+import { Icon } from 'vant'; // 图标
+import VueCropper from 'vue-cropper' // 图片裁剪
+import { Sticky } from 'vant'; // 粘性布局
+
+
+import VueVideoPlayer from 'vue-video-player'
+import 'video.js/dist/video-js.css'
+import 'vue-video-player/src/custom-theme.css'
+Vue.use(VueVideoPlayer);
+
+import '../public/static/css/iconfont.css'
+import utils from 'km-vue-utils'
+Vue.use(utils);
+Vue.prototype.$utils = utils;
 Vue.prototype.$http = http
 Vue.prototype.$msg = Toast
-
+Vue.config.productionTip = false;
 Vue.use(vant)
+Vue.use(Uploader);
+Vue.use(Icon);
+Vue.use(VueCropper);
+Vue.use(Sticky);
+Vue.use(VueTouch, {name: 'v-touch'})
+ VueTouch.config.swipe = {
+      threshold: 100 //手指左右滑动距离
+ }
+ 
 
+//plus.screen.lockOrientation('portrait-primary'); //锁死屏幕方向为竖屏
+ 
  //监听获取设备uuid
 document.addEventListener('plusready', function(){
   localStorage.uuid = plus.device.uuid;
@@ -26,6 +53,16 @@ document.addEventListener('plusready', function(){
     }
   })
 })
+
+
+Vue.prototype.getUser = async  function(){
+  if(localStorage.getItem('token')){
+    const res = await this.$http.get('/admin/info')
+    return res;
+  }
+  return null;
+}
+
 new Vue({
   router,
   render: h => h(App)
