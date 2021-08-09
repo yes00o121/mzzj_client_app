@@ -1,6 +1,6 @@
 <template>
   <div class="home" v-if="category">
-    <nav-bar v-show="tabActive != 2" :style="{height : active == 1 ? '0px' : 'auto'}"></nav-bar>
+    <nav-bar v-show="tabActive != 2" :style="{height : active == 2 ? '0px' : 'auto'}"></nav-bar>
 	<!-- home -->
     <div class="categorytab" v-show="tabActive == 0">
 		
@@ -9,7 +9,7 @@
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy  >
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
             <van-list 
-			 v-show="active != 1"
+			 v-show="active != 2"
 			  style="padding-bottom: 50px;"
               v-model="item.loading"
               :immediate-check="false"
@@ -22,7 +22,7 @@
                   class="detailitem"
                   :detailitem="categoryitem"
                   v-for="(categoryitem,categoryindex) in item.list"
-                  :key="categoryindex"
+                  
                 />
               </div>
 			  
@@ -30,8 +30,14 @@
           </van-pull-refresh>
         </van-tab>
       </van-tabs>
-	  <shortvideo v-if="active == 1"></shortvideo>
+	  <shortvideo v-if="active == 2"></shortvideo>
     </div>
+	<div v-if="tabActive == 1" style="heihgt:800px">
+		<video controls :src="'http://192.168.1.6:8090/video/person/香港美少女(HongKongDoll)/video/' + curVideo"></video>
+			  <div v-for="item in videoList">
+				  <van-button type="info" @click="curVideo = item">{{item}}</van-button>
+			  </div>
+	</div>
 	<userinfo v-show="tabActive == 3"></userinfo>
 	<dynamic v-if="tabActive == 2"></dynamic>
 	<van-tabbar
@@ -59,6 +65,7 @@ import shortvideo from './video'
 export default {
   data() {
     return {
+		curVideo:'',
 	  curTableHeight:0, // 当前table高度
 	  tabbarStatus:true, // 底部菜单是否显示
 	  dynamicNum:null, // 动态数量
@@ -123,11 +130,19 @@ export default {
       if(localStorage.getItem('newCat')) {
         return
       }
+	  this.videoList = []
+	   const res1 = await this.$http.get("/webInfoDetailData/queryVideoRandom");
+	  		console.log(res1)
+	  this.videoList = res1.data
+	  console.log(this.videoList)
       const res = await this.$http.get("/webInfoDetailData/queryMenu");
       this.category = this.changeCategory(res.data.data);
       this.selectArticle();
     },
     changeCategory(data) {
+		// const res = this.$http.get("/webInfoDetailData/queryVideoRandom");
+		// console.log(res)
+		
       const category1 = data.map((item, index) => {
         // console.log(item)
         item.list = [];
@@ -160,7 +175,7 @@ export default {
 			  categoryitem.finished = true;
 			}
 		}
-		if(categoryitem.CODE_VALUE != 4){
+		if(categoryitem.CODE_VALUE != 5){
 			const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
 			  typeId: categoryitem.CODE_VALUE,
 			  pageNum: categoryitem.page,
@@ -175,7 +190,7 @@ export default {
 			}
 		}
        
-
+		console.log(this.category)
     },
     onRefresh() {       //下拉刷新
                 setTimeout(() => {
@@ -214,12 +229,13 @@ export default {
   },
   watch: {
     active(current,before) {
+		// 记录头部高度
+		if(this.curTableHeight == 0) {
+			this.curTableHeight = $('.van-tabs__wrap').height()
+		}
 		// 视频下隐藏头部和table
-		if(current == 1){
-			// 记录头部高度
-			if(this.curTableHeight == 0) {
-				this.curTableHeight = $('.van-tabs__wrap').height()
-			}
+		if(current == 2){
+
 			// 隐藏头部
 			$('.van-tabs__wrap').height(0)
 			this.tabbarStatus = false;
@@ -250,7 +266,8 @@ export default {
     }
   },
   created() {
-
+	  
+	 
       this.selectCategory();
 	  // 建立websocket连接
 	  let websocketUrl = this.baseURL.replace('http','ws') + '/websocket?token=' + localStorage.getItem('token')
@@ -284,6 +301,8 @@ export default {
 	         this.websocket.close();
 	     }
 	  }
+	  
+	  
   }
 };
 </script>

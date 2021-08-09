@@ -1,9 +1,18 @@
+/*********
+注释事项：非常重要....................................
+vant滑动组件每次渲染的时候都会初始化,导致索引被重置,我们需要找到node_modules\vant\es\swipe\index.js文件
+在他watch下children添加判断
+if(this.activeIndicator <= 0){
+		  this.initialize();
+  }
+  来确保数据追加后不被重新初始化
+********/
 import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
 // const baseURL = 'http://127.0.0.1:8090'
-const baseURL = 'http://192.168.1.109:8090'
-// const baseURL = 'http://121.201.2.228:10824'
+// const baseURL = 'http://192.168.1.6:8090'
+const baseURL = 'http://121.201.2.228:10824'
 Vue.prototype.baseURL = baseURL
 const http = axios.create({
 	baseURL

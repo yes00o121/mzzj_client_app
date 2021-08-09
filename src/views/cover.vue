@@ -19,7 +19,7 @@
 export default {
     data(){
       return {
-        scrollTop: 0, //记录滚动条位置
+        // scrollTop: 0, //记录滚动条位置
         // CURRENT_IP:'http://192.168.1.100:8095'
       }
     },

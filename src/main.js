@@ -11,12 +11,14 @@ import { Uploader } from 'vant'; // 附件上传
 import { Icon } from 'vant'; // 图标
 import VueCropper from 'vue-cropper' // 图片裁剪
 import { Sticky } from 'vant'; // 粘性布局
-
+import { SwipeCell } from 'vant';
 
 import VueVideoPlayer from 'vue-video-player'
 import 'video.js/dist/video-js.css'
 import 'vue-video-player/src/custom-theme.css'
 Vue.use(VueVideoPlayer);
+import loadingIndex from "./components/loadingIndex";
+Vue.use(loadingIndex);
 
 import '../public/static/css/iconfont.css'
 import utils from 'km-vue-utils'
@@ -30,6 +32,7 @@ Vue.use(Uploader);
 Vue.use(Icon);
 Vue.use(VueCropper);
 Vue.use(Sticky);
+Vue.use(SwipeCell);
 Vue.use(VueTouch, {name: 'v-touch'})
  VueTouch.config.swipe = {
       threshold: 100 //手指左右滑动距离

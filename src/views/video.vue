@@ -1,10 +1,10 @@
 <template>
-	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div">
+	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swipeup="onSwipeup"  v-on:swiperight="onSwipeRight"  tag="div">
     <div class="container_box" id="video_box">
         <div class="van_swipe">
             <!--vant van-swipe 滑动组件 -->
-            <van-swipe :show-indicators="false" @change="onChange" vertical :loop="false">
-                <van-swipe-item v-for="(item, index) in videoList" :key="index" class="product_swiper">
+            <van-swipe :show-indicators="false" @change="onChange" vertical :loop="false" ref="swipe" >
+                <van-swipe-item  v-for="(item, index) in videoList"  :key="index"  class="product_swiper" >
                     <div class="video_container">
                         <!--video属性
                     webkit-playsinline ios 小窗播放，使视频不脱离文本流，安卓则无效
@@ -21,28 +21,32 @@
                                @click="pauseVideo" @ended="onPlayerEnded($event)"
                         >
                         </video> -->
-						<video class="video_box" loop webkit-playsinline="true" x5-video-player-type="h5-page"
+						<!-- 判断视频类型,mp4使用普通加载,m3u8使用videojs加载s -->
+						<video  class="video_box" loop webkit-playsinline="true" x5-video-player-type="h5-page"
 								x5-playsinline  x-webkit-airplay="allow" 
 						       x5-video-player-fullscreen="true" playsinline="true" preload="auto"
-							   style="object-fit:fill" autoplay  muted
 						       :poster="item.cover" :src="item.url" :playOrPause="playOrPause"
 							   :controls="false"
 							   object-fit="fill"
-						       @click="pauseVideo" @ended="onPlayerEnded($event)"
+						       @click="pauseVideo" @ended="onPlayerEnded($event)" @canplay="oncanplay($event)"
 						>
 						</video>
+						<!-- <item :favorite="item" :url="item.url" :cover="item.cover" :id="item.id"></item> -->
+						<!-- <videoelement  :detailitem="item" :url="item.url" :cover="item.cover" :id="item.id"></videoelement> -->
                         <!-- 封面 -->
                         <img v-show="isVideoShow" class="play" @click="playvideo" :src="item.cover"/>
                         <!-- 播放暂停按钮 -->
                         <img v-show="iconPlayShow" class="icon_play" @click="playvideo"
-                             src="http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575340653940esdHR.png"/>
+                             src="@/assets/play.png"/>
+						 <!-- <van-loading size="24px" v-show="playStatus" vertical>加载中...</van-loading> -->
                     </div>
                     <!-- 右侧头像、点赞、评论、分享功能 -->
                     <div class="tools_right">
                         <div class="tools_r_li">
                             <img :src="item.tag_image" class="tag_image">
-                            <i class="iconfont icon-jiahao tag_add" v-show="!item.tagFollow"
-                               @click="checkSubscribe(item,index)"></i>
+							<!-- 关注按钮，暂时注释 -->
+                           <!-- <i class="iconfont icon-jiahao tag_add" v-show="!item.tagFollow"
+                               @click="checkSubscribe(item,index)"></i> -->
                             <i class="iconfont icon-duihao tag_dui" v-show="item.tagFollow"
                                :class="item.tagFollow?'tag_dui_active':''"></i>
                         </div>
@@ -57,7 +61,7 @@
                         </div>
                         <div class="tools_r_li" @click="changeShare">
                             <i class="iconfont icon-iconfontforward icon_right"></i>
-                            <div class="tools_r_num">22.2w</div>
+                            <div class="tools_r_num">0</div>
                         </div>
                     </div>
                     <!-- 底部作品描述 -->
@@ -72,7 +76,7 @@
                 </van-swipe-item>
             </van-swipe>
             <!--底部操作栏-->
-            <!-- <div class="container_bottom">
+            <div class="container_bottom">
                 <div class="border_progress" :style="'width:'+videoProcess+'%'"></div>
                 <div class="bottom_tab" :class="tabIndex==0?'tab_active':''" @click="changeTab(0)">
                     <span class="bottom_tab_span ">首页</span>
@@ -83,7 +87,7 @@
                 <div class="bottom_tab" :class="tabIndex==2?'tab_active':''" @click="changeTab(2)">
                     <span class="bottom_tab_span">我的</span>
                 </div>
-            </div> -->
+            </div>
             <!--分享弹框-->
             <div class="share_box" :class="showShareBox?'share_active':''">
                 <div class="share_tips">分享到</div>
@@ -185,15 +189,17 @@
 	</v-touch>
 </template>
 <script>
-    import Vue from "vue";
-    import {
-        Swipe,
-        SwipeItem,
-        Toast,
-    } from 'vant';
-    // 引入微信分享
-    // import wx from "weixin-js-sdk";
-    Vue.use(Swipe, Toast).use(SwipeItem);
+	import videoelement from '../components/videoelement.vue'
+    // import Vue from "vue";
+    // // import {
+    // //     Swipe,
+    // //     SwipeItem,
+    // //     Toast,
+    // // } from 'vant';
+    // // // 引入微信分享
+    // // // import wx from "weixin-js-sdk";
+    // // Vue.use(Swipe, Toast).use(SwipeItem);
+
 
     let videoProcessInterval;
 	document.addEventListener("webkitfullscreenchange", function (e) {
@@ -211,53 +217,71 @@
         data() {
             let u = navigator.userAgent;
             return {
+				pageNum:1, // 第一页
+				pageSize:5,// 一次五个视频
+				playStatus:true, // 播放状态
                 current: 0,
-                videoList: [{
-                    // url: 'http://video.jishiyoo.com/3720932b9b474f51a4cf79f245325118/913d4790b8f046bfa1c9a966cd75099f-8ef4af9b34003bd0bc0261cda372521f-ld.mp4',//视频源
-					// url:'http://192.168.1.109:8090/video/4h3aWK9k_YwTQwkR.mp4',
-					url:'http://192.168.1.109:8090/video/exQxGJDH7g1FTbqG.mp4',
-                    // cover: 'http://oss.jishiyoo.com/images/file-1575341210559.png',//封面
-                    tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',//作者头像
-                    fabulous: false,//是否赞过
-                    tagFollow: false,//是否关注过该作者
-                    author_id: 1,//作者ID
-                    author: '薄荷七喜',
-                    des: ''
-                }, {
-                    // url: 'http://video.jishiyoo.com/1eedc49bba7b4eaebe000e3721149807/d5ab221b92c74af8976bd3c1473bfbe2-4518fe288016ee98c8783733da0e2da4-ld.mp4',
-                    url:'http://192.168.1.109:8090/video/Prav8L7sWqL3xtIE.mp4',
-					// cover: 'http://oss.jishiyoo.com/images/file-1575343195934.jpg',
-                    tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449298299M3V50.jpg',
-                    fabulous: true,//是否赞过
-                    tagFollow: false,//是否关注过该作者
-                    author_id: 2,//作者ID
-                    author: '薄荷七喜',
-                    des: ''
-                }, {
-                    // url: 'http://video.jishiyoo.com/161b9562c780479c95bbdec1a9fbebcc/8d63913b46634b069e13188b03073c09-d25c062412ee3c4a0758b1c48fc8c642-ld.mp4',
-                    url:'http://192.168.1.109:8090/video/4y6wMHYYuk9Exw_c.mp4',
-					// cover: 'http://oss.jishiyoo.com/images/file-1575343262684.jpg',
-                    tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',
-                    fabulous: false,//是否赞过
-                    tagFollow: false,//是否关注过该作者
-                    author_id: 1,//作者ID
-                    author: '薄荷七喜',
-                    des: ''
-                }, {
-                    // url: 'http://video.jishiyoo.com/549ed372c9d14b029bfb0512ba879055/8e2dc540573d496cb0942273c4a4c78c-15844fe70971f715c01d57c0c6595f45-ld.mp4',
-					url:'http://192.168.1.109:8090/video/6DLTIrJpMPCSzyJr.mp4',
-                    // cover: 'http://oss.jishiyoo.com/images/file-1575343508574.jpg',
-                    tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',
-                    fabulous: false,//是否赞过
-                    tagFollow: false,//是否关注过该作者
-                    author_id: 1,//作者ID
-                    author: '薄荷七喜',
-                    des: ''
-                }],
+				videoList:[],
+				// videoList:[{
+				// 	url: 'http://video.jishiyoo.com/3720932b9b474f51a4cf79f245325118/913d4790b8f046bfa1c9a966cd75099f-8ef4af9b34003bd0bc0261cda372521f-ld.mp4',//视频源
+				// 						// url:'http://192.168.1.109:8090/video/1/UNGLqF__fOI0AXT.mp4',
+				// 						// url:'http://192.168.1.109:8090/video/1/SSIS-014.mp4',
+				// 	               // cover: 'http://oss.jishiyoo.com/images/file-1575341210559.png',//封面
+				// 	               tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',//作者头像
+				// 	               fabulous: false,//是否赞过
+				// 	               tagFollow: false,//是否关注过该作者
+				// 	               author_id: 1,//作者ID
+				// 	               author: '薄荷七喜',
+				// 	               des: ''
+				// }],
+     //            videoList: [{
+     //                url: 'http://video.jishiyoo.com/3720932b9b474f51a4cf79f245325118/913d4790b8f046bfa1c9a966cd75099f-8ef4af9b34003bd0bc0261cda372521f-ld.mp4',//视频源
+					// // url:'http://192.168.1.109:8090/video/1/UNGLqF__fOI0AXT.mp4',
+					// // url:'http://192.168.1.109:8090/video/1/SSIS-014.mp4',
+     //                // cover: 'http://oss.jishiyoo.com/images/file-1575341210559.png',//封面
+     //                tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',//作者头像
+     //                fabulous: false,//是否赞过
+     //                tagFollow: false,//是否关注过该作者
+     //                author_id: 1,//作者ID
+     //                author: '薄荷七喜',
+     //                des: ''
+     //            }, {
+     //                // url: 'http://video.jishiyoo.com/1eedc49bba7b4eaebe000e3721149807/d5ab221b92c74af8976bd3c1473bfbe2-4518fe288016ee98c8783733da0e2da4-ld.mp4',
+     //                url:'http://192.168.1.109:8090/video/1/Prav8L7sWqL3xtIE.mp4',
+					// // cover: 'http://oss.jishiyoo.com/images/file-1575343195934.jpg',
+     //                tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449298299M3V50.jpg',
+     //                fabulous: true,//是否赞过
+     //                tagFollow: false,//是否关注过该作者
+     //                author_id: 2,//作者ID
+     //                author: '薄荷七喜',
+     //                des: ''
+     //            }, {
+     //                // url: 'http://video.jishiyoo.com/161b9562c780479c95bbdec1a9fbebcc/8d63913b46634b069e13188b03073c09-d25c062412ee3c4a0758b1c48fc8c642-ld.mp4',
+     //                url:'http://192.168.1.109:8090/video/1/4y6wMHYYuk9Exw_c.mp4',
+					// // cover: 'http://oss.jishiyoo.com/images/file-1575343262684.jpg',
+     //                tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',
+     //                fabulous: false,//是否赞过
+     //                tagFollow: false,//是否关注过该作者
+     //                author_id: 1,//作者ID
+     //                author: '薄荷七喜',
+     //                des: ''
+     //            }, {
+     //                // url: 'http://video.jishiyoo.com/549ed372c9d14b029bfb0512ba879055/8e2dc540573d496cb0942273c4a4c78c-15844fe70971f715c01d57c0c6595f45-ld.mp4',
+					// url:'http://192.168.1.109:8090/video/1/6DLTIrJpMPCSzyJr.mp4',
+     //                // cover: 'http://oss.jishiyoo.com/images/file-1575343508574.jpg',
+     //                tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',
+     //                fabulous: false,//是否赞过
+     //                tagFollow: false,//是否关注过该作者
+     //                author_id: 1,//作者ID
+     //                author: '薄荷七喜',
+     //                des: ''
+     //            }],
                 isVideoShow: true,
-                playOrPause: true,
+                // playOrPause: true,
+				playOrPause: true,
                 video: null,
-                iconPlayShow: true,
+                // iconPlayShow: true,
+				iconPlayShow: false,
                 isAndroid: u.indexOf('Android') > -1 || u.indexOf('Adr') > -1, // android终端
                 isiOS: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), // ios终端
                 tabIndex: 0,
@@ -273,51 +297,157 @@
                 videoProcess: 0,//视频播放进度
             }
         },
+		created(){
+			this.loadData()
+		},
+		components:{
+			videoelement
+		},
         watch: {
             //监听输入变化
             comment_text(newV, oldV) {
                 newV == '' ? this.canSend = false : this.canSend = true
-            }
+            },
+			// 'videoList'(data){
+			// 	// data.__ob__ = null;
+			// 	// data.__proto__ = null;
+			// 	// consoel.log(dat)
+			// 	// console.log(data.__ob__.value=[])
+			// 	console.log('数组边话..当前索引' + this.current)
+			// 	console.log(data)
+			// }
         },
         mounted() {
-            try{
-                wx.config({
-                    debug: false,
-                    appId: '111',
-                    timestamp: '111',
-                    nonceStr: '111',
-                    signature: '111',
-                    jsApiList: []
-                })
-            }catch (e) {
-                console.log(e)
-            }
-
+            // try{
+            //     wx.config({
+            //         debug: false,
+            //         appId: '111',
+            //         timestamp: '111',
+            //         nonceStr: '111',
+            //         signature: '111',
+            //         jsApiList: []
+            //     })
+            // }catch (e) {
+            //     console.log(e)
+            // }
             //获取到视频资源后默认自动播放
             setTimeout(() => {
                 this.playvideo()
             }, 500)
         },
         methods: {
-			onSwipeLeft () {
+			onSwipeup(){
+				// 向上滑动判断是否视频已经加载到最后,加载到最后加载新视频数据，然后滑动组件向下一个
+				if(this.videoList.length - 1 == this.current){
+					console.log('已经到了最后》。。')
+					// 提示加载数据
+					
+					this.loadData()
+					console.log(this.videoList.length)
+					// if(this.videoList.length - 1 > this.current){
+					// 	// 加载成功,乡下滑动一个
+					// 	this.$refs.swipe.next ();
+					// } else {
+					// 	// 加资失败,请提示重新加资
+					// 	this.$msg.fail('加载失败,请重试')
+					// }
+				}
+			},
+			showloading() {
+			    var title = "加载中···";
+			    this.$showLoading({
+			      title: title
+			    });
+			  },
+			
+			  hideloading() {
+			    this.$cancelLoading();
+			  },
+			async loadData(){
+				this.showloading()
+				const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
+				  // typeId: categoryitem.CODE_VALUE,
+				  pageNum: this.pageNum,
+				  pageSize: this.pageSize,
+				  loadMode:'5',
+				  search: ''
+				})
+				// console.log(res)
+				// 追加数据
+				if(res.data.data.list.length == 0) {
+					this.$msg.fail('没有更多了...')
+					return;
+				}
+				// let tempList = []
+				for(let i =0;i<res.data.data.list.length;i++){
+					this.videoList.push({
+						url: this.baseURL + res.data.data.list[i].nextAddress,
+						tag_image: this.baseURL + '/common/image?imgId=6103eed9f1a2480958525955',  // 默认使用tom猫
+						fabulous:false,
+						tagFollow:false,
+						author_id:1,
+						id:res.data.data.list[i].id,
+						isFavorite:false, 
+						author: '薄荷七喜',
+						// des: res.data.data.list[i].title
+					    des : ''
+					})
+				}
+				// this.videoList.push(...tempList)
+				this.pageNum = this.pageNum + 1;
+				if(this.current > 0 ){
+					if(this.videoList.length - 1 > this.current){
+						// 加载成功,乡下滑动一个
+						this.$refs.swipe.next ();
+					} else {
+						// 加资失败,请提示重新加资
+						this.$msg.fail('加载失败,请重试')
+					}
+				}
+				this.hideloading()
+				// this.videoList = this.videoList.concat(tempList)
+				// console.log('当前位置......' + this.current)
+				// 隐藏显示加载中,加载后在显示回来
+				// this.$refs.swipe.swipeTo(this.current,{
+				// 	immediate: true
+				// })
+				// this.$refs.swipe.swipeTo(this.currents);
+				// setTimeout(()=>{
+				// 	this.$refs.swipe.swipeTo(this.current,false)
+					// this.hideloading()
+				// },500)
+				// console.log(this.videoList)
+				// console.log(index)
+				// this.videoList.push({
+				// 	url: 'http://video.jishiyoo.com/161b9562c780479c95bbdec1a9fbebcc/8d63913b46634b069e13188b03073c09-d25c062412ee3c4a0758b1c48fc8c642-ld.mp4',
+				// 	               // url:'http://192.168.1.109:8090/video/1/4y6wMHYYuk9Exw_c.mp4',
+				// 						// cover: 'http://oss.jishiyoo.com/images/file-1575343262684.jpg',
+				// 	               tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',
+				// 	               fabulous: false,//是否赞过
+				// 	               tagFollow: false,//是否关注过该作者
+				// 	               author_id: 1,//作者ID
+				// 	               author: '薄荷七喜',
+				// 	               des: ''
+				// })
+				
+			},
+			onSwipeLeft (a) {
+				console.log(a)
 				// table + 1
-				console.log(this.$parent.category.length)
+				// console.log(this.$parent.category.length)
 				if(this.$parent.category.length ==  this.$parent.active + 1){
 					return;
 				}
+				clearInterval(videoProcessInterval)
 				this.$parent.active += 1
-			    // console.log('页面左滑')
-			  // this.$router.go(-1)
 			},
-			onSwipeRight(){
+			onSwipeRight(a){
 				if(this.$parent.active == 0){
 					return;
 				}
+				clearInterval(videoProcessInterval)
 				this.$parent.active -= 1
-				console.log(this.$parent)
-				// table - 1
-			    // console.log('页面右滑')
-			    // this.$router.go(-1)
+				// console.log(a)
 			},
             //获取评论
             getComment() {
@@ -521,7 +651,8 @@
             },
             //展示分享弹窗
             changeShare() {
-                this.showShareBox = true
+				this.$msg.fail('分析暂时关闭')
+                // this.showShareBox = true
             },
             //取消分享
             cancelShare() {
@@ -529,36 +660,24 @@
             },
             //滑动改变播放的视频
             onChange(index) {
-				// console.log(index)
-				// console.log(this.current)
-                //改变的时候 暂停当前播放的视频
-                clearInterval(videoProcessInterval)
+				//改变的时候 暂停当前播放的视频
+				clearInterval(videoProcessInterval)
 				setTimeout(() => {
 					this.pauseVideo() // 暂停之前视频
 				}, 100)
-                this.videoProcess = 0;
-                let video = document.querySelectorAll('video')[this.current];
-                video.pause();
-                this.playOrPause = false;
-                this.showShareBox = false;
-                this.current = index;
+				this.videoProcess = 0;
+				let video = document.querySelectorAll('video')[this.current];
+				video.pause();
+				this.playOrPause = false;
+				this.showShareBox = false;
+				this.current = index;
+				this.isVideoShow = false;
+				// this.playvideo();// 播放当前视频
 				
 				this.isVideoShow = false;
-				this.playvideo();// 播放当前视频
-				
-                //非ios切换直接自动播放下一个
-                // if (!this.isiOS) {
-                //     this.isVideoShow = false;
-                //     setTimeout(() => {
-                //         this.pauseVideo()
-                //     }, 100)
-                // } else {
-                //     //ios官方禁止video自动播放，未找到合适的方法，如果您发现了，麻烦告诉我一下谢谢啦
-                //     this.playOrPause = true;
-                //     this.iconPlayShow = true;
-                // }
-
-
+				setTimeout(() => {
+					this.pauseVideo()
+				}, 100)
             },
 			setHeight(video){
 				// console.log(video)
@@ -579,33 +698,21 @@
 				if(video.style.paddingTop == '' || video.style.paddingTop == null) {
 					video.style.paddingTop = height + 'px'
 				}
+				
 			},
             // 开始播放
             playvideo(event) {
                 let video = document.querySelectorAll('video')[this.current];
                 // console.log("playvideo：" + this.current);
+				// 隐藏视频,计算完高度后显示
+				// video.style.visibility = 'hidden'
 				// 计算设置视频高度
-				this.setHeight(video);
                 this.isVideoShow = false;
                 this.iconPlayShow = false;
                 this.showShareBox = false;
                 video.play();
-
-                if (this.isiOS) {
-                    setTimeout(() => {
-                        //处理ios宽视频
-                        let documentW = (document.documentElement.clientWidth || document.body.clientWidth);
-                        let docB = parseFloat(video.videoWidth / documentW);
-                        // console.log("获取视频宽和屏幕比：" + docB)
-                        // 计算视频最适高度
-                        let realH = parseInt(video.videoHeight / docB);
-                        this.realH = realH + 'px'
-                        // console.log("视频最适高度：" + this.realH)
-                        this.$forceUpdate();
-                    }, 200);
-                }
-
                 videoProcessInterval = setInterval(() => {
+					// video.style.visibility = 'visible'
                     this.changeProcess(video)
                 }, 100)
             },
@@ -635,19 +742,30 @@
                     this.playOrPause = !this.playOrPause;
                     this.showShareBox = false;
                 } catch (e) {
-                    alert(e)
+                    // alert(e)
                 }
 
 
             },
             //记录播放进度
             changeProcess() {
+				// console.log('记录播放。。。。')
                 let video = document.querySelectorAll('video')[this.current];
                 let currentTime = video.currentTime.toFixed(1);
                 let duration = video.duration.toFixed(1);
+				// console.log(currentTime)
+				// console.log(duration)
+				// console.log(currentTime / duration)
                 this.videoProcess = parseInt((currentTime / duration).toFixed(2) * 100)
+				// console.log(this.videoProcess)
+				
             },
+			oncanplay(){
+				console.log('视频开始播放。。。。。。')
+				// this.playStatus = false
+			},
             onPlayerEnded(player) { //视频结束
+				
                 this.isVideoShow = true
                 this.current += this.current
             },
@@ -661,7 +779,7 @@
                 document.execCommand("Copy"); // 执行浏览器复制命令
                 oInput.className = 'oInput';
                 oInput.style.display = 'none';
-                alert("链接复制成功")
+                // alert("链接复制成功")
             }
         }
     }
@@ -688,6 +806,7 @@
     .product_swiper {
         width: 100vw;
         height: 100vh;
+		position:relative;
     }
 
     .van_swipe {
@@ -718,9 +837,17 @@
 
     video {
         /* object-position: 0 0; */
-		height:100%;
-		width:100%;	
+		/* height:100%; */
+		/* width:100%;	 */
 		/* margin-top: 73%; */
+		/* position: absolute;
+		transform: translate(-50%, -50%);
+		top: 50%;
+		bottom: 50%; */
+		position: absolute;
+		height: 100%;
+		width: 100%;
+		left: 0;
     }
 
     .icon_play {
