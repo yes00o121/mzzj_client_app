@@ -11,7 +11,7 @@ import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
 // const baseURL = 'http://127.0.0.1:8090'
-// const baseURL = 'http://192.168.1.6:8090'
+// const baseURL = 'http://192.168.1.111:8090'
 const baseURL = 'http://121.201.2.228:10824'
 Vue.prototype.baseURL = baseURL
 const http = axios.create({
@@ -26,7 +26,6 @@ const http = axios.create({
 http.interceptors.request.use(function (config) {
 	// console.log(localStorage.getItem('token'))
     if(localStorage.getItem('token')){
-		// console.log('??????????????????????????')
         config.headers.Authorization = 'Bearer ' + localStorage.getItem('token')
     } 
 

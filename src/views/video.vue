@@ -15,22 +15,24 @@
                     poster：封面
                     src：播放地址
                     -->
-                        <!-- <video class="video_box" loop webkit-playsinline="true" x5-video-player-type="h5-page"
-                               x5-video-player-fullscreen="true" playsinline="true" preload="auto"
-                               :poster="item.cover" :src="item.url" :playOrPause="playOrPause"
-                               @click="pauseVideo" @ended="onPlayerEnded($event)"
-                        >
-                        </video> -->
 						<!-- 判断视频类型,mp4使用普通加载,m3u8使用videojs加载s -->
-						<video  class="video_box" loop webkit-playsinline="true" x5-video-player-type="h5-page"
+						<video v-if="item.videoType != 'm3u8'" class="video_box" loop webkit-playsinline="true" x5-video-player-type="h5-page"
 								x5-playsinline  x-webkit-airplay="allow" 
 						       x5-video-player-fullscreen="true" playsinline="true" preload="auto"
-						       :poster="item.cover" :src="item.url" :playOrPause="playOrPause"
+						       :poster="item.cover" :src="item.url" :playOrPause="playOrPause" :playUrl="item.url"
+							   :videoType="item.videoType" 
 							   :controls="false"
 							   object-fit="fill"
 						       @click="pauseVideo" @ended="onPlayerEnded($event)" @canplay="oncanplay($event)"
 						>
 						</video>
+						<video ref = "videoPlayer" v-if="item.videoType == 'm3u8'"  class="video_box" 
+						webkit-playsinline="true" x5-video-player-type="h5-page"
+						x5-playsinline  x-webkit-airplay="allow"
+						x5-video-player-fullscreen="true" playsinline="true" preload="auto"
+						:controls="false" :videoType="item.videoType"   :playUrl="item.url"
+						object-fit="fill"
+						></video>
 						<!-- <item :favorite="item" :url="item.url" :cover="item.cover" :id="item.id"></item> -->
 						<!-- <videoelement  :detailitem="item" :url="item.url" :cover="item.cover" :id="item.id"></videoelement> -->
                         <!-- 封面 -->
@@ -50,10 +52,10 @@
                             <i class="iconfont icon-duihao tag_dui" v-show="item.tagFollow"
                                :class="item.tagFollow?'tag_dui_active':''"></i>
                         </div>
-                        <div class="tools_r_li" @click="changeFabulous(item,index)">
+                        <div class="tools_r_li" @click="collectionClick(item,index)">
                             <i class="iconfont icon-shoucang icon_right"
                                :class="item.fabulous?'fabulous_active':''"></i>
-                            <div class="tools_r_num">52.1w</div>
+                            <div class="tools_r_num">{{item.collNum}}</div>
                         </div>
                         <div class="tools_r_li" @click="changeComment">
                             <i class="iconfont icon-liuyan icon_right icon_right_change"></i>
@@ -72,6 +74,9 @@
                         <div class="production_des">
                             {{item.des}}
                         </div>
+						<div class="production_length">
+						    {{item.length | getDateBysecond}}
+						</div>
                     </div>
                 </van-swipe-item>
             </van-swipe>
@@ -79,13 +84,13 @@
             <div class="container_bottom">
                 <div class="border_progress" :style="'width:'+videoProcess+'%'"></div>
                 <div class="bottom_tab" :class="tabIndex==0?'tab_active':''" @click="changeTab(0)">
-                    <span class="bottom_tab_span ">首页</span>
+                    <span class="bottom_tab_span " @click="home">首页</span>
                 </div>
                 <div class="bottom_tab" :class="tabIndex==1?'tab_active':''" @click="changeTab(1)">
-                    <img src="http://oss.jishiyoo.com/images/file-1575427746903.png" alt="" class="bottom_tab_icon">
+                    <img @click="message('暂未开放')" src="http://oss.jishiyoo.com/images/file-1575427746903.png" alt="" class="bottom_tab_icon">
                 </div>
                 <div class="bottom_tab" :class="tabIndex==2?'tab_active':''" @click="changeTab(2)">
-                    <span class="bottom_tab_span">我的</span>
+                    <span @click="message('暂未开放')" class="bottom_tab_span">我的</span>
                 </div>
             </div>
             <!--分享弹框-->
@@ -222,6 +227,9 @@
 				playStatus:true, // 播放状态
                 current: 0,
 				videoList:[],
+				curVideoTime:0, // 当前视频时长
+				// curCollNum:0,// 收藏数
+				// userColl:false, // 用户是否收藏
 				// videoList:[{
 				// 	url: 'http://video.jishiyoo.com/3720932b9b474f51a4cf79f245325118/913d4790b8f046bfa1c9a966cd75099f-8ef4af9b34003bd0bc0261cda372521f-ld.mp4',//视频源
 				// 						// url:'http://192.168.1.109:8090/video/1/UNGLqF__fOI0AXT.mp4',
@@ -308,15 +316,21 @@
             comment_text(newV, oldV) {
                 newV == '' ? this.canSend = false : this.canSend = true
             },
-			// 'videoList'(data){
-			// 	// data.__ob__ = null;
-			// 	// data.__proto__ = null;
-			// 	// consoel.log(dat)
-			// 	// console.log(data.__ob__.value=[])
-			// 	console.log('数组边话..当前索引' + this.current)
-			// 	console.log(data)
-			// }
         },
+		filters:{
+			// 根据秒获取时间
+			getDateBysecond(second){
+				if(second < 60){
+					return '0:' + second;
+				}
+				let minute = parseInt(second/60)
+				let s = second - (minute * 60)
+				if(minute < 60){
+					return (minute < 9 ? '0' + minute : minute) + ':' + (s < 9 ? '0' + s : s);
+				}
+				return '';
+			}
+		},
         mounted() {
             // try{
             //     wx.config({
@@ -331,26 +345,55 @@
             //     console.log(e)
             // }
             //获取到视频资源后默认自动播放
-            setTimeout(() => {
-                this.playvideo()
-            }, 500)
+            // setTimeout(() => {
+            //     this.playvideo()
+            // }, 500)
+			// this.$nextTick(function () {
+			// 	this.playvideo()
+			// })
         },
         methods: {
+			// 收藏数据
+			async collectionClick() {
+			   if(localStorage.getItem('token')){
+			     // 判断显示状态,是收藏还是取消收藏
+			     if(this.videoList[this.current].fabulous){
+					  const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.videoList[this.current].id})
+					  if(res.data.data == '取消成功'){
+						this.videoList[this.current].fabulous = false
+					  } else {
+						 this.$msg.fail(res.data.message)
+					  }
+			     } else {
+					 const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.videoList[this.current].id})
+					 if(res.data.data == '收藏成功'){
+					     this.videoList[this.current].fabulous = true
+					 }else{
+					     this.$msg.fail(res.data.message)
+					 }
+
+			     }
+				// 收藏后，重新加载收藏数据
+				this.loadCollection()
+			   }
+			},
+			message(msg){
+				this.$msg.fail(msg)
+			},
+			// 点击首页,直接刷新页面
+			home(){
+				clearInterval(videoProcessInterval)
+				this.pageNum = 1;
+				this.videoList = [];
+				// location.reload();
+				this.loadData()
+			},
 			onSwipeup(){
 				// 向上滑动判断是否视频已经加载到最后,加载到最后加载新视频数据，然后滑动组件向下一个
 				if(this.videoList.length - 1 == this.current){
-					console.log('已经到了最后》。。')
 					// 提示加载数据
-					
 					this.loadData()
 					console.log(this.videoList.length)
-					// if(this.videoList.length - 1 > this.current){
-					// 	// 加载成功,乡下滑动一个
-					// 	this.$refs.swipe.next ();
-					// } else {
-					// 	// 加资失败,请提示重新加资
-					// 	this.$msg.fail('加载失败,请重试')
-					// }
 				}
 			},
 			showloading() {
@@ -363,13 +406,33 @@
 			  hideloading() {
 			    this.$cancelLoading();
 			  },
+			 // 获取收藏数据
+			async loadCollection(){
+				// 判断是否已经有收藏数据,有收藏数据不请求,直接获取之前的展示
+				const res = await this.$http.get("/collection/queryCollTotalAndUserStatus?webInfoDetailDataId=" + this.videoList[this.current].id)
+				// this.videoList[this.current].fabulous = res.data.userStatus && res.data.userStatus > 0 ? true : false
+				console.log(res.data.collectionNum)
+				
+				if(res.data.userStatus){
+					this.videoList[this.current].fabulous = true
+				}else {
+					if(res.data.userStatus > 0){
+						this.videoList[this.current].fabulous = true
+					} else {
+						this.videoList[this.current].fabulous = false
+					}
+				}
+				this.videoList[this.current].collNum = res.data.collectionNum
+				console.log(this.videoList[this.current])
+			},
 			async loadData(){
 				this.showloading()
 				const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
 				  // typeId: categoryitem.CODE_VALUE,
 				  pageNum: this.pageNum,
 				  pageSize: this.pageSize,
-				  loadMode:'5',
+				  // loadMode:'5',
+				  loadMode:'4',
 				  search: ''
 				})
 				// console.log(res)
@@ -380,19 +443,57 @@
 				}
 				// let tempList = []
 				for(let i =0;i<res.data.data.list.length;i++){
-					this.videoList.push({
-						url: this.baseURL + res.data.data.list[i].nextAddress,
-						tag_image: this.baseURL + '/common/image?imgId=6103eed9f1a2480958525955',  // 默认使用tom猫
-						fabulous:false,
-						tagFollow:false,
-						author_id:1,
-						id:res.data.data.list[i].id,
-						isFavorite:false, 
-						author: '薄荷七喜',
-						// des: res.data.data.list[i].title
-					    des : ''
-					})
+					// 判断数据类型,如果是m3u8获取m3u8的请求地址
+					if(res.data.data.list[i].videoType == 'm3u8'){
+						let nextAddress = res.data.data.list[i].nextAddress
+						nextAddress = nextAddress.split('_-')[1]
+						console.log(this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress)
+						this.videoList.push({
+							url: this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress,
+							tag_image: this.baseURL + '/common/image?imgId=6103eed9f1a2480958525955',  // 默认使用tom猫
+							fabulous:false,
+							tagFollow:false,
+							author_id:1,
+							videoType:res.data.data.list[i].videoType,
+							id:res.data.data.list[i].id,
+							isFavorite:false, 
+							author: '薄荷七喜',
+							collNum:0,
+							des: res.data.data.list[i].title,
+							length: res.data.data.list[i].videoLength
+						})
+					} else {
+						this.videoList.push({
+							url: this.baseURL + res.data.data.list[i].nextAddress,
+							tag_image: this.baseURL + '/common/image?imgId=6103eed9f1a2480958525955',  // 默认使用tom猫
+							fabulous:false,
+							tagFollow:false,
+							videoType:res.data.data.list[i].videoType,
+							author_id:1,
+							id:res.data.data.list[i].id,
+							isFavorite:false, 
+							author: '薄荷七喜',
+							collNum:0,
+							des: res.data.data.list[i].title,
+						    des : '',
+							length: res.data.data.list[i].videoLength
+						})
+					}
 				}
+				// this.videoList.push({
+				// 			url: 'http://hls01open.ys7.com/openlive/7d917f9f76554a879ad498449d497db6.m3u8',
+				// 			tag_image: this.baseURL + '/common/image?imgId=6103eed9f1a2480958525955',  // 默认使用tom猫
+				// 			fabulous:false,
+				// 			tagFollow:false,
+				// 			author_id:1,
+				// 			videoType:'m3u8',
+				// 			id:1,
+				// 			isFavorite:false, 
+				// 			author: '薄荷七喜',
+				// 			// des: res.data.data.list[i].title
+				// 		    des : ''
+				// 		})
+				
 				// this.videoList.push(...tempList)
 				this.pageNum = this.pageNum + 1;
 				if(this.current > 0 ){
@@ -405,6 +506,11 @@
 					}
 				}
 				this.hideloading()
+				// 播放视频
+				this.$nextTick(()=>{
+					this.playvideo()
+				})
+				
 				// this.videoList = this.videoList.concat(tempList)
 				// console.log('当前位置......' + this.current)
 				// 隐藏显示加载中,加载后在显示回来
@@ -456,24 +562,24 @@
                     let data = [{
                         "comment_id": 297,
                         "p_id": 0,
-                        "comment_content": "你好，我叫蓝湛",
+                        "comment_content": "你好，我叫ben",
                         "love_count": 0,
                         "create_time": "1月前",
                         "user_id": 78634,
-                        "nickname": "蓝忘机\uD83C\uDF1F",
-                        "avatar": "http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg",
+                        "nickname": "薄荷七喜\uD83C\uDF1F",
+                        "avatar": "https://img1.baidu.com/it/u=2972028612,430721560&fm=26&fmt=auto&gp=0.jpg",
                         "be_commented_user_id": 0,
                         "be_commented_nickname": "",
                         "be_commented_avatar": "",
                         "child_comment": [{
                             "comment_id": 298,
                             "p_id": 296,
-                            "comment_content": "蓝二公子，今天天气不错",
+                            "comment_content": "oh yeah thank sir,coming you!!!",
                             "love_count": 1,
                             "create_time": "7天前",
                             "user_id": 55163,
-                            "nickname": "魏婴",
-                            "avatar": "http://thirdwx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTKPJb1k8zia02PjVibdaDJ83JIDGm0hIsY34kAlXyZMT6FMBibdw6rhdPPjpxtp6d8B75x5Kpicxp2gqw/132",
+                            "nickname": "比利",
+                            "avatar": "https://img2.baidu.com/it/u=1551085455,669562283&fm=26&fmt=auto&gp=0.jpg",
                             "be_commented_user_id": 78480,
                             "be_commented_nickname": "chenchen",
                             "be_commented_avatar": "http://thirdwx.qlogo.cn/mmopen/vi_32/icxHc0Ym1p4hQAFAUnjpxDPMkEUyojnibBj9wUSS2OmibiazdBAicSLpoicricVYP6QG6XicjTzQPx9koMPqcGfhTOy5qA/132",
@@ -483,12 +589,12 @@
                     }, {
                         "comment_id": 281,
                         "p_id": 0,
-                        "comment_content": "楼主好帅，我要嫁给你！！",
+                        "comment_content": "fuck you！！",
                         "love_count": 0,
                         "create_time": "1月前",
                         "user_id": 74164,
-                        "nickname": "冰雪奇缘2",
-                        "avatar": "http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449298299M3V50.jpg",
+                        "nickname": "比利",
+                        "avatar": "https://img2.baidu.com/it/u=246367135,466135651&fm=26&fmt=auto&gp=0.jpg",
                         "be_commented_user_id": 0,
                         "be_commented_nickname": "",
                         "be_commented_avatar": "",
@@ -660,24 +766,72 @@
             },
             //滑动改变播放的视频
             onChange(index) {
-				//改变的时候 暂停当前播放的视频
-				clearInterval(videoProcessInterval)
-				setTimeout(() => {
-					this.pauseVideo() // 暂停之前视频
-				}, 100)
-				this.videoProcess = 0;
 				let video = document.querySelectorAll('video')[this.current];
-				video.pause();
-				this.playOrPause = false;
-				this.showShareBox = false;
-				this.current = index;
-				this.isVideoShow = false;
-				// this.playvideo();// 播放当前视频
+				// 判断视频类型加载不同
+				let videoType = video.getAttribute('videoType')
+				this.pauseVideo() // 暂停之前视频
+				if(videoType == 'm3u8'){
+					clearInterval(videoProcessInterval)
+					this.current = index;
+					let obj = this.videoList[this.current].vObj
+					if(obj){
+						console.log('存在操作.....')
+						this.playOrPause = true;
+						this.showShareBox = false;
+						obj.play()
+					}else {
+						this.playOrPause = true;
+						this.showShareBox = false;
+						// this.isVideoShow = false;
+						console.log('不存在，进行添加.....')
+						let curVideo = document.querySelectorAll('video')[this.current];
+						let vdoSrc= curVideo.getAttribute('playUrl')
+						console.log(vdoSrc)
+						console.log(this.$refs.videoPlayer[this.current])
+						let myVideo = this.$video(
+						          this.$refs.videoPlayer[this.current],
+						          // this.options,
+								  {
+									  autoplay: 'muted',//自动播放
+									  loop:true,
+								  									  // controls: true,//用户可以与之交互的控件
+								  },
+						          function onPlayerReady() {
+
+								  }
+						        );
+						// myVideo.src({
+						//   src:vdoSrc,
+						//   type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
+						// })
+
+						this.videoList[this.current].vObj = myVideo
+						this.loadCollection()
+					}
+				} else {
+					//改变的时候 暂停当前播放的视频
+					clearInterval(videoProcessInterval)
+					setTimeout(() => {
+						this.pauseVideo() // 暂停之前视频
+					}, 100)
+					this.videoProcess = 0;
+					// let video = document.querySelectorAll('video')[this.current];
+					video.pause();
+					this.playOrPause = false;
+					this.showShareBox = false;
+					this.current = index;
+					this.isVideoShow = false;
+					// this.playvideo();// 播放当前视频
+
+					setTimeout(() => {
+						this.pauseVideo()
+					}, 100)
+				}
 				
-				this.isVideoShow = false;
-				setTimeout(() => {
-					this.pauseVideo()
-				}, 100)
+				this.iconPlayShow = false;
+				// this.playOrPause = false;
+				// this.isVideoShow = false;
+				
             },
 			setHeight(video){
 				// console.log(video)
@@ -702,50 +856,184 @@
 			},
             // 开始播放
             playvideo(event) {
+				// 判断视频类型,如果m3u8和mp4加载不同
                 let video = document.querySelectorAll('video')[this.current];
-                // console.log("playvideo：" + this.current);
-				// 隐藏视频,计算完高度后显示
-				// video.style.visibility = 'hidden'
-				// 计算设置视频高度
-                this.isVideoShow = false;
-                this.iconPlayShow = false;
-                this.showShareBox = false;
-                video.play();
-                videoProcessInterval = setInterval(() => {
-					// video.style.visibility = 'visible'
-                    this.changeProcess(video)
-                }, 100)
+				console.log(video)
+				let videoType = video.getAttribute('videoType')
+				if(videoType == 'm3u8'){
+					
+					let vObj = this.videoList[this.current].vObj
+					if(this.videoList[this.current].vObj){
+						if (this.playOrPause) {
+							// console.log('开始......')
+							this.iconPlayShow = true;
+							// this.isVideoShow = true
+							vObj.pause()
+							
+						} else {
+							console.log('取消')
+							this.iconPlayShow = false;
+							// this.isVideoShow = true
+							vObj.play()
+						}
+						this.playOrPause = !this.playOrPause;
+						this.showShareBox = false;
+						
+					}else{
+						let _this = this;
+						let vdoSrc= video.getAttribute('playUrl')
+						let myVideo = this.$video(
+						          this.$refs.videoPlayer[this.current],
+								  {
+									  // autoplay: 'muted',//自动播放
+									  // loop:true,
+									  controls: false
+								  },
+						          function onPlayerReady() {
+										// this.on("loadstart",function(){
+											// // 2
+											// 	console.log("开始请求数据 ");
+											// })
+											this.on("progress",function(){
+												// 5
+												// console.log("正在请求数据 ");
+												this.el_.getElementsByTagName('span')[0].innerText = ''
+											})
+				// 							this.on("loadedmetadata",function(){
+				// 								// 6,视频已加载
+				// 								console.log("获取资源长度完成 ")
+				// 							})
+				// 							this.on("canplaythrough",function(){
+				// 								// top.aa = this;
+				// 								// 获取视频时长
+				// 								// console.log('视频时长为.....' +parseInt($(this.el_).find('video')[0].currentTime))
+				// 								// _this.curVideoTime = parseInt($(this.el_).find('video')[0].currentTime)
+				// 								// // 8
+				// 								// console.log("视频源数据加载完成")
+				// 							})
+				// 							this.on("waiting", function(){
+				// 								// 4
+				// 								console.log("等待数据")
+				// 							});
+				// 							this.on("play", function(){
+				// 								// 3
+				// 								// top.aa = this;
+				// 								console.log("视频开始播放")
+												
+				// 							});
+				// 							this.on("playing", function(){
+				// 								// 7
+				// 								console.log("视频播放中")
+				// 							});
+				// 							this.on("pause", function(){
+				// 								console.log("视频暂停播放")
+				// 							});
+				// 							this.on("ended", function(){
+				// 								console.log("视频播放结束");
+				// 							});
+				// 							this.on("error", function(){
+				// 								console.log("加载错误")
+				// 							});
+				// 							this.on("seeking",function(){
+				// 								console.log("视频跳转中");
+				// 							})
+				// 							this.on("seeked",function(){
+				// 								console.log("视频跳转结束");
+				// 							})
+				// 							this.on("ratechange", function(){
+				// 								console.log("播放速率改变")
+				// 							});
+				// 							this.on("timeupdate",function(){
+				
+				// 							})
+				// 							this.on("volumechange",function(){
+				// 								console.log("音量改变");
+				// 							})
+				// 							this.on("stalled",function(){
+				// 								console.log("网速异常");
+				// 							})
+								  }
+						        );
+						// myVideo.src({
+						//   src:vdoSrc,
+						//   type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
+						// })
+						// myVideo.play()
+						this.videoList[this.current].vObj = myVideo
+						this.iconPlayShow = false;
+						this.isVideoShow = true;
+						// 加载收藏
+						this.loadCollection()
+						videoProcessInterval = setInterval(() => {
+						    this.changeProcess()
+						}, 100)
+					}
+					
+					
+				}else {
+					this.isVideoShow = false;
+					this.iconPlayShow = false;
+					this.showShareBox = false;
+					video.play();
+					videoProcessInterval = setInterval(() => {
+						// video.style.visibility = 'visible'
+					    this.changeProcess(video)
+					}, 100)
+				}
             },
             pauseVideo() { //暂停\播放
+			
                 try {
                     let video = document.querySelectorAll('video')[this.current];
+					let videoType = video.getAttribute('videoType')
                     // console.log("pauseVideo" + this.current);
-                    if (this.playOrPause) {
-                        video.pause();
-                        this.iconPlayShow = true;
-                        clearInterval(videoProcessInterval)
-                    } else {
-                        // wx.ready(() => {
-                        //     // 在微信的ready中进行播放 不管成功配置与否 都会执行ready
-                        //     video.play();
-                        // })
-                        video.play();
-                        video.pause();
-                        setTimeout(() => {
-                            video.play();
-                            this.iconPlayShow = false;
-                            videoProcessInterval = setInterval(() => {
-                                this.changeProcess(video)
-                            }, 100)
-                        }, 100)
-                    }
-                    this.playOrPause = !this.playOrPause;
-                    this.showShareBox = false;
+					if(videoType == 'm3u8'){
+						console.log('暂停了.....m3u8')
+						let vObj = this.videoList[this.current]
+						if(this.playOrPause){
+							video.pause();
+							this.iconPlayShow = true;
+							clearInterval(videoProcessInterval)
+						}else {
+							video.play();
+							video.pause();
+							this.playOrPause = !this.playOrPause;
+							this.showShareBox = false;
+							setTimeout(() => {
+							    this.iconPlayShow = false;
+							    videoProcessInterval = setInterval(() => {
+							        this.changeProcess()
+							    }, 100)
+							}, 100)
+						}
+					} else {
+						if (this.playOrPause) {
+						    video.pause();
+						    this.iconPlayShow = true;
+						    clearInterval(videoProcessInterval)
+						} else {
+							// console.log('取消暂停。。。。')
+						    // wx.ready(() => {
+						    //     // 在微信的ready中进行播放 不管成功配置与否 都会执行ready
+						    //     video.play();
+						    // })
+						    video.play();
+						    video.pause();
+						    setTimeout(() => {
+						        video.play();
+						        this.iconPlayShow = false;
+						        videoProcessInterval = setInterval(() => {
+						            this.changeProcess(video)
+						        }, 100)
+						    }, 100)
+						}
+						this.playOrPause = !this.playOrPause;
+						this.showShareBox = false;
+					}
+                    
                 } catch (e) {
                     // alert(e)
                 }
-
-
             },
             //记录播放进度
             changeProcess() {
@@ -753,12 +1041,7 @@
                 let video = document.querySelectorAll('video')[this.current];
                 let currentTime = video.currentTime.toFixed(1);
                 let duration = video.duration.toFixed(1);
-				// console.log(currentTime)
-				// console.log(duration)
-				// console.log(currentTime / duration)
                 this.videoProcess = parseInt((currentTime / duration).toFixed(2) * 100)
-				// console.log(this.videoProcess)
-				
             },
 			oncanplay(){
 				console.log('视频开始播放。。。。。。')
@@ -779,12 +1062,14 @@
                 document.execCommand("Copy"); // 执行浏览器复制命令
                 oInput.className = 'oInput';
                 oInput.style.display = 'none';
-                // alert("链接复制成功")
             }
         }
     }
 </script>
-<style scoped>
+<style >
+	.vjs-loading-spinner:after {
+	    content: none;
+	}
     .clear {
         clear: both;
     }
@@ -1019,7 +1304,19 @@
         -webkit-box-orient: vertical;
         min-height: 62px;
         font-size: 13px;
+		
     }
+	
+	.production_length {
+	    overflow: hidden;
+	    text-overflow: ellipsis;
+	    display: -webkit-box;
+	    -webkit-line-clamp: 3;
+	    -webkit-box-orient: vertical;
+	    /* min-height: 62px; */
+	    font-size: 13px;
+		float: right;
+	}
 
     .container_bottom {
         position: fixed;

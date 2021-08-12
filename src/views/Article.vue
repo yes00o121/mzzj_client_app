@@ -240,7 +240,7 @@ export default {
         },
          play(vdoSrc){
                          //初始化播放器
-              this.myVideo = videojs(
+              this.myVideo = this.$video(
                       this.$refs.videoPlayer,
                       // this.options,
                       function onPlayerReady() {}
