@@ -37,6 +37,7 @@ export default {
   data() {
     return {
       category: [],
+	  curScroll:0, // 当前滚动位置
       // menu:[{id:1,DICT_NAME:'收藏'},{id:2,DICT_NAME:'评论'}],
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
@@ -47,11 +48,20 @@ export default {
     cover
   },
   activated() {
-    if(localStorage.getItem('newCat')) {
-        let newCat = JSON.parse(localStorage.getItem('newCat'))
-        this.category = this.changeCategory(newCat)
-        this.selectArticle();
-    }
+    // if(localStorage.getItem('newCat')) {
+    //     let newCat = JSON.parse(localStorage.getItem('newCat'))
+    //     this.category = this.changeCategory(newCat)
+    //     this.selectArticle();
+    // }
+	// top.a = this
+	// console.log(this.$parent)
+	if(this.curScroll > 0){
+		scroll(0,this.curScroll)
+	}
+	this.curScroll = 0 // 不是相同页面,重置高度
+	// if(this.category.length == 0){
+	// 	this.selectCategory();
+	// }
   },
   methods: {
     onScroll(){
@@ -107,15 +117,18 @@ export default {
 
     },
     onRefresh() {       //下拉刷新
-                setTimeout(() => {
-                    this.finished = false;
-                    this.isLoading = false;
-                    // this.list = []
-                    let categoryitem = this.categoryItem();
-                    categoryitem.page = 1;
-                    categoryitem.list = []
-                    this.selectArticle();
-                }, 500);
+
+				setTimeout(() => {
+				    this.finished = false;
+				    this.isLoading = false;
+				    // this.list = []
+				    let categoryitem = this.categoryItem();
+				    categoryitem.page = 1;
+				    categoryitem.list = []
+					categoryitem.finished = true;
+					categoryitem.loading = false;
+				    this.selectArticle();
+				}, 500);
             },
     onLoad() {
       const categoryitem = this.categoryItem();
@@ -136,6 +149,13 @@ export default {
 
   },
   watch: {
+	  '$parent.$parent.$parent.tabActive'(cur){
+		  if(cur != 3){
+			  // 记录当前高度
+			  this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+		  }
+		// alert(111)  
+	  },
     active() {
       const categoryitem = this.categoryItem();
       if (!categoryitem.list.length) {

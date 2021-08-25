@@ -1,14 +1,22 @@
 <template>
 	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
-  <div class="home" v-if="category">
-    <nav-bar></nav-bar>
+  <div class="home" v-if="category" :style="'height:'+windowWidth+'px'">
+    <!-- <nav-bar></nav-bar> -->
     <!-- <img :src="baseURL + manga.previewImg"  alt="" style="width:100%;height:100%;" v-show="false"> -->
 	
 	<div style="position: relative;height:300px" >
-		 <van-image
+		 <!-- <van-image
+		   lazy-load
 		   fit="contain"
-		   :src="baseURL + manga.previewImg" rel="external nofollow" style="clip-path: inset(0 0 40%)"
+		   :src="baseURL + manga.previewImg + '&width='+width+'&height=300'" rel="external nofollow" style="clip-path: inset(0 0 40%)"
 		   @load="load"
+		 /> -->
+		 <van-image
+		   lazy-load
+		   fit="contain"
+		   :src="baseURL + manga.previewImg + '&width='+width+'&height=500'" rel="external nofollow" 
+		   @load="load"
+		   style="width:100%;height:100%"
 		 />
 		 <van-sticky :container="null" style="position: absolute;right:0;bottom:0;">
 			 
@@ -31,11 +39,12 @@
              <div class="detailparent" ref="tab">
 				 <van-swipe-cell style="width:100%">
 				   <van-card
+				   lazy-load
 				   @click="toDetail(categoryitem)"
 				   v-for="(categoryitem,categoryindex) in item.list"
 				     :title="categoryitem.title"
 				     class="goods-card"
-				     :thumb="baseURL + categoryitem.imgUrl"
+				     :thumb="baseURL + categoryitem.imgUrl +'&region=true'"
 					 style="border-bottom: 1px solid #ebedf0;"
 					 :desc="categoryitem.createtime | filterTime"
 				   />
@@ -56,6 +65,10 @@ import cover from "./cover";
 export default {
   data() {
     return {
+		curScroll:0, // 当前滚动位置
+	  curPage:null, // 当前页面路径
+		width:'',
+		height:'',
       img:'',
 	  collectionActive:false,
       manga:{}, // 漫画基础信息
@@ -74,6 +87,24 @@ export default {
         this.category = this.changeCategory(newCat)
         this.selectArticle();
     }
+	if(this.curPage == this.$route.params.id){
+		if(this.curScroll > 0){
+			scroll(0,this.curScroll)
+		}
+		return;
+	}
+	this.curScroll = 0 // 不是相同页面,重置高度
+	if(this.curPage){
+		this.category = [];
+		// this.curPage = this.$route.params.id
+		this.selectCategory();
+		this.collectionInit()
+		this.$nextTick(()=>{
+				  // let war = this.$refs.
+			this.width = document.body.clientWidth
+		})
+	}
+	this.curPage = this.$route.params.id // 当前页面设置为该id
   },
   filters:{
   	filterTime(val) {
@@ -129,6 +160,8 @@ export default {
       if(localStorage.getItem('newCat')) {
         return
       }
+	  this.showloading()
+	  scroll(0,0)
       // 查询漫画基础信息
       const res = await this.$http.post('/webInfoDetailData/queryDetailDataByTypeId',{
         id:this.$route.params.id
@@ -173,6 +206,7 @@ export default {
         if (res.data.data.length < categoryitem.pagesize) {
           categoryitem.finished = true;
         }
+		this.hideloading()
 
     },
 	onSwipeLeft () {
@@ -180,7 +214,9 @@ export default {
 	  // this.$router.go(-1)
 	},
 	onSwipeRight(){
-	    // console.log('页面右滑')
+	    console.log('页面右滑')
+		// 跳转其他页面的时候记录高度
+		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 	    this.$router.go(-1)
 	},
 	toDetail(item){
@@ -218,6 +254,18 @@ export default {
     },
 
   },
+  // 跳转其他页面之前
+  beforeRouteLeave(to, from ,next){
+	
+   next();
+  },
+  // 其他页面跳转过来
+  beforeRouteEnter(to, from,next){
+	  next();
+  },
+  destroyed(){
+	// console.log('返回了..........................')  
+  },
   watch: {
     active() {
       const categoryitem = this.categoryItem();
@@ -229,8 +277,13 @@ export default {
     }
   },
   created() {
-      this.selectCategory();
+	  console.log('chongxin。。。。。。。。。。。')
+	  this.selectCategory();
 	  this.collectionInit()
+	  this.$nextTick(()=>{
+		  // let war = this.$refs.
+		  this.width = document.body.clientWidth
+	  })
   },
   $route() {
       this.collectionInit()

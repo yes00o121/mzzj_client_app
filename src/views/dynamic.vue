@@ -1,7 +1,6 @@
 <template>
   <div class="home" v-if="category">
-    <div class="categorytab">
-      <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
+    <!-- <div class="categorytab">
       <van-tabs v-model="active" swipeable sticky animated >
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy >
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
@@ -25,7 +24,7 @@
           </van-pull-refresh>
         </van-tab>
       </van-tabs>
-    </div>
+    </div> -->
   </div>
 </template>
 

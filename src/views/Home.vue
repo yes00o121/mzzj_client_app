@@ -1,6 +1,6 @@
 <template>
   <div class="home" v-if="category">
-    <nav-bar v-show="tabActive != 2" :style="{height : active == 2 ? '0px' : 'auto'}"></nav-bar>
+    <nav-bar v-show="tabActive != 1" :style="{height : active == 1 ? '0px' : 'auto'}"></nav-bar>
 	<!-- home -->
     <div class="categorytab" v-show="tabActive == 0">
 		
@@ -9,7 +9,7 @@
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy  >
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
             <van-list 
-			 v-show="active != 2"
+			 v-show="active != 1"
 			  style="padding-bottom: 50px;"
               v-model="item.loading"
               :immediate-check="false"
@@ -30,15 +30,17 @@
           </van-pull-refresh>
         </van-tab>
       </van-tabs>
-	  <shortvideo v-if="active == 2"></shortvideo>
+	  <shortvideo v-if="active == 1 && videoStatus"></shortvideo>
     </div>
 	<div v-if="tabActive == 1" style="heihgt:800px">
-		<video controls :src="'http://192.168.1.6:8090/video/person/香港美少女(HongKongDoll)/video/' + curVideo"></video>
+		<!-- <video controls :src="'http://192.168.1.4:8090/video/person/香港美少女(HongKongDoll)/video/' + curVideo"></video>
 			  <div v-for="item in videoList">
 				  <van-button type="info" @click="curVideo = item">{{item}}</van-button>
-			  </div>
+			  </div> -->
 	</div>
-	<userinfo v-show="tabActive == 3"></userinfo>
+	<keep-alive >
+	<userinfo v-if="tabActive == 3"></userinfo>
+	</keep-alive >
 	<dynamic v-if="tabActive == 2"></dynamic>
 	<van-tabbar
 	  v-model="tabActive"
@@ -65,6 +67,7 @@ import shortvideo from './video'
 export default {
   data() {
     return {
+	  curScroll:0,
 		curVideo:'',
 	  curTableHeight:0, // 当前table高度
 	  tabbarStatus:true, // 底部菜单是否显示
@@ -75,6 +78,7 @@ export default {
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
 	  websocket:null,
+	  videoStatus:true, // 视频状态,用于子组件刷新
 	  normalHead:{
 		  height:'auto'
 	  },
@@ -82,6 +86,25 @@ export default {
 		  height:'400px',
 	  }
     };
+  },
+  // 跳转其他页面之前
+  beforeRouteLeave(to, from ,next){
+	  // 对跳转的页面进行缓存
+	  // if(to.name == 'manga')
+	  // to.meta.keepalive = true
+	  next()
+  },
+  beforeRouteEnter(to, from,next){
+	  // console.log(to)
+	  // console.log(from)
+	  // let path = from.path
+	  // // 关闭漫画目录页面缓存
+	  // if(path.startsWith('/manga/')){
+		 //  console.log('关闭漫画缓存。。。。')
+		 //  from.meta.keepalive = false; 
+		 //  // to.meta.keepalive = false; 
+	  // } 
+	  next()
   },
   components: {
     NavBar,
@@ -96,11 +119,11 @@ export default {
         this.category = this.changeCategory(newCat)
         this.selectArticle();
     }
-	const scrollTop = this.$route.meta.scrollTop;
-	    const $content = document.querySelector('.content');
-	    if (scrollTop && $content) {
-	      $content.scrollTop = scrollTop;
-	    }
+	// const scrollTop = this.$route.meta.scrollTop;
+	//     const $content = document.querySelector('.content');
+	//     if (scrollTop && $content) {
+	//       $content.scrollTop = scrollTop;
+	//     }
   },
   methods: {
 	  hit(){
@@ -132,7 +155,7 @@ export default {
       }
 	  this.videoList = []
 	   const res1 = await this.$http.get("/webInfoDetailData/queryVideoRandom");
-	  		console.log(res1)
+	  		// console.log(res1)
 	  this.videoList = res1.data
 	  console.log(this.videoList)
       const res = await this.$http.get("/webInfoDetailData/queryMenu");
@@ -190,7 +213,7 @@ export default {
 			}
 		}
        
-		console.log(this.category)
+		// console.log(this.category)
     },
     onRefresh() {       //下拉刷新
                 setTimeout(() => {
@@ -234,7 +257,7 @@ export default {
 			this.curTableHeight = $('.van-tabs__wrap').height()
 		}
 		// 视频下隐藏头部和table
-		if(current == 2){
+		if(current == 1){
 
 			// 隐藏头部
 			$('.van-tabs__wrap').height(0)
@@ -263,46 +286,25 @@ export default {
 		},50)
 	  	
 	  }
-    }
+    },
+	tabActive(cur){
+		console.log(cur)
+		if(cur != 0){
+			console.log('记录高度。。。。。。。。。。。。。。。。。。' + (document.documentElement.scrollTop ))
+			this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+		}else{
+			
+			if(this.curScroll > 0){
+				this.$nextTick(()=>{
+					scroll(0,this.curScroll)
+				})
+			}
+			// this.curScroll = 0 // 不是相同页面,重置高度
+		}
+	}
   },
   created() {
-	  
-	 
       this.selectCategory();
-	  // 建立websocket连接
-	  let websocketUrl = this.baseURL.replace('http','ws') + '/websocket?token=' + localStorage.getItem('token')
-	  // let websocketUrl = 'ws://192.168.1.113:8095/websocket?token='
-	  this.websocket = new WebSocket(websocketUrl);
-	  
-	  this.websocket.onclose=function(){//连接关闭监听
-	      console.log('websocket连接关闭');
-	  }
-	  this.websocket.onmessage = (event=>{
-		  //接收消息方法
-		  console.log(event)
-		  console.log('websocket接收消息');
-		  console.log(this.dynamicNum)
-		  if(this.dynamicNum == null){
-		  	this.dynamicNum = 1
-		  } else {
-		  	this.dynamicNum += 1;
-		  }
-		   console.log(this.dynamicNum)
-	  })
-	  //连接响应
-	  this.websocket.onopen = function(){
-	    console.log('websocket连接达成');
-	  }
-	  this.websocket.onerror = function(){
-	    console.log('websocket错误');
-	  }
-	  window.onbeforeunload = ()=>{
-	     if(this.websocket != null){
-	         this.websocket.close();
-	     }
-	  }
-	  
-	  
   }
 };
 </script>

@@ -19,7 +19,9 @@ Vue.use(VueRouter)
      {
        path:'/home',
        component:Home,
+	   name:'home',
        meta:{
+		 index:1,
          keepalive:true
        }
      },
@@ -35,6 +37,7 @@ Vue.use(VueRouter)
        path:'/userinfo',
        component:userinfo,
        meta:{
+		 index:2,
          istoken:true
        }
      },
@@ -42,12 +45,16 @@ Vue.use(VueRouter)
        path:'/edit',
        component:edit,
        meta:{
+		index:3,
         istoken:true
       }
      },
      {
        path:'/article/:id/:loadMode',
-       component:article
+       component:article,
+	   meta:{
+		   index:4
+	   }
      },
     {
       path:'/editcategory',
@@ -59,13 +66,20 @@ Vue.use(VueRouter)
     },
     {
       path:'/manga/:id',
-      component:manga
+      component:manga,
+	  name:'manga',
+	  meta:{
+		index:5,
+	    keepalive:true
+	  }
     },
 	{
 	  path:'/mangaDetail/:id/:pxh',
 	  component:mangaDetail,
+	  name:'mangaDetail',
 	  meta:{
-	    keepalive:false
+		  index:3,
+	  //   keepalive:false
 	  }
 	},
 	{
@@ -73,13 +87,21 @@ Vue.use(VueRouter)
 	  component:person
 	},
 	{
-		  path:'/search',
-		  component:search
-		},
-		{
-			  path:'/video',
-			  component:video
-			},
+	  path:'/search',
+	  component:search,
+	  name:'search',
+	  meta:{
+		index:6,
+	    keepalive:true
+	  }
+	},
+	{
+	  path:'/video',
+	  component:video,
+	  meta:{
+		  index:7
+	  }
+	},
 	// {
 	//   path:'/dynamic',
 	//   component:dynamic
@@ -104,7 +126,6 @@ router.beforeEach((to,from,next) => {
       console.log('scrollTop', scrollTop)
       from.meta.scrollTop = scrollTop;
     }
-	
   next()
 })
 

@@ -28,7 +28,7 @@
         }
     },
     "plus" : {
-		"allowsInlineMediaPlayback":true, // 禁止自动全屏
+        "allowsInlineMediaPlayback" : true, // 禁止自动全屏
         "kernel" : {
             "ios" : "UIWebview"
         },

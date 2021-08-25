@@ -4,7 +4,7 @@
           <img src="@/assets/mzzj120.png" style="height:40px;width:40px" alt="" @click="$router.push('/')">
 		  <span style="font-size:12px">漫宅之家</span>
       </div>
-      <div @click="$router.push('/search')">
+      <div @click="toSearch()">
           <div> <van-icon name="search"  class="iconNav"/></div>
       </div>
       <div>
@@ -22,10 +22,20 @@ export default {
     data() {
         return {
             // userInfo:null
-            imgUrl:''
+            imgUrl:'',
+			random:0,// 随机数,每次切换头部都生成
         }
     },
+	activated(){
+		this.random = this.getRandom()
+	},
     methods:{
+		toSearch(){
+			this.$router.push('/search?random=' + this.random);
+		},
+		getRandom(){
+			return Math.random()
+		},
         async NavInit() {
           this.getUser().then(response=>{
             if(response.data.data.icon){
@@ -47,7 +57,7 @@ export default {
     },
     mounted() {
         this.NavInit()
-    }
+    },
 }
 </script>
 

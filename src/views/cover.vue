@@ -3,7 +3,7 @@
       <div class="detailItem">
           <div class="imgparent">
                <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
-			   <van-image :src="baseURL +   detailitem.previewImg" style="width:100%;height:47.778vw;"/>
+			   <van-image lazy-load :src="baseURL +   detailitem.previewImg + '&width='+width+'&height=' + height" style="width:100%;height:47.778vw;"/>
               <div class="bottom">
                   <!-- <div class="icon-play2"><span class="video">&nbsp;{{detailitem.flowNum}}</span></div> -->
 				  <div v-if="detailitem.flowNum"><span class="video"><van-icon name="eye-o" />&nbsp;{{detailitem.flowNum}}</span></div>
@@ -19,15 +19,26 @@
 export default {
     data(){
       return {
-        // scrollTop: 0, //记录滚动条位置
-        // CURRENT_IP:'http://192.168.1.100:8095'
+		  width : '',
+		  height:'',
       }
     },
     props:['detailitem'],
     activated() {
+		
 　　　　//保持滚动到的位置
 // 　　　　this.$refs.wrapper.scrollTop = this.scrollTop;
 　　　},
+created(){
+	this.$nextTick(()=>{
+		let war = this.$refs.wrapper
+		console.log(this.$refs.wrapper.clientHeight)
+		if(war){
+			this.height = this.$refs.wrapper.clientHeight
+			this.width = this.$refs.wrapper.clientWidth
+		}
+	})
+},
     methods:{
         pathPush() {
             const loadMode = `${this.detailitem.loadMode}`;

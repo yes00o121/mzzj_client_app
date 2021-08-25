@@ -12,7 +12,7 @@
 				<div style="color:white;text-align: center;
     padding: 2%;" class="van-ellipsis">第{{$route.params.pxh}}话</div>
 			  </van-popup>
-		     <van-image :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl" v-for="item in mangaList" @click="showpopUp()"> </van-image>
+		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width" v-for="item in mangaList" @click="showpopUp()"> </van-image>
           </van-pull-refresh>
 		  <!-- 底部弹出 -->
 		  <van-popup
@@ -47,11 +47,28 @@
 export default {
   data() {
     return {
+		width:document.body.clientWidth,// 图片宽度
 	  value:0,
 	  mangaList:[],
 	  bottom:false,
       isLoading: false,   //是否处于下拉刷新状态
     };
+  },
+  // 跳转其他页面之前
+  beforeRouteLeave(to, from ,next){
+	next();  
+  },
+  beforeRouteEnter(to, from,next){
+	  let path = from.path
+	  console.log(to)
+	  console.log(from)
+	  // if(path.startsWith('/manga/')){
+		 //  from.meta.keepalive = true
+	  // } else{
+		 //  from.meta.keepalive = false
+	  // }
+	  // 
+	  next()
   },
   methods: {
 	  closePop(){
@@ -130,6 +147,7 @@ export default {
       if(localStorage.getItem('newCat')) {
         return
       }
+	  this.showloading()
       // 查询漫画明细
       const res = await this.$http.post('/manga/queryMangaDetailMangaMenuId',{
         webInfoMangaDetailDataId:this.$route.params.id,
@@ -137,6 +155,7 @@ export default {
       })
 	  this.mangaList = res.data.data
 	  this.isLoading = false
+	  this.hideloading()
     },
     onRefresh() {       //下拉刷新
                 setTimeout(() => {

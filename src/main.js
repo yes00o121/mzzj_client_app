@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
+import store from './store'	
 import vant from 'vant'
 import {Toast} from 'vant'
 import 'vant/lib/index.css';
@@ -14,6 +15,8 @@ import { Sticky } from 'vant'; // 粘性布局
 import { SwipeCell } from 'vant';
 import 'video.js/dist/video-js.css'
 import videojs from 'video.js';
+import NoSleep from "nosleep.js/dist/NoSleep.min.js";
+ Vue.prototype.$NoSleep = NoSleep;
 
 // import VueVideoPlayer from 'vue-video-player'
 Vue.prototype.$video = videojs //引入Video播放器
@@ -24,6 +27,9 @@ Vue.use(loadingIndex);
 
 import '../public/static/css/iconfont.css'
 import utils from 'km-vue-utils'
+import { Lazyload } from 'vant';
+
+Vue.use(Lazyload);
 Vue.use(utils);
 Vue.prototype.$utils = utils;
 Vue.prototype.$http = http
@@ -54,7 +60,8 @@ document.addEventListener('plusready', function(){
         // }
     },
     fail:function(){
-      alert('获取设备号失败')
+      // alert('获取设备号失败')
+	  alert('加载错误')
     }
   })
 })
@@ -68,7 +75,21 @@ Vue.prototype.getUser = async  function(){
   return null;
 }
 
+Vue.prototype.windowWidth = screen.height // 获取用户屏幕高度
+
+Vue.prototype.showloading = function() {
+	var title = "加载中···";
+	this.$showLoading({
+	  title: title
+	});
+}
+		
+Vue.prototype.hideloading = function() {
+	this.$cancelLoading();
+  }
+
 new Vue({
+  store,
   router,
   render: h => h(App)
 }).$mount('#app')

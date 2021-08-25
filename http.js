@@ -11,7 +11,7 @@ import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
 // const baseURL = 'http://127.0.0.1:8090'
-// const baseURL = 'http://192.168.1.111:8090'
+// const baseURL = 'http://192.168.1.6:8090'
 const baseURL = 'http://121.201.2.228:10824'
 Vue.prototype.baseURL = baseURL
 const http = axios.create({
@@ -39,6 +39,7 @@ http.interceptors.response.use(function (response) {
     return response;
   }, function (error) {
 	  console.log(error)
+	  Vue.prototype.hideloading()
      if(!error.response || error.response.status == 401 || error.response.status == 402){
          router.push('/')
 		 console.log(error.message)
@@ -46,7 +47,8 @@ http.interceptors.response.use(function (response) {
 		 if(error.message.startsWith('timeout')){
 			 Vue.prototype.$msg.fail('系统维护中...')
 		 }else {
-			 Vue.prototype.$msg.fail('没有权限...')
+			 // Vue.prototype.$msg.fail('没有权限...')
+			 Vue.prototype.$msg.fail('加载超时拉...')
 		 }
          
 		 
