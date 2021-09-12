@@ -14,9 +14,9 @@
 		 <van-image
 		   lazy-load
 		   fit="contain"
-		   :src="baseURL + manga.previewImg + '&width='+width+'&height=500'" rel="external nofollow" 
+		   :src="baseURL + manga.previewImg + '&width='+width+'&height='" rel="external nofollow" 
 		   @load="load"
-		   style="width:100%;height:100%"
+		   style="width:100%;"
 		 />
 		 <van-sticky :container="null" style="position: absolute;right:0;bottom:0;">
 			 
@@ -90,6 +90,8 @@ export default {
 	if(this.curPage == this.$route.params.id){
 		if(this.curScroll > 0){
 			scroll(0,this.curScroll)
+		} else {
+			scroll(0,0)
 		}
 		return;
 	}
@@ -210,13 +212,15 @@ export default {
 
     },
 	onSwipeLeft () {
+		// alert('页面右滑')
 	    // console.log('页面左滑')
 	  // this.$router.go(-1)
 	},
 	onSwipeRight(){
-	    console.log('页面右滑')
+	    // alert('页面右滑')
 		// 跳转其他页面的时候记录高度
 		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+		// alert('漫画高度' + this.curScroll)
 	    this.$router.go(-1)
 	},
 	toDetail(item){

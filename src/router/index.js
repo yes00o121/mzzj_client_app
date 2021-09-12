@@ -13,6 +13,8 @@ const mangaDetail = ()=>import('@/views/mangaMenuDetail.vue')
 const person = ()=>import('@/views/person.vue')
 const search = ()=>import('@/views/search.vue')
 const video = ()=> import('@/views/video.vue')
+const videosearch = () => import('@/views/videosearch.vue')
+
 // const dynamic = ()=>import('@/views/dynamic.vue')
 Vue.use(VueRouter)
   const routes = [
@@ -102,6 +104,23 @@ Vue.use(VueRouter)
 		  index:7
 	  }
 	},
+  {
+      path: '/videosearch/',
+      component: videosearch,
+      redirect: '/videosearch/video',
+      children: [
+        {
+          name: 'videosearch/video',
+          path: 'video',
+          component: () => import('@/base/searchVideoList/searchVideoList.vue')
+        },
+        // {
+        //   name: 'videosearch/user',
+        //   path: 'user',
+        //   component: () => import('@/base/searchUserList/searchUserList.vue')
+        // }
+      ]
+    }
 	// {
 	//   path:'/dynamic',
 	//   component:dynamic

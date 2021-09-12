@@ -25,16 +25,20 @@
 		  >
 		  
 			<van-button   style="left: -2vw;
+			position: absolute;
 				background: black;
 				border: none;
 				font-size: 1rem;top: 5.778vw;color:#cac4c4" @click="changePage('up')">上一话</van-button>
-				<van-slider  v-model="value" @change="onChange" :min="1" style="top: 0vw;
+				<van-slider  v-model="value" @change="onChange" :min="1" style="top: 11vw;
+				position: absolute;
 				width: 50%;
 				left: 26%;" />
-				<van-button style="right: -80vw;
+				<van-button style="right: 0;
+				position: absolute;
 								background: black;
+								top: 5vw;
 								border: none;
-								font-size: 1rem;top: -7vw;color:#cac4c4" @click="changePage('next')">下一话</van-button>
+								font-size: 1rem;color:#cac4c4" @click="changePage('next')">下一话</van-button>
 		  </van-popup>
 		  
 		  </van-popup>
@@ -83,6 +87,10 @@ export default {
 	},
 	onSwipeRight(){
 	    // console.log('页面右滑')
+		// 切换回漫画页面
+		// console.log(this.$route.params.id)
+		// let id = this.$route.params.id
+		// this.$router.push(`/manga/${id}`)
 	    this.$router.go(-1)
 	},
 	changePage(type){
@@ -92,12 +100,16 @@ export default {
 		} else {
 			// 跳转
 			if(type == 'next'){
-				pxh = pxh + 1
+				// pxh = pxh + 1
+				this.$route.params.pxh = pxh + 1
 			}
 			if(type == 'up'){
-				pxh = pxh - 1
+				// pxh = pxh - 1
+				this.$route.params.pxh = pxh - 1
 			}
-			this.$router.push(`/mangaDetail/${this.$route.params.id}/${pxh}`)
+			scrollTo(0,0)
+			this.selectCategory();
+			// this.$router.push(`/mangaDetail/${this.$route.params.id}/${pxh}`)
 		}
 	},
 	changeSlider(){

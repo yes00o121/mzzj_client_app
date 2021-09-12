@@ -1,10 +1,11 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
-import store from './store'	
+import store from './store'
 import vant from 'vant'
 import {Toast} from 'vant'
 import 'vant/lib/index.css';
+import '@/common/stylus/index.styl'
 import http from '../http'
 import '@/assets/style.css'
 import VueTouch from 'vue-touch' // 提示框
@@ -45,10 +46,10 @@ Vue.use(VueTouch, {name: 'v-touch'})
  VueTouch.config.swipe = {
       threshold: 100 //手指左右滑动距离
  }
- 
+
 
 //plus.screen.lockOrientation('portrait-primary'); //锁死屏幕方向为竖屏
- 
+
  //监听获取设备uuid
 document.addEventListener('plusready', function(){
   localStorage.uuid = plus.device.uuid;
@@ -83,7 +84,7 @@ Vue.prototype.showloading = function() {
 	  title: title
 	});
 }
-		
+
 Vue.prototype.hideloading = function() {
 	this.$cancelLoading();
   }

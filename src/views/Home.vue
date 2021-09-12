@@ -10,7 +10,7 @@
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
             <van-list 
 			 v-show="active != 1"
-			  style="padding-bottom: 50px;"
+			  style="padding-bottom: 20%;"
               v-model="item.loading"
               :immediate-check="false"
               :finished="item.finished"
@@ -33,10 +33,10 @@
 	  <shortvideo v-if="active == 1 && videoStatus"></shortvideo>
     </div>
 	<div v-if="tabActive == 1" style="heihgt:800px">
-		<!-- <video controls :src="'http://192.168.1.4:8090/video/person/香港美少女(HongKongDoll)/video/' + curVideo"></video>
+		<video controls :src="'http://121.201.2.228:10824/video/person/香港美少女(HongKongDoll)/video/' + curVideo"></video>
 			  <div v-for="item in videoList">
 				  <van-button type="info" @click="curVideo = item">{{item}}</van-button>
-			  </div> -->
+			  </div>
 	</div>
 	<keep-alive >
 	<userinfo v-if="tabActive == 3"></userinfo>
@@ -89,9 +89,10 @@ export default {
   },
   // 跳转其他页面之前
   beforeRouteLeave(to, from ,next){
-	  // 对跳转的页面进行缓存
-	  // if(to.name == 'manga')
-	  // to.meta.keepalive = true
+	  // console.log('跳转其他页面.......' + this.curScroll)
+	  // 跳转其他页面的时候记录当前滚动高度
+	  this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+	  // alert('跳转页面记录高度' + this.curScroll)
 	  next()
   },
   beforeRouteEnter(to, from,next){
@@ -119,6 +120,12 @@ export default {
         this.category = this.changeCategory(newCat)
         this.selectArticle();
     }
+	if(this.tabActive == 0){
+		this.$nextTick(()=>{
+			// alert('首页高度....' + this.curScroll)
+			scroll(0,this.curScroll)
+		})
+	}
 	// const scrollTop = this.$route.meta.scrollTop;
 	//     const $content = document.querySelector('.content');
 	//     if (scrollTop && $content) {
@@ -258,7 +265,8 @@ export default {
 		}
 		// 视频下隐藏头部和table
 		if(current == 1){
-
+            // 记录滚动高度
+			this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 			// 隐藏头部
 			$('.van-tabs__wrap').height(0)
 			this.tabbarStatus = false;
@@ -266,40 +274,48 @@ export default {
 			// alert(this.curTableHeight)
 			$('.van-tabs__wrap').height(this.curTableHeight) // 显示头部
 			this.tabbarStatus = true;
+			this.$nextTick(()=>{
+				// alert('首页高度....' + this.curScroll)
+				scroll(0,this.curScroll)
+			})
 		}
+		
+		
+		
 		// console.log(e,a)
 		// 		// console.log('qieh....')
 		// 		console.log(document.body.getBoundingClientRect())
-      const categoryitem = this.categoryItem();
+      // const categoryitem = this.categoryItem();
 	  // 切换时候记录之前位置
-	  this.recordScroll(before)
+	  // this.recordScroll(before)
 	  // console.log(categoryitem)
-      if (!categoryitem.list.length) {
-        this.selectArticle();
-        // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
-      }
+      // if (!categoryitem.list.length) {
+      //   this.selectArticle();
+      //   // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
+      // }
 	  // 定位指定位置
-	  if(categoryitem.scroll){
-	  	// console.log('开始定位...' + categoryitem.scroll)
-		setTimeout(()=>{
-			scrollTo(0,categoryitem.scroll)
-		},50)
+	 //  if(categoryitem.scroll){
+	 //  	// console.log('开始定位...' + categoryitem.scroll)
+		// setTimeout(()=>{
+		// 	scrollTo(0,categoryitem.scroll)
+		// },50)
 	  	
-	  }
+	 //  }
     },
 	tabActive(cur){
-		console.log(cur)
 		if(cur != 0){
-			console.log('记录高度。。。。。。。。。。。。。。。。。。' + (document.documentElement.scrollTop ))
+			// console.log('记录高度。。。。。。。。。。。。。。。。。。' + (document.documentElement.scrollTop ))
 			this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+			// alert('首页高度' + this.curScroll)
 		}else{
-			
 			if(this.curScroll > 0){
 				this.$nextTick(()=>{
+					// alert('首页高度....' + this.curScroll)
 					scroll(0,this.curScroll)
 				})
+			} else {
+				scroll(0,0)
 			}
-			// this.curScroll = 0 // 不是相同页面,重置高度
 		}
 	}
   },

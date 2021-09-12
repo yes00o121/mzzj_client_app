@@ -37,7 +37,6 @@ export default {
   data() {
     return {
       category: [],
-	  curScroll:0, // 当前滚动位置
       // menu:[{id:1,DICT_NAME:'收藏'},{id:2,DICT_NAME:'评论'}],
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
@@ -48,31 +47,16 @@ export default {
     cover
   },
   activated() {
-    // if(localStorage.getItem('newCat')) {
-    //     let newCat = JSON.parse(localStorage.getItem('newCat'))
-    //     this.category = this.changeCategory(newCat)
-    //     this.selectArticle();
-    // }
-	// top.a = this
-	// console.log(this.$parent)
-	if(this.curScroll > 0){
-		scroll(0,this.curScroll)
-	}
-	this.curScroll = 0 // 不是相同页面,重置高度
-	// if(this.category.length == 0){
-	// 	this.selectCategory();
-	// }
+
   },
   methods: {
     onScroll(){
-      // console.log('2222222222222222')
+
     },
     async selectCategory() {
       if(localStorage.getItem('newCat')) {
         return
       }
-      // const res = await this.$http.get("/webInfoDetailData/queryMenu");
-      // console.log(res)
       const menu = [{DICT_NAME:'收藏'}/*,{DICT_NAME:'评论'}*/]
       this.category = this.changeCategory(menu);
       this.selectArticle();
@@ -149,13 +133,6 @@ export default {
 
   },
   watch: {
-	  '$parent.$parent.$parent.tabActive'(cur){
-		  if(cur != 3){
-			  // 记录当前高度
-			  this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
-		  }
-		// alert(111)  
-	  },
     active() {
       const categoryitem = this.categoryItem();
       if (!categoryitem.list.length) {

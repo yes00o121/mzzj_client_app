@@ -32,7 +32,7 @@ export default {
 created(){
 	this.$nextTick(()=>{
 		let war = this.$refs.wrapper
-		console.log(this.$refs.wrapper.clientHeight)
+		// console.log(this.$refs.wrapper.clientHeight)
 		if(war){
 			this.height = this.$refs.wrapper.clientHeight
 			this.width = this.$refs.wrapper.clientWidth
