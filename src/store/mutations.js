@@ -63,6 +63,9 @@ const mutations = {
   [types.SET_PLAYLIST] (state, playList) {
     state.playList = playList
   },
+  [types.APPEND_PLAYLIST] (state, playList) {
+    state.playList = state.playList.concat(playList)
+  },
   [types.CLEAN_PLAYLIST] (state) {
     state.playList = []
   },

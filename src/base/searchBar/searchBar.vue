@@ -19,7 +19,7 @@ export default {
     return {
       query: '',
       page:0, // 页数
-      pagesize:10 // 每页数量
+      pagesize: 10 // 每页数量
     }
   },
   methods: {

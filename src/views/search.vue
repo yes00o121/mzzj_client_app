@@ -20,7 +20,8 @@
   <div class="categorytab">
     <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
     <van-tabs v-model="active" swipeable sticky animated>
-      <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
+		
+      <van-tab v-for="(item,index) in category" v-if="item.CODE_VALUE != 5" :key="index" :title="item.DICT_NAME" scrollspy>
         <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
           <van-list
             v-model="item.loading"
@@ -114,11 +115,15 @@ export default {
 		},
 		async onSearch(content) {
 			if(content && this.beforeSearch != content){
+				// this.this.searchList = []
 				const categoryitem = this.categoryItem();
 				categoryitem.list = []
 				categoryitem.page = 1
 				categoryitem.loading = true;
 				categoryitem.finished = false
+			}
+			if(content == this.beforeSearch){
+				return;
 			}
 			this.search = content;
 			this.beforeSearch = this.search
@@ -204,7 +209,8 @@ export default {
 				console.log(res.data.data.list.length)
 				console.log(categoryitem.pagesize)
 				if (res.data.data.list.length < categoryitem.pagesize) {
-					console.log('没了。。。')
+					// console.log('没了。。。')
+				  categoryitem.loading = true;
 				  categoryitem.finished = true;
 				}
 			}
@@ -238,6 +244,7 @@ export default {
 	    // console.log(categoryitem)
 	    return categoryitem;
 	  },
+	  
 		// 记录列表滚动位置
 	 //  recordScroll(active){
 		// 	const categoryitem = this.category[active];
@@ -280,16 +287,17 @@ export default {
 .van-hairline--top-bottom::after, .van-hairline-unset--top-bottom::after{
 	border-width:inherit;
 }
+
 .van-button--hairline::after{
 	border-color:white
 }
 .van-button::before{
 	// border-color:black;
-	border-color:black;
+	border-color:white;
 	background-color:white;
 }
 input[type='button']:enabled:active, input[type='button'].mui-active:enabled, input[type='submit']:enabled:active, input[type='submit'].mui-active:enabled, input[type='reset']:enabled:active, input[type='reset'].mui-active:enabled, button:enabled:active, button.mui-active:enabled, .mui-btn:enabled:active, .mui-btn.mui-active:enabled{
-	color:black;
+	color:white;
 	background-color:white
 }
 

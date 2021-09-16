@@ -68,6 +68,7 @@ export default {
       // }
     },
     scroll (pos) {
+		// console.log(pos.y)
 	  if(this.currentHeight > 0){
 		  return;
 	  }
@@ -77,7 +78,7 @@ export default {
         this.currentY = Math.ceil(absY / clientHeight) * clientHeight
         this.$refs.scroll.scrollTo(0, -this.currentY, 500)
 		// 向下
-		// console.log(this.currentY)
+		console.log(this.currentY)
 		this.changeVideo(1)
       } else if (absY < this.currentY - clientHeight / 2) {
         this.currentY = Math.floor(absY / clientHeight) * clientHeight
@@ -130,8 +131,15 @@ export default {
 	},
     scrollEnd (pos) {
 		// 结束将当前高度设置为0
-		// this.currentHeight = 0
-		// console.log('000000000000000000000000000000000000')
+		let totalHeight  = -(this.clientHeight * (this.playList.length - 1)) // 总高度
+		if(pos.y == totalHeight){
+			top.a = this
+			console.log(this)
+			console.log('滑到最下面》。。。。。。。。。')
+			this.$parent.$children[0].queryData()
+		}
+		// 滑到最底下加载新数据
+		console.log(this.playList)
 		if(this.currentHeight > 0){
 			this.$refs.scroll.scrollTo(0, -this.currentHeight)
 			this.currentHeight = 0

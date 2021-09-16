@@ -87,11 +87,21 @@ export default {
 	  console.log(this.SET_PLAYLIST)
       console.log('chaxun 回调...')
       console.log(q)
-      if (q.length < PER_PAGE_LIMIT_NUM) {
-          this.isEnd = true
-        }
-        this.searches = this.searches.concat(q)
-        console.log(this.searches)
+      // if (q.length < PER_PAGE_LIMIT_NUM) {
+          // this.isEnd = true
+      //   }
+		// if(q.length)
+		if(this.searches.length > 0){
+			// console.log(this.searches)
+			this.APPEND_PLAYLIST(q)
+			this.searches = this.searches.concat(q)
+		}else{
+			this.searches = this.searches.concat(q)
+		}
+
+
+		// this.CLEAN_PLAYLIST()
+		// this.SET_PLAYLIST(this.searches)
 	  // this.playList = this.searches
 	  // this.SET_PLAYLIST(this.searches)
 	  // this.$refs.playList.scrollToIndex(0)
@@ -142,7 +152,8 @@ export default {
     },
     ...mapMutations([
       'SET_PLAYLIST',
-	  'CLEAN_PLAYLIST'
+	  'CLEAN_PLAYLIST',
+	  'APPEND_PLAYLIST'
     ])
   },
   components: {

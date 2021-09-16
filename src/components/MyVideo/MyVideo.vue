@@ -27,7 +27,7 @@
 		  
         <!-- <div class="follow">+</div> -->
       </div>
-      <div class="like iconfont icon-heart-fill" :class="{ 'red-heart': like }" @click="toggleLike(VideoItem.videoId)">
+      <div class="like iconfont icon-heart-fill" :class="{ 'red-heart': like }" @click.stop="collectionClick()">
         <span class="likenum">{{likeNum}}</span>
       </div>
       <div class="comment iconfont icon-message" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)">
@@ -38,8 +38,8 @@
       </div>
     </div>
     <div class="text-wrap">
-      <div class="name">@{{VideoItem.userNickname}}</div>
-      <div class="desc">{{VideoItem.videoDesc}}</div>
+      <!-- <div class="name">@{{VideoItem.userNickname}}</div> -->
+      <div class="desc">{{VideoItem.title}}</div>
     </div>
     <div class="input-bar" v-show="!isHome" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)">
       <input class="input" placeholder="  有爱评论，说点儿好听的~" type="text">
@@ -193,7 +193,7 @@ export default {
   data () {
     return {
       // baseURL,
-      like: false,
+      like: this.VideoItem.collection == '是',
       likeNum: this.VideoItem.likeNum,
 	  video: null,
 	  playStatus:true // 播放状态,默认播放
@@ -217,6 +217,32 @@ export default {
     ])
   },
   methods: {
+	  // 收藏数据
+	  async collectionClick() {
+	     if(localStorage.getItem('token')){
+	       // 判断显示状态,是收藏还是取消收藏
+	       if(this.like){
+	  		  const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.VideoItem.id})
+	  		  if(res.data.data == '取消成功'){
+	  			// this.videoList[this.current].fabulous = false
+				this.like = !this.like
+	  		  } else {
+	  			 this.$msg.fail(res.data.message)
+	  		  }
+	       } else {
+	  		 const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.VideoItem.id})
+	  		 if(res.data.data == '收藏成功'){
+	  		     // this.videoList[this.current].fabulous = true
+				 this.like = !this.like
+	  		 }else{
+	  		     this.$msg.fail(res.data.message)
+	  		 }
+	  
+	       }
+	  	// 收藏后，重新加载收藏数据
+	  	// this.loadCollection()
+	     }
+	  },
     playHandler (e) {
       this.$emit('playVideo', e)
     },

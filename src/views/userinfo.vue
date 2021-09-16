@@ -1,11 +1,24 @@
 <template>
 		<!-- <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}"> -->
   <div class="userinfo">
+	  		<van-icon name="apps-o" size="1.5em" @click="openRightPop" style="position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 1.5em;" />
       <!-- <nav-bar/> -->
       <img src="@/assets/bannerTop_new.png" alt="" class="backImg">
       <user-detail :userInfo="model"/>
       <user-article />
+	  <van-popup
+	    get-container="#app"
+	    v-model="show"
+	    position="right"
+	    :style="{ height: '100%', width: '45%' }"
+	  >
+	  		<van-cell icon="setting-o" title="设置" is-link to="/set" />
+	</van-popup>
   </div>
+  
   <!-- </v-touch> -->
 </template>
 
@@ -17,7 +30,8 @@ export default {
     data() {
         return {
             model:{},
-			curScroll:0
+			curScroll:0,
+			show:false
         }
     },
     components:{
@@ -26,6 +40,13 @@ export default {
         userArticle
     },
     methods:{
+		// 打开右侧窗口
+		openRightPop(){
+			this.show = true
+		},
+		toSet(){
+			this.$router.push('/set')
+		},
 		onSwipeLeft () {
 		    // console.log('页面左滑')
 		  // this.$router.go(-1)
@@ -86,6 +107,7 @@ export default {
 
 <style lang="less">
 .userinfo{
+	position: absolute;
 .backImg{
     height: 91px;
     width: 100%;

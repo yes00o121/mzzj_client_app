@@ -49,6 +49,7 @@ Vue.use(VueTouch, {name: 'v-touch'})
 
 
 //plus.screen.lockOrientation('portrait-primary'); //锁死屏幕方向为竖屏
+// plus.screen.lockOrientation( 'landscape-primary');
 
  //监听获取设备uuid
 document.addEventListener('plusready', function(){
@@ -62,11 +63,10 @@ document.addEventListener('plusready', function(){
     },
     fail:function(){
       // alert('获取设备号失败')
-	  alert('加载错误')
+	  alert('加载错误,请联系薄荷七喜')
     }
   })
 })
-
 
 Vue.prototype.getUser = async  function(){
   if(localStorage.getItem('token')){
@@ -77,6 +77,15 @@ Vue.prototype.getUser = async  function(){
 }
 
 Vue.prototype.windowWidth = screen.height // 获取用户屏幕高度
+
+// 页面横线展示
+Vue.prototype.transverse = ()=>{
+	plus.screen.lockOrientation( 'landscape-primary');
+}
+// 页面纵向展示
+Vue.prototype.longitudinal =()=>{
+	plus.screen.lockOrientation('portrait-primary'); //锁死屏幕方向为竖屏
+}
 
 Vue.prototype.showloading = function() {
 	var title = "加载中···";

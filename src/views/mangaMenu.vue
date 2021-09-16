@@ -1,28 +1,21 @@
 <template>
 	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
+		<van-sticky  >
+			<van-cell style="z-index:2999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
+		</van-sticky>
   <div class="home" v-if="category" :style="'height:'+windowWidth+'px'">
-    <!-- <nav-bar></nav-bar> -->
-    <!-- <img :src="baseURL + manga.previewImg"  alt="" style="width:100%;height:100%;" v-show="false"> -->
-	
 	<div style="position: relative;height:300px" >
-		 <!-- <van-image
-		   lazy-load
-		   fit="contain"
-		   :src="baseURL + manga.previewImg + '&width='+width+'&height=300'" rel="external nofollow" style="clip-path: inset(0 0 40%)"
-		   @load="load"
-		 /> -->
 		 <van-image
-		   lazy-load
 		   fit="contain"
-		   :src="baseURL + manga.previewImg + '&width='+width+'&height='" rel="external nofollow" 
-		   @load="load"
+		   :src="baseURL + manga.previewImg + '&width='+width+'&height='+windowWidth + '&random=1&token=' + token" rel="external nofollow" 
 		   style="width:100%;"
 		 />
-		 <van-sticky :container="null" style="position: absolute;right:0;bottom:0;">
-			 
-			<van-button plain type="default" @click="collectionClick" :class="{activeColor:collectionActive}"><span class="icon-star-full" ></span>&nbsp;收藏</van-button>
-			<!-- <div  @click="collectionClick" :class="{activeColor:collectionActive}"><span class="icon-star-full" ></span>&nbsp;收藏</div> -->
-		  </van-sticky>
+		 <div style="position: absolute;right:0;bottom:0;">
+			<van-button plain type="default" @click="collectionClick" :class="{activeColor:collectionActive}">
+				<van-icon style="top:5px" name="star-o" size="1.5rem" />
+				<span>&nbsp;收藏</span>
+			</van-button>
+		</div>
 	</div>
     <div class="categorytab">
       <van-tabs v-model="active" swipeable sticky animated>
@@ -44,7 +37,7 @@
 				   v-for="(categoryitem,categoryindex) in item.list"
 				     :title="categoryitem.title"
 				     class="goods-card"
-				     :thumb="baseURL + categoryitem.imgUrl +'&region=true'"
+				     :thumb="baseURL + categoryitem.imgUrl +'&region=true&token=' + token"
 					 style="border-bottom: 1px solid #ebedf0;"
 					 :desc="categoryitem.createtime | filterTime"
 				   />
@@ -65,6 +58,7 @@ import cover from "./cover";
 export default {
   data() {
     return {
+		windowWidth:'300',
 		curScroll:0, // 当前滚动位置
 	  curPage:null, // 当前页面路径
 		width:'',
@@ -74,6 +68,7 @@ export default {
       manga:{}, // 漫画基础信息
       category: [],
       active: 0,
+	  token: 'Bearer ' + localStorage.token,
       isLoading: false,   //是否处于下拉刷新状态
     };
   },
@@ -206,6 +201,7 @@ export default {
         categoryitem.list.push(...res.data.data);
         categoryitem.loading = false;
         if (res.data.data.length < categoryitem.pagesize) {
+		  categoryitem.loading = true;
           categoryitem.finished = true;
         }
 		this.hideloading()
@@ -219,15 +215,20 @@ export default {
 	onSwipeRight(){
 	    // alert('页面右滑')
 		// 跳转其他页面的时候记录高度
-		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+		// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 		// alert('漫画高度' + this.curScroll)
-	    this.$router.go(-1)
+	    // this.$router.go(-1)
 	},
 	toDetail(item){
 		// console.log(item)
 		// 跳转漫画明细页面
 		// this.$route.push()
 		 this.$router.push(`/mangaDetail/${item.webInfoDetailDataId}/${item.pxh}`)
+	},
+	returnPage(){
+		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+		// alert('漫画高度' + this.curScroll)
+		this.$router.go(-1)
 	},
     onRefresh() {       //下拉刷新
                 setTimeout(() => {
@@ -298,7 +299,7 @@ export default {
 };
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .activeColor{
             color: #fb7299;
         }
@@ -357,5 +358,17 @@ bottom: 0;
 	    overflow: hidden;
 	    background: white;
 	    cursor: grab;
+}
+input[type='button']:enabled:active, input[type='button'].mui-active:enabled, input[type='submit']:enabled:active, input[type='submit'].mui-active:enabled, input[type='reset']:enabled:active, input[type='reset'].mui-active:enabled, button:enabled:active, button.mui-active:enabled, .mui-btn:enabled:active, .mui-btn.mui-active:enabled{
+	color:black;
+	background-color:white
+}
+.van-button--hairline::after{
+	border-color:white
+}
+.van-button::before{
+	// border-color:black;
+	border-color:black;
+	background-color:white;
 }
 </style>

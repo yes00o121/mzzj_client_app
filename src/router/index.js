@@ -14,6 +14,7 @@ const person = ()=>import('@/views/person.vue')
 const search = ()=>import('@/views/search.vue')
 const video = ()=> import('@/views/video.vue')
 const videosearch = () => import('@/views/videosearch.vue')
+const set = () => import('@/views/set.vue')
 
 // const dynamic = ()=>import('@/views/dynamic.vue')
 Vue.use(VueRouter)
@@ -102,6 +103,15 @@ Vue.use(VueRouter)
 	  component:video,
 	  meta:{
 		  index:7
+	  }
+	},
+	{
+	  path:'/set',
+	  component:set,
+	  name:'set',
+	  meta:{
+		index:10,
+	    keepalive:true
 	  }
 	},
   {

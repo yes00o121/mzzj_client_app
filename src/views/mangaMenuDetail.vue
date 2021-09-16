@@ -2,17 +2,11 @@
 	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
   <div class="home">
     <div class="categorytab">
+		<van-sticky v-show="bottom" style="position: absolute;width: 100%;">
+			<van-cell style="z-index:2999;background: black;color:white;opacity: 0.7;"  icon="arrow-left" :title="'第'+$route.params.pxh+'话'"  @click="$router.go(-1)"/>
+		</van-sticky>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-			  <!-- 顶部弹出 -->
-			  <van-popup
-			    style="background: black;"
-			    v-model="bottom"
-			    position="top"
-			    :style="{ height: '5%' }">
-				<div style="color:white;text-align: center;
-    padding: 2%;" class="van-ellipsis">第{{$route.params.pxh}}话</div>
-			  </van-popup>
-		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width" v-for="item in mangaList" @click="showpopUp()"> </van-image>
+		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"> </van-image>
           </van-pull-refresh>
 		  <!-- 底部弹出 -->
 		  <van-popup
@@ -23,24 +17,110 @@
 		    :style="{ height: '15%' }"
 			@open="changeSlider"
 		  >
-		  
-			<van-button   style="left: -2vw;
-			position: absolute;
-				background: black;
-				border: none;
-				font-size: 1rem;top: 5.778vw;color:#cac4c4" @click="changePage('up')">上一话</van-button>
-				<van-slider  v-model="value" @change="onChange" :min="1" style="top: 11vw;
-				position: absolute;
-				width: 50%;
-				left: 26%;" />
-				<van-button style="right: 0;
-				position: absolute;
-								background: black;
-								top: 5vw;
-								border: none;
-								font-size: 1rem;color:#cac4c4" @click="changePage('next')">下一话</van-button>
+		  <van-row  justify="space-around" style="padding-top:5%">
+		    <van-col span="6" :style="$route.params.pxh == 1 ? 'color:rgb(52 52 52)' : ''" @click="changePage('up')">
+				上一话
+			</van-col>
+		    <van-col span="12" offset="1" style="float:left;padding-top:6px" >
+				<van-slider  v-model="value" @change="onChange" :min="1" style="width:90%" button-size="18" /> 
+			</van-col>
+		    <van-col span="4" offset="0" style="float:left" @click="changePage('next')">
+				下一话
+			</van-col>
+		  </van-row>
+		  <van-row  justify="space-around" style="padding-top:5%">
+		    <van-col span="6">
+		  		<span @click="collectionClick">
+					<van-icon name="star-o" size="1.5rem" :class="{activeColor:collectionActive}" />
+					<p>收藏</p>
+				</span>
+			</van-col>
+			<van-col span="6" @click="" v-show="screenStatus == 1" >
+				<span @click="trans('2')">
+					<van-icon name="exchange" size="1.5rem" />
+					<p>横屏</p>
+				</span>
+			</van-col>
+			<van-col span="6" @click="" v-show="screenStatus == 2">
+				<span @click="trans('1')">
+					<van-icon name="exchange" size="1.5rem" />
+					<p>竖屏</p>
+				</span>
+			</van-col>
+			<van-col span="6"  @click="imgShow = true">
+				<span>
+					<van-icon name="photo-o" size="1.5rem" />
+					<!-- <p>画质</p> -->
+					<p v-if="item.value == imgQuality.configValue" v-for="item in actions">
+						{{item.name}}
+					</p>
+				</span>
+			</van-col>
+		    <van-col span="6"  @click="selectChapter">
+				<span>
+		    		<van-icon name="orders-o" size="1.5rem" />
+		    		<p>章节</p>
+				</span>
+		    </van-col>
+		  </van-row>
 		  </van-popup>
-		  
+		  <!-- 画质选择 -->
+		  <van-action-sheet v-model="imgShow" :actions="actions" @select="onSelect"  description="请选择画质"/>
+		  <!-- 漫画章节窗口 -->
+		  <van-popup
+		  	  style="background: white;
+				opacity: 1;"
+		  	    v-model="chapter"
+		  	    position="bottom"
+		  	    :style="{ height: '65%' }"
+		  		@open="changeChapter"
+		  	  >
+			  <van-sticky :offset-top="chapterTopSize">
+				  <div style="font-size:14px;color:black;background:white;height:5%;z-index: 999;">
+					  <!-- <p>全部章节({{chapterList.length}})</p> -->
+					  
+					  <van-row  justify="space-around" style="padding-top:5%">
+						  <van-col span="1"></van-col>
+							<van-col span="6">
+								全部章节({{chapterList.length}})
+							</van-col>
+					   
+						<!-- <van-col v-show="mangaMode == 1" span="3" offset="0" style="right:0;position: absolute;top:1rem" @click="changePage('next')">
+							<van-icon name="shrink" size="1.2rem" />
+						</van-col>
+						<van-col v-show="mangaMode == 2" span="3" offset="0" style="right:0;position: absolute;top:1rem" @click="changePage('next')">
+							<van-icon name="expand-o" size="1.2rem" />
+						</van-col> -->
+					  </van-row>
+					<van-divider />
+				  </div>
+			  
+			</van-sticky>
+			  <!-- <van-pull-refresh v-model="chapterisLoading" @refresh="onRefresh"> -->
+			    <!-- <van-list
+			      v-model="item.loading"
+			      :immediate-check="false"
+			      :finished="item.finished"
+			      finished-text="我也是有底线的"
+			      @load="onLoad"
+			    > -->
+			  			<!-- :icon="baseURL + categoryitem.imgUrl" -->
+			     <div class="detailparent" ref="tab">
+			  				 <van-swipe-cell style="width:100%">
+			  				   <van-card
+			  				   lazy-load
+			  				   @click="changeManga(categoryitem)"
+			  				   v-for="(categoryitem,categoryindex) in chapterList"
+			  				     :title="categoryitem.title"
+			  				     class="goods-card"
+			  				     :thumb="baseURL + categoryitem.imgUrl +'&region=true&token=' + token"
+			  					 style="border-bottom: 1px solid #ebedf0;"
+			  					 :desc="categoryitem.createtime | filterTime"
+			  				   />
+			  				 </van-swipe-cell>
+			      </div>
+			    <!-- </van-list> -->
+			  <!-- </van-pull-refresh> -->
 		  </van-popup>
     </div>
   </div>
@@ -51,17 +131,41 @@
 export default {
   data() {
     return {
-		width:document.body.clientWidth,// 图片宽度
+	   width:document.body.clientWidth,// 图片宽度
 	  value:0,
 	  mangaList:[],
 	  bottom:false,
       isLoading: false,   //是否处于下拉刷新状态
+	  token: 'Bearer ' + localStorage.token,
+	  collectionActive:false, // 收藏状态
+	  screenStatus:'1' ,// 是否横屏1竖屏、2横屏
+	  imgShow: false, // 画质选择
+	  chapter:false, // 章节窗口
+		actions: [
+		  { name: '低',value: '0.2' },
+		  { name: '中',value: '0.5' },
+		  { name: '高',value: '0.8' },
+		  { name: '原画',value: '1'}
+		],
+	  imgQuality:'',// 图片清晰度
+	  chapterList:[], // 章节数据集合
+	  mangaMode:'1' ,// 漫画模式,1略所模式,2列表模式
+	  chapterTopSize: document.body.clientHeight * 0.35 // 章节菜单高度距离顶部距离像素
     };
+  },
+  filters:{
+  	filterTime(val) {
+  	  if(val){
+  	    return val.split('T')[0]
+  	  }
+  	  return "";
+  	},
   },
   // 跳转其他页面之前
   beforeRouteLeave(to, from ,next){
 	next();  
   },
+  
   beforeRouteEnter(to, from,next){
 	  let path = from.path
 	  console.log(to)
@@ -75,8 +179,34 @@ export default {
 	  next()
   },
   methods: {
+	  // 点击章节按钮
+	  selectChapter(){
+		  this.chapter = true
+		  this.$http.post('/manga/queryMangaMenuByWebInfoDataId',{
+		    webInfoDataId:this.$route.params.id
+		  }).then(res=>{
+
+			  this.chapterList = res.data.data
+			  			  console.log(this.chapterList)
+		  })
+	  },
+	  onSelect(e){
+		  // 判断选择的时候和当前的一直，一直退出,不一直修改配置信息
+		 if(e.value == this.imgQuality.configValue){
+			 return;
+		 }
+		 this.imgQuality.configValue = e.value;
+		 // 修改图片画质配置
+		 this.changeConfig(this.imgQuality)
+		 this.setCurrentImage()
+		 
+	  },
 	  closePop(){
 
+	  },
+	  // 打开章节窗口
+	  changeChapter(){
+		  
 	  },
     onScroll(){
 
@@ -91,12 +221,29 @@ export default {
 		// console.log(this.$route.params.id)
 		// let id = this.$route.params.id
 		// this.$router.push(`/manga/${id}`)
-	    this.$router.go(-1)
+	    // this.$router.go(-1)
+	},
+	trans(type){
+		console.log(type)
+		// this.transverse()
+		// 
+		if(type == '2'){
+			// this.screenStatus = type
+			// this.longitudinal();
+			this.transverse()
+		}
+		if(type == '2'){
+			// this.screenStatus = '1'
+			// this.transverse()
+			this.longitudinal()
+		}
+		this.screenStatus = type
 	},
 	changePage(type){
 		var pxh = parseInt(this.$route.params.pxh)
 		if(pxh == 1 && type == 'up'){
-			this.$msg.fail('已经是第一话')
+			// this.$msg.fail('已经是第一话')
+			return;
 		} else {
 			// 跳转
 			if(type == 'next'){
@@ -107,6 +254,7 @@ export default {
 				// pxh = pxh - 1
 				this.$route.params.pxh = pxh - 1
 			}
+			this.value = 1;
 			scrollTo(0,0)
 			this.selectCategory();
 			// this.$router.push(`/mangaDetail/${this.$route.params.id}/${pxh}`)
@@ -115,7 +263,10 @@ export default {
 	changeSlider(){
 		// 获取当前滚动高度,设置进度条
 		let rect = document.body.getBoundingClientRect()
-		let page =  parseInt((Math.abs(rect.top)/rect.height) * 100); // 当前可视内的页数
+		let height = document.body.scrollHeight // body总高度
+		// let page =  parseInt((Math.abs(rect.top)/rect.height) * 100); // 当前可视内的页数
+		let page =  parseInt((Math.abs(rect.top)/height) * 100); // 当前可视内的页数
+		// console.log(page)
 		if(page == 0){
 			return
 		}
@@ -143,6 +294,38 @@ export default {
 		// 定位到滚动位置
 		
 	},
+	//进入页面获取是否收藏
+	async collectionInit() {
+	    if(localStorage.getItem('token')){
+	        const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
+	            webInfoDetailDataId:this.$route.params.id
+	        })
+	        // console.log(res.data)
+	    this.collectionActive = res.data.data == '1' ? true : false;
+	    }
+	},
+	async collectionClick() {
+	   if(localStorage.getItem('token')){
+	     // 判断显示状态,是收藏还是取消收藏
+	     if(!this.collectionActive){
+	       const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id})
+	       // console.log(res)
+	       if(res.data.data == '收藏成功'){
+	           this.collectionActive = true
+	       }else{
+	           // this.collectionActive = false
+	           this.$msg.fail(res.data.message)
+	       }
+	     } else {
+	       const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id})
+	       if(res.data.data == '取消成功'){
+	         this.collectionActive = false
+	       } else {
+	          this.$msg.fail(res.data.message)
+	       }
+	     }
+	   }
+	},
 	getOffsetTopByBody (el) {
 	  let offsetTop = 0
 	  while (el && el.tagName !== 'BODY') {
@@ -150,6 +333,16 @@ export default {
 	    el = el.offsetParent
 	  }
 	  return offsetTop
+	},
+	// 切换漫画
+	changeManga(item){
+		console.log(item)
+		let pxh = item.pxh
+		this.$route.params.pxh = pxh;
+		this.value = 1;
+		scrollTo(0,0)
+		this.selectCategory();
+		// this.$route.params.pxh = pxh
 	},
 	showpopUp(){
 		this.bottom = !this.bottom
@@ -173,15 +366,94 @@ export default {
                 setTimeout(() => {
                     this.selectCategory();
                 }, 500);
-            }
+            },
+	// 修改配置方法
+	changeConfig(data){
+		// if(this.initStatus){
+		// 	return;
+		// }
+		// 配置存在，走修改
+		if(data.uId){
+			this.$http.post('/config/updateUserConfigValueById',{
+				configValue: data.configValue,
+				id:data.uId
+			}).then(res=>{
+				console.log(res)
+				if(res.data.code == 200){
+					this.mangaList = []
+					this.selectCategory()
+				}else{
+					this.$msg.fail(res.data.message)
+				}
+			})
+		} else {
+			// console.log('新增.....')
+			
+			// 配置不存在走新增
+			this.$http.post('/config/insertConfigValue',{
+				configId:data.id,
+				configName: data.configName,
+				configValue: data.configValue
+			}).then(res=>{
+				// console.log(res)
+				if(res.data.code == 200){
+					this.mangaList = []
+					this.selectCategory()
+					// 请求已配置数据,刷新配置信息
+					// this.queryConfigAll()
+					// this.setCurrentImage()
+				}else {
+					this.$msg.fail(res.data.message)
+				}
+			})
+		}
+	},
+	// 设置当前选中图片
+	setCurrentImage(){
+		// 遍历清晰度数组,将与值相同的进行选中
+		for(let i =0;i<this.actions.length;i++){
+			  if(this.actions[i].value == this.imgQuality.configValue){
+				  this.actions[i].color = '#1989fa'
+			  }else {
+				  this.actions[i].color = ''
+			  }
+		}
+		console.log(this.actions)
+	}
   },
   created() {
       this.selectCategory();
-  },
+	  this.collectionInit();
+	  // 获取用户图片清晰度配置
+	  // this.$http.get('/user/getImageDefinition').then(res=>{
+		 //  this.imgQuality = res.data.data
+	  // })
+	  this.$http.post('/config/queryConfigAll/',{
+		  id:1
+	  }).then(res=>{
+		  // console.log(res)
+		  this.imgQuality = res.data[0]
+		  // console.log(this.imgQuality)
+		  // this.changeConfig(this.imgQuality)
+	  })
+	  
+  },	
   mounted(){
 
   },
   watch:{
+	  imgShow(cur,bef){
+		  console.log(cur)
+		  if(cur){
+			  this.setCurrentImage()
+		  }
+	  },
+	  chapter(bef){
+		// 当章节变成false时候,将底部菜单也一并关闭
+		 if(!bef){
+			 this.bottom = false
+		 }
+	  },
 	  $route() {
 		  if(this.$route.params.pxh == 1){
 			  return
@@ -194,10 +466,10 @@ export default {
 };
 </script>
 
-<style lang="less">
-	
+<style lang="less" scoped>
 .home {
   background-color: white;
+  color:white;
 }
 .detailparent {
   display: flex;
@@ -244,5 +516,44 @@ export default {
 .van-image{
 	position: relative;
 	    display: block;
+}
+p{
+	padding-top:5px;
+	font-size:14px;
+	color:white;
+}
+.activeColor{
+            color: #fb7299;
+        }
+input[type='button']:enabled:active, input[type='button'].mui-active:enabled, input[type='submit']:enabled:active, input[type='submit'].mui-active:enabled, input[type='reset']:enabled:active, input[type='reset'].mui-active:enabled, button:enabled:active, button.mui-active:enabled, .mui-btn:enabled:active, .mui-btn.mui-active:enabled{
+	color:black;
+	background-color:white
+}
+.van-button--hairline::after{
+	border-color:white
+}
+.van-button::before{
+	// border-color:black;
+	border-color:black;
+	background-color:white;
+}
+.detailparent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  .detailitem {
+    margin: 1.389vw 0;
+    width: 45%;
+  }
+}
+.van-card__desc{
+bottom: 0;
+    position: absolute;
+}
+.van-swipe-cell{
+	position: relative;
+	    overflow: hidden;
+	    background: white;
+	    cursor: grab;
 }
 </style>

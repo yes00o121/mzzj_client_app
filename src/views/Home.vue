@@ -6,7 +6,7 @@
 		
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <van-tabs v-model="active" swipeable sticky animated >
-        <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy  >
+        <van-tab v-for="(item,index) in category" :key="index" v-if="item.CODE_VALUE != 5" :title="item.DICT_NAME" scrollspy  >
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
             <van-list 
 			 v-show="active != 1"
@@ -216,6 +216,7 @@ export default {
 			categoryitem.list.push(...res.data.data.list);
 			categoryitem.loading = false;
 			if (res.data.length < categoryitem.pagesize) {
+			  categoryitem.loading = true;
 			  categoryitem.finished = true;
 			}
 		}

@@ -86,6 +86,7 @@ export default{
   text-align: center;
   color: #2c3e50;
   width:100%;	
+  background:white;
 }
 #nav {
   padding: 30px;
