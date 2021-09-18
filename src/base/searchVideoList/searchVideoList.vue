@@ -7,17 +7,17 @@
   <ul class="container">
     <!-- {{searches}} -->
     <li class="search-item" v-for="(item, index) in searches" :key="index" @click="chooseVideo(index)" style="padding: 1px 1px" v-if="item.videoType">
-      <img class="videoCover" :style="VideoItemHeightStyle" :src="baseURL + item.previewImg">
-      <div class="bottom">
-        <p class="videoDesc">{{`${item.title.substr(0,40)}`}}</p>
+      <img class="videoCover" :style="VideoItemHeightStyle" :src="baseURL + item.previewImg + '&token=' + token">
+      <div class="bottom" style="width: 100%;text-align: initial;">
+        <p class="videoDesc" style="padding-bottom: 0.5rem;">{{`${item.title.substr(0,40)}`}}</p>
         <div class="userAndLike">
           <div class="avatarAndName">
             <!-- <img class="avatar" :src="baseURL+ `${item.previewImg}`" alt=""> -->
-            <img class="avatar" :src="baseURL+ `/common/image?imgId=6103eed9f1a2480958525955`" alt="">
+            <img class="avatar" :src="baseURL+ `/common/image?imgId=6103eed9f1a2480958525955&token=${token}`" alt="">
             <!-- <p class="name">{{item.userNickname}}</p> -->
             <p class="name">薄荷七喜</p>
           </div>
-          <div class="like">
+          <div class="like" style="padding-right: 1rem;">
             <span class="iconfont icon-heart"></span>
             <p class="likeNum">{{item.flowNum}}</p>
           </div>
@@ -44,6 +44,7 @@ export default {
   },
   data () {
     return {
+		token: 'Bearer ' + localStorage.token
       // baseURL
     }
   },
@@ -53,7 +54,7 @@ export default {
   computed: {
     VideoItemHeightStyle () {
       let clientWidth = document.body.clientWidth
-      let height = clientWidth / 2 * 1.8 + 'px'
+      let height = clientWidth / 2 * 1.3 + 'px'
       return {
         height
       }

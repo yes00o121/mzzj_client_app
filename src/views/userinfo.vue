@@ -15,7 +15,20 @@
 	    position="right"
 	    :style="{ height: '100%', width: '45%' }"
 	  >
-	  		<van-cell icon="setting-o" title="设置" is-link to="/set" />
+	  		<van-cell icon="setting-o" value="设置" @click="toSet" >
+				<van-icon
+					    slot="right-icon"
+					    name="arrow"
+					    style="line-height: inherit;"
+					  />
+			</van-cell>
+			<van-cell icon="close" value="退出" @click="exitSystem" >
+				<van-icon
+				    slot="right-icon"
+				    name="arrow"
+				    style="line-height: inherit;"
+				  />
+			</van-cell>
 	</van-popup>
   </div>
   
@@ -40,6 +53,19 @@ export default {
         userArticle
     },
     methods:{
+		// 退出系统
+		exitSystem(){
+			this.$dialog.confirm({
+			  title: '提示',
+			  message: '确定退出吗？'
+			}).then(() => {
+				console.log('退出')
+				localStorage.clear()
+				this.$router.push('/')
+			}).catch(() => {
+				// console.log('不退出')
+			});
+		},
 		// 打开右侧窗口
 		openRightPop(){
 			this.show = true
@@ -83,6 +109,8 @@ export default {
 		} else {
 			scroll(0,0)
 		}
+		// 页面显示的时候关闭右侧面板
+		this.show = false;
 		// this.curScroll = 0 // 不是相同页面,重置高度
 		// if(this.category.length == 0){
 		// 	this.selectCategory();
@@ -105,12 +133,19 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .userinfo{
 	position: absolute;
 .backImg{
     height: 91px;
     width: 100%;
 }
+}
+.van-dialog__header{
+	padding-top: 24px;
+	font-weight: 500;
+	line-height: 24px;
+	text-align: center;
+	color: black;
 }
 </style>

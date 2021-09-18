@@ -11,7 +11,7 @@ import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
 // const baseURL = 'http://127.0.0.1:8090'
-const baseURL = 'http://192.168.1.103:8090'
+const baseURL = 'http://192.168.1.4:8090'
 // const baseURL = 'http://121.201.2.228:10824'
 Vue.prototype.baseURL = baseURL
 const http = axios.create({

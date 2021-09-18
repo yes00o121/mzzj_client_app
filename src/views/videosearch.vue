@@ -1,7 +1,7 @@
 <template>
 <div class="searchWrap">
   <div class="topBar">
-    <span class="iconfont icon-left" @click="$router.push('/home')"></span>
+    <span class="iconfont icon-left" @click="$router.go(-1)"></span>
     <search-bar
     class="searchBar"
     :placeholder="placeholder"

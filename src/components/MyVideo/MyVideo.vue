@@ -9,9 +9,9 @@
       @click="playHandler($event)"
       @loadeddata="watchHandler"
       ref="video"></video> -->
-	  <video ref = "videoPlayer" v-if="VideoItem.videoType == 'm3u8'"  class="video"
+	  <video ref = "videoPlayer" :id="VideoItem.id" v-if="VideoItem.videoType == 'm3u8'"  class="video"
 	  style="width:100%;height:100%"
-	  :poster="baseURL +  VideoItem.previewImg"
+	  :poster="baseURL +  VideoItem.previewImg + '&token=' + token"
 	  webkit-playsinline="true" x5-video-player-type="h5-page"
 	  x5-playsinline  x-webkit-airplay="allow"
 	  x5-video-player-fullscreen="true" playsinline="true" preload="auto"
@@ -22,7 +22,7 @@
       <div class="avatar">
        <!-- <img :src="`${baseURL}${VideoItem.userAvatar}`" alt="" width="40" height="40"
           @click="chooseUser"> -->
-		  <img :src="`${baseURL}/common/image?imgId=6103eed9f1a2480958525955`" alt="" width="40" height="40"
+		  <img :src="`${baseURL}/common/image?imgId=6103eed9f1a2480958525955&token=${token}`" alt="" width="40" height="40"
 		    >
 		  
         <!-- <div class="follow">+</div> -->
@@ -39,9 +39,18 @@
     </div>
     <div class="text-wrap">
       <!-- <div class="name">@{{VideoItem.userNickname}}</div> -->
-      <div class="desc">{{VideoItem.title}}</div>
+      <div class="desc van-multi-ellipsis--l2" style="text-align: initial;">{{VideoItem.title}}</div>
+	 
     </div>
+	 <div  style="text-align: initial;text-align: initial;
+    position: absolute;
+    bottom: 66px;
+    color: white;
+    right: 11px;">{{VideoItem.videoLength | getDateBysecond}}</div>
+	<div style="position:absolute;left:10px;bottom:48px;width:100%"> <!-- 当前播放位置 -->
+	  <van-slider v-model="videoProcess" :min="0" :max="100" :button-size="1" @drag-start="dragStart" @drag-end="dragEnd" @input="dragInput" @change="dragChange"/></div>
     <div class="input-bar" v-show="!isHome" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)">
+		
       <input class="input" placeholder="  有爱评论，说点儿好听的~" type="text">
       <span class="iconfont icon-at" ></span>
       <span class="iconfont icon-check"></span>
@@ -59,11 +68,26 @@ export default {
     VideoItem: {
       type: Object,
       required: true
+	  
     },
 	index:{
 		type:Number
 	}
   },
+  filters:{
+		// 根据秒获取时间
+		getDateBysecond(second){
+			if(second < 60){
+				return '0:' + (second <= 9 ? '0' + second: second);
+			}
+			let minute = parseInt(second/60)
+			let s = second - (minute * 60)
+			if(minute < 60){
+				return (minute <= 9 ? '0' + minute : minute) + ':' + (s <= 9 ? '0' + s : s);
+			}
+			return '';
+		}
+	},
   created () {
     // if (this.isLogged) {
       // this.$axios.get(`/api/user/${this.loginInfo.userId}/isLiked/${this.VideoItem.videoId}`).then(res => {
@@ -93,6 +117,7 @@ export default {
 		  	  				})
 		  	  		  }
 		  	          );
+					  top.a = this.video
 		  	  // alert(111)
 		  	  let nextAddress = this.VideoItem.nextAddress
 		  	  nextAddress = nextAddress.split('_-')[1]
@@ -105,6 +130,8 @@ export default {
 				// top.a = this
 				this.$parent.$parent.$refs.scroll.scrollTo(0,this.$parent.$parent.currentHeight)
 				 this.video.play()
+				this.stopProcess()
+				this.startProcess();
 				 // 延迟0.5秒,等待滚动事件加载完成
 				 // setTimeout(()=>{
 					//  this.$parent.$parent.currentHeight = 0
@@ -192,11 +219,15 @@ export default {
   },
   data () {
     return {
+		token: 'Bearer ' + localStorage.token, // 用户token
       // baseURL,
       like: this.VideoItem.collection == '是',
       likeNum: this.VideoItem.likeNum,
 	  video: null,
-	  playStatus:true // 播放状态,默认播放
+	  playStatus:true ,// 播放状态,默认播放
+	  videoProcess:0 ,// 进度条位置
+	  maxVideoProcess: 0, // 当前视频长度
+	  videoProcessInterval:null
     }
   },
   computed: {
@@ -217,6 +248,70 @@ export default {
     ])
   },
   methods: {
+	  //记录播放进度
+	  changeProcess() {
+		  // console.log(this.$refs['videoPlayer'])
+		// console.log('记录播放。。。。')
+		// top.a = this.$refs
+		  let video = this.getVideo()
+		  let currentTime = video.currentTime.toFixed(1);
+		  // console.log(currentTime)
+		  let duration = video.duration.toFixed(1);
+		  this.videoProcess = parseInt((currentTime / duration).toFixed(2) * 100)
+	  },
+	  // 开始计时
+	startProcess(){
+		this.maxVideoProcess = this.getVideo().currentTime // 记录当前视频长度
+		this.videoProcessInterval = setInterval(() => {
+			// video.style.visibility = 'visible'
+			this.changeProcess(this.getVideo())
+		}, 100)
+	},
+	// 停止计时
+	stopProcess(){
+		// 视频时间重置
+		let video = this.getVideo();
+		video.currentTime = 0;
+		this.videoProcess = 0
+		clearInterval(this.videoProcessInterval)
+	},
+	getVideo(){
+		return $('#'+this.VideoItem.id+'_html5_api')[0]
+	},
+	  // 开始拖动,暂停播放
+		dragStart(e){
+			clearInterval(this.videoProcessInterval)
+			if(!this.iconPlayShow){
+				this.playvideo()
+			}
+
+			// console.log('开始拖动')
+		},
+		// 结束拖动
+		dragEnd(e){
+			// console.log('结束拖动')
+		},
+		// 进度条变化触发,用于获取位置，显示当前时间
+		dragInput(value){
+			// console.log(value)
+			clearInterval(this.videoProcessInterval)
+			// if(!this.iconPlayShow){
+			// 	this.playvideo()
+			// }
+			// 
+		},
+		// 进度条变化,且结束时候触发,用于加载当前位置视频
+		dragChange(value){
+			// alert(value)
+
+			// let duration = document.querySelectorAll('video')[this.current].duration.toFixed(0);
+			let video = this.getVideo()
+			// console.log('拖动结束位置' + value)
+			this.videoProcess = value
+			video.currentTime = parseInt((video.duration * (value/100)).toFixed(2))
+			// this.playvideo()
+			this.startProcess()
+		},
 	  // 收藏数据
 	  async collectionClick() {
 	     if(localStorage.getItem('token')){
@@ -254,8 +349,8 @@ export default {
       this.$emit('showCommentList', videoId, commentNum)
     },
 	playVideo(){
-		console.log(this.video)
-		top.a = this.video
+		// console.log(this.video)
+		// top.a = this.video
 		if(this.playStatus){
 			this.video.pause()
 		}else{
@@ -331,7 +426,7 @@ export default {
   .text-wrap
     position absolute
     left 10px
-    bottom 54px
+    bottom 60px
     width 70%
     .name
       color $color-white
@@ -342,7 +437,7 @@ export default {
   .side-bar
     position absolute
     right 10px
-    bottom 74px
+    bottom 100px
     display flex
     flex-direction column
     height 250px

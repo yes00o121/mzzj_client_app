@@ -1,10 +1,13 @@
 <template>
 	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
+<!-- 				{{$route.params.pxh}}-----------------{{chapterList.length - 1}} -->
   <div class="home">
     <div class="categorytab">
+
 		<van-sticky v-show="bottom" style="position: absolute;width: 100%;">
-			<van-cell style="z-index:2999;background: black;color:white;opacity: 0.7;"  icon="arrow-left" :title="'第'+$route.params.pxh+'话'"  @click="$router.go(-1)"/>
+			<van-cell style="z-index:2999;background: black;color:white;opacity: 0.7;"  icon="arrow-left" :title="'第'+chapterList[this.$route.params.pxh - 1].title+'话'"  @click="$router.go(-1)"/>
 		</van-sticky>
+
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
 		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"> </van-image>
           </van-pull-refresh>
@@ -24,7 +27,7 @@
 		    <van-col span="12" offset="1" style="float:left;padding-top:6px" >
 				<van-slider  v-model="value" @change="onChange" :min="1" style="width:90%" button-size="18" /> 
 			</van-col>
-		    <van-col span="4" offset="0" style="float:left" @click="changePage('next')">
+		    <van-col span="4" :style="$route.params.pxh == chapterList.length  ? 'color:rgb(52 52 52)' : ''" offset="0" style="float:left" @click="changePage('next')">
 				下一话
 			</van-col>
 		  </van-row>
@@ -96,31 +99,20 @@
 				  </div>
 			  
 			</van-sticky>
-			  <!-- <van-pull-refresh v-model="chapterisLoading" @refresh="onRefresh"> -->
-			    <!-- <van-list
-			      v-model="item.loading"
-			      :immediate-check="false"
-			      :finished="item.finished"
-			      finished-text="我也是有底线的"
-			      @load="onLoad"
-			    > -->
-			  			<!-- :icon="baseURL + categoryitem.imgUrl" -->
-			     <div class="detailparent" ref="tab">
-			  				 <van-swipe-cell style="width:100%">
-			  				   <van-card
-			  				   lazy-load
-			  				   @click="changeManga(categoryitem)"
-			  				   v-for="(categoryitem,categoryindex) in chapterList"
-			  				     :title="categoryitem.title"
-			  				     class="goods-card"
-			  				     :thumb="baseURL + categoryitem.imgUrl +'&region=true&token=' + token"
-			  					 style="border-bottom: 1px solid #ebedf0;"
-			  					 :desc="categoryitem.createtime | filterTime"
-			  				   />
-			  				 </van-swipe-cell>
-			      </div>
-			    <!-- </van-list> -->
-			  <!-- </van-pull-refresh> -->
+			 <div class="detailparent" ref="tab">
+						 <van-swipe-cell style="width:100%">
+						   <van-card
+						   lazy-load
+						   @click="changeManga(categoryitem)"
+						   v-for="(categoryitem,categoryindex) in chapterList"
+							 :title="categoryitem.title"
+							 class="goods-card"
+							 :thumb="baseURL + categoryitem.imgUrl +'&region=true&token=' + token"
+							 style="border-bottom: 1px solid #ebedf0;"
+							 :desc="categoryitem.createtime | filterTime"
+						   />
+						 </van-swipe-cell>
+			  </div>
 		  </van-popup>
     </div>
   </div>
@@ -132,16 +124,17 @@ export default {
   data() {
     return {
 	   width:document.body.clientWidth,// 图片宽度
-	  value:0,
-	  mangaList:[],
-	  bottom:false,
+	  value:0, // 漫画位置滑动值
+	  mangaList:[],// 漫画明细集合
+	  bottom:false, // 是否显示底部工具栏
       isLoading: false,   //是否处于下拉刷新状态
-	  token: 'Bearer ' + localStorage.token,
+	  token: 'Bearer ' + localStorage.token, // 用户token
 	  collectionActive:false, // 收藏状态
 	  screenStatus:'1' ,// 是否横屏1竖屏、2横屏
 	  imgShow: false, // 画质选择
 	  chapter:false, // 章节窗口
-		actions: [
+	  // 清晰度选择栏
+	  actions: [ 
 		  { name: '低',value: '0.2' },
 		  { name: '中',value: '0.5' },
 		  { name: '高',value: '0.8' },
@@ -167,9 +160,9 @@ export default {
   },
   
   beforeRouteEnter(to, from,next){
-	  let path = from.path
-	  console.log(to)
-	  console.log(from)
+	  // let path = from.path
+	  // console.log(to)
+	  // console.log(from)
 	  // if(path.startsWith('/manga/')){
 		 //  from.meta.keepalive = true
 	  // } else{
@@ -182,24 +175,19 @@ export default {
 	  // 点击章节按钮
 	  selectChapter(){
 		  this.chapter = true
-		  this.$http.post('/manga/queryMangaMenuByWebInfoDataId',{
-		    webInfoDataId:this.$route.params.id
-		  }).then(res=>{
-
-			  this.chapterList = res.data.data
-			  			  console.log(this.chapterList)
-		  })
+		  
 	  },
 	  onSelect(e){
 		  // 判断选择的时候和当前的一直，一直退出,不一直修改配置信息
 		 if(e.value == this.imgQuality.configValue){
 			 return;
 		 }
+		 
 		 this.imgQuality.configValue = e.value;
 		 // 修改图片画质配置
 		 this.changeConfig(this.imgQuality)
 		 this.setCurrentImage()
-		 
+		this.value = 1
 	  },
 	  closePop(){
 
@@ -224,9 +212,7 @@ export default {
 	    // this.$router.go(-1)
 	},
 	trans(type){
-		console.log(type)
-		// this.transverse()
-		// 
+		// 横屏、竖屏控制
 		if(type == '2'){
 			// this.screenStatus = type
 			// this.longitudinal();
@@ -247,6 +233,10 @@ export default {
 		} else {
 			// 跳转
 			if(type == 'next'){
+				// 最后一页,不跳转
+				if(this.$route.params.pxh == this.chapterList.length){
+					return;
+				}
 				// pxh = pxh + 1
 				this.$route.params.pxh = pxh + 1
 			}
@@ -257,7 +247,6 @@ export default {
 			this.value = 1;
 			scrollTo(0,0)
 			this.selectCategory();
-			// this.$router.push(`/mangaDetail/${this.$route.params.id}/${pxh}`)
 		}
 	},
 	changeSlider(){
@@ -266,7 +255,6 @@ export default {
 		let height = document.body.scrollHeight // body总高度
 		// let page =  parseInt((Math.abs(rect.top)/rect.height) * 100); // 当前可视内的页数
 		let page =  parseInt((Math.abs(rect.top)/height) * 100); // 当前可视内的页数
-		// console.log(page)
 		if(page == 0){
 			return
 		}
@@ -274,24 +262,16 @@ export default {
 		this.value = page
 	},
 	onChange(e){
-		console.log(e)
 		let page = parseInt(this.mangaList.length * (e/100))
 		if(page == 0) {
 			window.scrollTo(0, 0)
 			return
 		}
-		// console.log(this.$refs)
-		console.log('当前页数' + page)
 		// 获取对应图片
 		let ref = this.$refs['img' + page][0].$el;
-		console.log(ref)
-		top.a = ref
 		let height = this.getOffsetTopByBody(ref)
-		// let height = ref.clientHeight
-		// console.log(height)
+		// 计算后定位到目标高度
 		window.scrollTo(0, height)
-		// console.log(this.$refs['img' + page])
-		// 定位到滚动位置
 		
 	},
 	//进入页面获取是否收藏
@@ -300,7 +280,6 @@ export default {
 	        const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
 	            webInfoDetailDataId:this.$route.params.id
 	        })
-	        // console.log(res.data)
 	    this.collectionActive = res.data.data == '1' ? true : false;
 	    }
 	},
@@ -313,7 +292,6 @@ export default {
 	       if(res.data.data == '收藏成功'){
 	           this.collectionActive = true
 	       }else{
-	           // this.collectionActive = false
 	           this.$msg.fail(res.data.message)
 	       }
 	     } else {
@@ -336,13 +314,11 @@ export default {
 	},
 	// 切换漫画
 	changeManga(item){
-		console.log(item)
 		let pxh = item.pxh
 		this.$route.params.pxh = pxh;
 		this.value = 1;
 		scrollTo(0,0)
 		this.selectCategory();
-		// this.$route.params.pxh = pxh
 	},
 	showpopUp(){
 		this.bottom = !this.bottom
@@ -369,16 +345,12 @@ export default {
             },
 	// 修改配置方法
 	changeConfig(data){
-		// if(this.initStatus){
-		// 	return;
-		// }
 		// 配置存在，走修改
 		if(data.uId){
 			this.$http.post('/config/updateUserConfigValueById',{
 				configValue: data.configValue,
 				id:data.uId
 			}).then(res=>{
-				console.log(res)
 				if(res.data.code == 200){
 					this.mangaList = []
 					this.selectCategory()
@@ -387,21 +359,15 @@ export default {
 				}
 			})
 		} else {
-			// console.log('新增.....')
-			
 			// 配置不存在走新增
 			this.$http.post('/config/insertConfigValue',{
 				configId:data.id,
 				configName: data.configName,
 				configValue: data.configValue
 			}).then(res=>{
-				// console.log(res)
 				if(res.data.code == 200){
 					this.mangaList = []
 					this.selectCategory()
-					// 请求已配置数据,刷新配置信息
-					// this.queryConfigAll()
-					// this.setCurrentImage()
 				}else {
 					this.$msg.fail(res.data.message)
 				}
@@ -418,32 +384,34 @@ export default {
 				  this.actions[i].color = ''
 			  }
 		}
-		console.log(this.actions)
+	},
+	async initConfig(){
+		// 获取画质配置信息
+		const res = await this.$http.post('/config/queryConfigAll/',{
+				  id:1
+		})
+		this.imgQuality = res.data[0]
+	},
+	async initChapter(){
+		// 获取漫画章节数据
+		const res = await this.$http.post('/manga/queryMangaMenuByWebInfoDataId',{
+		  webInfoDataId:this.$route.params.id
+		})
+		this.chapterList = res.data.data
 	}
   },
   created() {
-      this.selectCategory();
+	  this.initConfig();
+	  this.initChapter();
+	  this.selectCategory();
 	  this.collectionInit();
-	  // 获取用户图片清晰度配置
-	  // this.$http.get('/user/getImageDefinition').then(res=>{
-		 //  this.imgQuality = res.data.data
-	  // })
-	  this.$http.post('/config/queryConfigAll/',{
-		  id:1
-	  }).then(res=>{
-		  // console.log(res)
-		  this.imgQuality = res.data[0]
-		  // console.log(this.imgQuality)
-		  // this.changeConfig(this.imgQuality)
-	  })
-	  
   },	
   mounted(){
 
   },
   watch:{
 	  imgShow(cur,bef){
-		  console.log(cur)
+		  // 打开图片清晰度,选中用户当前配置
 		  if(cur){
 			  this.setCurrentImage()
 		  }

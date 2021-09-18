@@ -29,6 +29,10 @@ Vue.use(loadingIndex);
 import '../public/static/css/iconfont.css'
 import utils from 'km-vue-utils'
 import { Lazyload } from 'vant';
+import { Dialog } from 'vant';
+
+// 全局注册
+Vue.use(Dialog);
 
 Vue.use(Lazyload);
 Vue.use(utils);
@@ -63,7 +67,7 @@ document.addEventListener('plusready', function(){
     },
     fail:function(){
       // alert('获取设备号失败')
-	  alert('加载错误,请联系薄荷七喜')
+	  alert('加载错误,请联系管理员')
     }
   })
 })
@@ -75,6 +79,8 @@ Vue.prototype.getUser = async  function(){
   }
   return null;
 }
+
+Vue.prototype.httpTimeout = 5000; // http接口超时时长
 
 Vue.prototype.windowWidth = screen.height // 获取用户屏幕高度
 

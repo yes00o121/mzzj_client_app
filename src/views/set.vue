@@ -14,29 +14,6 @@
 		    <van-radio name="2" @click="changeSort('2')">倒序</van-radio>
 			<van-radio name="3" @click="changeSort('3')">随机</van-radio>
 		  </van-radio-group>
-		<!-- <van-radio-group v-model="radio" style="text-align: initial;">
-		  <van-cell-group>
-		    <van-cell title="低" clickable @click="radio = '1'">
-		      <template #right-icon>
-		        <van-radio name="1" />
-		      </template>
-		    </van-cell>
-		    <van-cell title="中" clickable @click="radio = '2'">
-		      <template #right-icon>
-		        <van-radio name="2" />
-		      </template>
-		    </van-cell>
-			<van-cell title="高" clickable @click="radio = '3'">
-			  <template #right-icon>
-			    <van-radio name="3" />
-			  </template>
-			</van-cell>
-			<van-cell title="原画" clickable @click="radio = '4'">
-			  <template #right-icon>
-			    <van-radio name="4" />
-			  </template>
-			</van-cell>
-		  </van-cell-group> -->
 		</van-radio-group>
 		
 	</div>

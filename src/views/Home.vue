@@ -30,18 +30,21 @@
           </van-pull-refresh>
         </van-tab>
       </van-tabs>
-	  <shortvideo v-if="active == 1 && videoStatus"></shortvideo>
+	  <!-- <shortvideo v-if="active == 1 && videoStatus"></shortvideo>ss -->
     </div>
-	<div v-if="tabActive == 1" style="heihgt:800px">
+	<!-- <div v-if="tabActive == 1" style="heihgt:800px">
 		<video controls :src="'http://121.201.2.228:10824/video/person/香港美少女(HongKongDoll)/video/' + curVideo"></video>
 			  <div v-for="item in videoList">
 				  <van-button type="info" @click="curVideo = item">{{item}}</van-button>
 			  </div>
-	</div>
+	</div> -->
 	<keep-alive >
 	<userinfo v-if="tabActive == 3"></userinfo>
 	</keep-alive >
 	<dynamic v-if="tabActive == 2"></dynamic>
+	<keep-alive >
+		<hot v-if="tabActive == 1"></hot>
+	</keep-alive >
 	<van-tabbar
 	  v-model="tabActive"
 	  active-color="#07c160"
@@ -63,7 +66,8 @@ import NavBar from "@/components/common/Navbar.vue";
 import cover from "./cover";
 import dynamic from "./dynamic"
 import userinfo from './userinfo'
-import shortvideo from './video'
+// import shortvideo from './video'
+import hot from './hot'
 export default {
   data() {
     return {
@@ -112,7 +116,8 @@ export default {
     cover,
 	userinfo,
 	dynamic,
-	shortvideo
+	hot
+	// shortvideo
   },
   activated() {
     if(localStorage.getItem('newCat')) {
@@ -160,12 +165,12 @@ export default {
       if(localStorage.getItem('newCat')) {
         return
       }
-	  this.videoList = []
-	   const res1 = await this.$http.get("/webInfoDetailData/queryVideoRandom");
+	  // this.videoList = []
+	  //  const res1 = await this.$http.get("/webInfoDetailData/queryVideoRandom");
 	  		// console.log(res1)
-	  this.videoList = res1.data
-	  console.log(this.videoList)
-      const res = await this.$http.get("/webInfoDetailData/queryMenu");
+	  // this.videoList = res1.data
+	  // console.log(this.videoList)
+      const res = await this.$http.get("/webInfoDetailData/queryMenu",{timeout:this.httpTimeout});
       this.category = this.changeCategory(res.data.data);
       this.selectArticle();
     },
@@ -231,6 +236,7 @@ export default {
                     let categoryitem = this.categoryItem();
                     categoryitem.page = 1;
                     categoryitem.list = []
+					categoryitem.finished = false;
                     this.selectArticle();
                 }, 500);
             },
@@ -321,7 +327,13 @@ export default {
 	}
   },
   created() {
+	  this.$msg.loading({
+	    message: '加载中...',
+	    forbidClick: true,
+	    duration:0
+	  });
       this.selectCategory();
+	  this.$msg.clear()
   }
 };
 </script>

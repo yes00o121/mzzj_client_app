@@ -1,7 +1,7 @@
 <template>
 	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
-		<van-sticky  >
-			<van-cell style="z-index:2999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
+		<van-sticky >
+			<van-cell  style="z-index:2999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
 		</van-sticky>
   <div class="home" v-if="category" :style="'height:'+windowWidth+'px'">
 	<div style="position: relative;height:300px" >
@@ -370,5 +370,13 @@ input[type='button']:enabled:active, input[type='button'].mui-active:enabled, in
 	// border-color:black;
 	border-color:black;
 	background-color:white;
+}
+.van-cell__title{
+	-webkit-box-flex: 1;
+	-webkit-flex: 1;
+	flex: 1;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 </style>

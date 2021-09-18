@@ -64,7 +64,7 @@ export default {
 
 <style scoped lang="less">
 .NavBar{
-    height: 13.056vw;
+    // height: 13.056vw;
     display: flex;
     background-color: white;
     div:nth-child(1){

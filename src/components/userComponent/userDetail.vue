@@ -2,7 +2,7 @@
   <div class="userdetail">
     <div>
       <div class="user_img">
-        <img :src="baseURL + '/common/image?imgId=' + userInfo.icon" alt="" v-if="userInfo.icon"  >
+        <img :src="baseURL + '/common/image?imgId=' + userInfo.icon + '&token=' + token" alt="" v-if="userInfo.icon"  >
         <img src="@/assets/default_img.jpg" alt v-else  />
       </div>
       <div class="user_edit">
@@ -36,6 +36,11 @@
 <script>
 export default {
     props:['userInfo'],
+	data(){
+		return {
+			token: 'Bearer ' + localStorage.token, // 用户token
+		}
+	},
     methods:{
       changeUserImg(){
         this.$router.push('/upload')

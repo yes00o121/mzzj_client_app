@@ -47,13 +47,20 @@ export default {
 				this.$msg.fail('请输入账号!')
 				return
 			}
+			// 神秘代码，显示uuid
 			if(this.model.username == '漫宅之家'){
 				this.uuidShow = true
 				return
 			}
             let rulg = /^.{3,16}$/
             if(rulg.test(this.model.username)/*&&rulg.test(this.model.password)*/){
-                const res =  await this.$http.post('/admin/login',this.model,{timeout:5000})
+				this.$msg.loading({
+				  message: '登录中...',
+				  forbidClick: true,
+				  duration:0
+				});
+                const res =  await this.$http.post('/admin/login',this.model,{timeout:this.httpTimeout})
+				// this.$msg.clear()
                 if(res.data.code == 404 || res.data.code == 401){
 					this.$msg.fail(res.data.message)
 					return
