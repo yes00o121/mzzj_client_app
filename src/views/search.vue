@@ -111,7 +111,7 @@ export default {
 			const res = await this.$http.get('/search/queryUserSearch?limit=10')
 
 			this.searchList = res.data
-			console.log(this.searchList)
+			// console.log(this.searchList)
 		},
 		async onSearch(content) {
 			if(content && this.beforeSearch != content){
@@ -157,7 +157,7 @@ export default {
 	  },
 	  changeCategory(data) {
 	    const category1 = data.map((item, index) => {
-	      console.log(item)
+	      // console.log(item)
 	      item.list = [];
 	      item.page = 1;
 	      item.finished = false;
@@ -190,7 +190,7 @@ export default {
 					res.data.data.list[i].previewImg = '/common/image?imgId=' + res.data.data.list[i].person_photp
 					res.data.data.list[i].title = res.data.data.list[i].person_name
 				}
-				console.log(res)
+				// console.log(res)
 				categoryitem.list.push(...res.data.data.list);
 				categoryitem.loading = false;
 				if (res.data.length < categoryitem.pagesize) {
@@ -206,8 +206,8 @@ export default {
 				
 				categoryitem.list.push(...res.data.data.list);
 				categoryitem.loading = false;
-				console.log(res.data.data.list.length)
-				console.log(categoryitem.pagesize)
+				// console.log(res.data.data.list.length)
+				// console.log(categoryitem.pagesize)
 				if (res.data.data.list.length < categoryitem.pagesize) {
 					// console.log('没了。。。')
 				  categoryitem.loading = true;
@@ -230,7 +230,7 @@ export default {
 	          },
 	  onLoad() {
 	    const categoryitem = this.categoryItem();
-		  console.log(categoryitem)
+		  // console.log(categoryitem)
 		  if(categoryitem.list.length == 0){
 			  categoryitem.finished = true
 		  }

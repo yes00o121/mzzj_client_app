@@ -6,7 +6,8 @@
 	background: 'white',
 	display: 'flex',
 	justifyContent: 'center',
-	paddingTop: '300px'
+	paddingTop: '300px',
+	zIndex:'99999'
   }"
 >
   <van-loading size="24px" color="black">

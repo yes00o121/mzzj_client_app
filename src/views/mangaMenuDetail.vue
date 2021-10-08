@@ -3,11 +3,9 @@
 <!-- 				{{$route.params.pxh}}-----------------{{chapterList.length - 1}} -->
   <div class="home">
     <div class="categorytab">
-
-		<van-sticky v-show="bottom" style="position: absolute;width: 100%;">
-			<van-cell style="z-index:2999;background: black;color:white;opacity: 0.7;"  icon="arrow-left" :title="'第'+chapterList[this.$route.params.pxh - 1].title+'话'"  @click="$router.go(-1)"/>
+		<van-sticky v-show="bottom" style="position: absolute;width: 100%;z-index:9999">
+			<van-cell style="z-index:2999;background: black;color:white;opacity: 0.7;"  icon="arrow-left" :title="(chapterList[this.$route.params.pxh - 1] ? chapterList[this.$route.params.pxh - 1].title : '')"  @click="$router.go(-1)"/>
 		</van-sticky>
-
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
 		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"> </van-image>
           </van-pull-refresh>
@@ -77,6 +75,7 @@
 		  	    position="bottom"
 		  	    :style="{ height: '65%' }"
 		  		@open="changeChapter"
+				ref="chapterPanl"
 		  	  >
 			  <van-sticky :offset-top="chapterTopSize">
 				  <div style="font-size:14px;color:black;background:white;height:5%;z-index: 999;">
@@ -87,7 +86,6 @@
 							<van-col span="6">
 								全部章节({{chapterList.length}})
 							</van-col>
-					   
 						<!-- <van-col v-show="mangaMode == 1" span="3" offset="0" style="right:0;position: absolute;top:1rem" @click="changePage('next')">
 							<van-icon name="shrink" size="1.2rem" />
 						</van-col>
@@ -99,20 +97,22 @@
 				  </div>
 			  
 			</van-sticky>
-			 <div class="detailparent" ref="tab">
-						 <van-swipe-cell style="width:100%">
+			 <div class="detailparent" ref="tab" >
+						 <van-swipe-cell style="width:100%;" initial-swipe="20" :key="categoryitem.id" v-for="(categoryitem,categoryindex) in chapterList">
 						   <van-card
 						   lazy-load
 						   @click="changeManga(categoryitem)"
-						   v-for="(categoryitem,categoryindex) in chapterList"
+						   
 							 :title="categoryitem.title"
 							 class="goods-card"
 							 :thumb="baseURL + categoryitem.imgUrl +'&region=true&token=' + token"
-							 style="border-bottom: 1px solid #ebedf0;"
+							 :style="$route.params.pxh == categoryitem.pxh ? 'color:rgb(7, 193, 96);border-bottom: 1px solid #ebedf0;' : ';border-bottom: 1px solid #ebedf0;'"
 							 :desc="categoryitem.createtime | filterTime"
 						   />
 						 </van-swipe-cell>
+						 
 			  </div>
+			 
 		  </van-popup>
     </div>
   </div>
@@ -123,6 +123,7 @@
 export default {
   data() {
     return {
+		windowWidth:'0',// 距离顶部高度
 	   width:document.body.clientWidth,// 图片宽度
 	  value:0, // 漫画位置滑动值
 	  mangaList:[],// 漫画明细集合
@@ -328,7 +329,13 @@ export default {
       if(localStorage.getItem('newCat')) {
         return
       }
-	  this.showloading()
+	  this.$msg.loading({
+	    message: '加载中...',
+	  		duration:0,
+	    forbidClick: true,
+	    loadingType: 'spinner'
+	  });
+	  // this.showloading()
       // 查询漫画明细
       const res = await this.$http.post('/manga/queryMangaDetailMangaMenuId',{
         webInfoMangaDetailDataId:this.$route.params.id,
@@ -336,7 +343,8 @@ export default {
       })
 	  this.mangaList = res.data.data
 	  this.isLoading = false
-	  this.hideloading()
+	  // this.hideloading()
+	  this.$msg.clear()
     },
     onRefresh() {       //下拉刷新
                 setTimeout(() => {
@@ -380,6 +388,7 @@ export default {
 		for(let i =0;i<this.actions.length;i++){
 			  if(this.actions[i].value == this.imgQuality.configValue){
 				  this.actions[i].color = '#1989fa'
+				  this.bottom = false
 			  }else {
 				  this.actions[i].color = ''
 			  }
@@ -401,10 +410,12 @@ export default {
 	}
   },
   created() {
+	  
 	  this.initConfig();
 	  this.initChapter();
 	  this.selectCategory();
 	  this.collectionInit();
+
   },	
   mounted(){
 
@@ -420,6 +431,22 @@ export default {
 		// 当章节变成false时候,将底部菜单也一并关闭
 		 if(!bef){
 			 this.bottom = false
+		 }else {
+			 // 章节显示，定位到指定章节位置
+			 setTimeout(()=>{
+				 // 获取总高度
+				 let el = this.$refs['chapterPanl'].$el
+				 let totalHeight = el.scrollHeight
+				 // 总高度除以目录数,获取各个高度
+				 let singelHeight = totalHeight / this.chapterList.length 
+				 let curHeight = parseInt((this.$route.params.pxh - 1) * singelHeight) - 200
+			     if(curHeight < 0){
+					 curHeight = 0
+				 }
+				 this.slideTo(curHeight + '',this.$refs['chapterPanl'].$el)
+			 },50)
+
+			 top.a = this
 		 }
 	  },
 	  $route() {
@@ -515,13 +542,13 @@ input[type='button']:enabled:active, input[type='button'].mui-active:enabled, in
   }
 }
 .van-card__desc{
-bottom: 0;
+	bottom: 0;
     position: absolute;
 }
 .van-swipe-cell{
 	position: relative;
-	    overflow: hidden;
-	    background: white;
-	    cursor: grab;
+	overflow: hidden;
+	background: white;
+	cursor: grab;
 }
 </style>

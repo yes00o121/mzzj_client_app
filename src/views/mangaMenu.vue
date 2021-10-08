@@ -1,7 +1,7 @@
 <template>
 	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
 		<van-sticky >
-			<van-cell  style="z-index:2999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
+			<van-cell  style="z-index:99999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
 		</van-sticky>
   <div class="home" v-if="category" :style="'height:'+windowWidth+'px'">
 	<div style="position: relative;height:300px" >
@@ -17,7 +17,8 @@
 			</van-button>
 		</div>
 	</div>
-    <div class="categorytab">
+    <div class="categorytab" >
+	  <back-top :showHeight="300"></back-top>
       <van-tabs v-model="active" swipeable sticky animated>
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
@@ -55,6 +56,7 @@
 <script>
 import NavBar from "@/components/common/Navbar.vue";
 import cover from "./cover";
+import backTop from '@/components/backTop'
 export default {
   data() {
     return {
@@ -74,7 +76,8 @@ export default {
   },
   components: {
     NavBar,
-    cover
+    cover,
+	backTop
   },
   activated() {
     if(localStorage.getItem('newCat')) {
@@ -157,7 +160,12 @@ export default {
       if(localStorage.getItem('newCat')) {
         return
       }
-	  this.showloading()
+	  this.$msg.loading({
+	    message: '加载中...',
+	    forbidClick: true,
+	    loadingType: 'spinner'
+	  });
+	  // this.showloading()
 	  scroll(0,0)
       // 查询漫画基础信息
       const res = await this.$http.post('/webInfoDetailData/queryDetailDataByTypeId',{
@@ -204,8 +212,8 @@ export default {
 		  categoryitem.loading = true;
           categoryitem.finished = true;
         }
-		this.hideloading()
-
+		// this.hideloading()
+		this.$msg.clear()
     },
 	onSwipeLeft () {
 		// alert('页面右滑')
@@ -282,7 +290,6 @@ export default {
     }
   },
   created() {
-	  console.log('chongxin。。。。。。。。。。。')
 	  this.selectCategory();
 	  this.collectionInit()
 	  this.$nextTick(()=>{

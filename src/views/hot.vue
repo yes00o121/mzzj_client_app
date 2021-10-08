@@ -1,6 +1,5 @@
 <template>
   <div  v-if="category">
-	  	<nav-bar></nav-bar>
     <div class="categorytab">
       <van-tabs v-model="active" swipeable sticky animated >
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy >
@@ -385,4 +384,3 @@ export default {
 	bottom: 0;
 }
 </style>
-s

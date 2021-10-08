@@ -84,6 +84,30 @@ Vue.prototype.httpTimeout = 5000; // http接口超时时长
 
 Vue.prototype.windowWidth = screen.height // 获取用户屏幕高度
 
+// 跳转到指定y轴位置
+Vue.prototype.slideTo = function(targetPageY,el) {
+		  var timer = setInterval(function () {
+		      var currentY = !el ? (document.documentElement.scrollTop || document.body.scrollTop) : el.scrollTop;//当前及滑动中任意时刻位置
+			  // console.log(currentY)
+		      var distance = targetPageY > currentY ? targetPageY - currentY : currentY - targetPageY;//剩余距离
+		      var speed = Math.ceil(distance/10);//每时刻速度
+		      if (currentY == targetPageY) {
+		       clearInterval(timer);
+		      } else {
+				  if(!el){
+					window.scrollTo(0,targetPageY > currentY ? currentY + speed : currentY - speed);
+				  }else{
+					  el.scrollTo(0,targetPageY > currentY ? currentY + speed : currentY - speed)
+				  }
+
+		      }
+			  // 不管如何,1秒后关闭定时任务,避免出现不能滚动问题
+			  setTimeout(()=>{
+				  clearInterval(timer);
+			  },1000)
+		     },10);
+		 }
+
 // 页面横线展示
 Vue.prototype.transverse = ()=>{
 	plus.screen.lockOrientation( 'landscape-primary');

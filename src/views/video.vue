@@ -1,30 +1,129 @@
 <template>
 	<div class="searchWrap">
+		<!-- 查询按钮 -->
 		<van-icon name="search" size="24" color="white" style="position: absolute;
 		    top: 1rem;z-index:99999;
-		    right: 1rem;" @click="$router.push('/videosearch')"/>
+		    right: 1rem;" @click="toQuery"/>
+			<!-- 返回按钮 -->
+		<van-icon name="arrow-left" size="24" color="white" style="position: absolute;
+			top: 1rem;z-index:99999;
+			left: 1rem;" @click="returnPage"/>
 		<div class="play-list">
-	<scroll class="wrap"
-	  :style="VideoItemHeightStyle"
-	  ref="scroll"
-	  :probeType="3"
-	  :data="playList"
-	  :scrollEnd="true"
-	  :momentum="true"
-	  :listenScroll="true"
-	  @scroll="scroll"
-	  @scrollEnd="scrollEnd">
-	  <div>
-		<my-video v-for="(item, index) in playList"
-		  ref="videos"
-		  :key="item.id"
-			:index="index"
-		  @playVideo="playHandler"
-		  :VideoItem="item"
-		  @showCommentList="fetchCommentsAndShowList"></my-video>
-	  </div>
-	</scroll>
-	</div>
+			<scroll class="wrap"
+			  :style="VideoItemHeightStyle"
+			  ref="scroll"
+			  :probeType="3"
+			  :data="playList"
+			  :scrollEnd="true"
+			  :momentum="true"
+			  :listenScroll="true"
+			  @scroll="scroll"
+			  @scrollEnd="scrollEnd">
+			  <div>
+				<my-video v-for="(item, index) in playList"
+				  ref="videos"
+				  :key="item.id"
+					:index="index"
+				  @playVideo="playHandler"
+				  :VideoItem="item"
+				  @showCommentList="fetchCommentsAndShowList"></my-video>
+			  </div>
+			</scroll>
+			<!--留言弹窗-->
+			<van-popup v-model="commentPop"  closeable :overlay="true" class="comment_container" position="bottom">
+				<div class="comment_box">
+					<div class="comment_top">
+						{{commentNum}}条评论
+						<i class="iconfont icon-guanbi1 guanbi3" @click="closeComment"></i>
+					</div>
+					<ul class="comment_ul">
+						<div v-if="videoComment.length!=0">
+							<transition-group appear>
+								<li class="comment_li" v-for="(item,index) in videoComment" :key="index"
+									@click="replayUser(item,index,-1)">
+									<div class="comment_author_left">
+										<img :src="baseURL + '/common/image?imgId=' +item.avatar +'&token=' + token">
+									</div>
+									<div class="comment_author_right">
+										<div class="comment_author_top">
+											<div class="comment_author_name">@{{item.nickname}}</div>
+											<!-- <div class="icon-shoucang1_box" @click.stop="commentLove(item,index,-1)">
+												<div class="icon_right_change"
+													 :class="item.love_comment?'love_active':''">
+													<i class="iconfont icon-shoucang icon-shoucang1"></i>
+												</div>
+												<div class="shoucang1_num">{{item.love_count}}</div>
+											</div> -->
+										</div>
+										<div class="comment_author_text">
+											{{item.comment_content}}<span>{{item.create_time}}</span>
+										</div>
+									</div>
+									<div class="clear"></div>
+									<div class="comment_replay_box">
+										<transition-group appear>
+											<div class="comment_replay_li" v-for="(item2,index2) in item.child_comment"
+												 :key="index2" @click.stop="replayUser(item2,index,index2)">
+												<div class="comment_replay_left">
+													<img :src="baseURL + '/common/image?imgId=' + item2.avatar + '&token=' + token">
+												</div>
+												<div class="comment_replay_right">
+													<div class="comment_replay_top">
+														<div class="comment_replay_name">@{{item2.nickname}}</div>
+														<!-- <div class="icon-shoucang1_box"
+															 @click.stop="commentLove(item2,index,index2)">
+															<div class="icon_right_change"
+																 :class="item2.love_comment?'love_active':''">
+																<i class="iconfont icon-shoucang icon-shoucang1"></i>
+															</div>
+															<div class="shoucang1_num">{{item2.love_count}}</div>
+														</div> -->
+													</div>
+													<div class="comment_replay_text">
+														<!-- <span v-if="item.user_id!=item2.be_commented_user_id && item.user_id!=item2.user_id">回复 {{item2.be_commented_nickname}}：</span> -->
+														<span v-if="item.user_id!=item2.be_commented_user_id">回复 {{item2.be_commented_nickname}}：</span>
+														{{item2.comment_content}}
+														<span>{{item2.create_time}}</span></div>
+												</div>
+												<div class="clear"></div>
+											</div>
+										</transition-group>
+									</div>
+								</li>
+							</transition-group>
+						</div>
+						<div class="no_message" v-if="videoComment.length==0">
+							<i class="iconfont iconfont_style icon-zanwupinglun"></i>
+							<div class="no_message_tips">暂无评论</div>
+						</div>
+					</ul>
+				</div>
+			</van-popup>
+			<!--留言输入-->
+			<div class="comment_input_box_hover"></div>
+			<div class="comment_input_box" v-show="commentPop">
+				<!--<form action="#" class="comment_form">-->
+				<input :placeholder="commentPlaceholder" class="comment_input" v-model="comment_text" ref="content"
+					   @keyup.enter="checkComment"/>
+				<!--</form>-->
+				<div class="comment_input_right" @click="checkComment">
+					<i class="iconfont icon-fasong comment_i" :class="canSend?'comment_i_active':''"></i>
+				</div>
+			</div>
+			</div>
+			<!--底部操作栏-->
+			<div class="container_bottom" v-show="bottomShow">
+				<!-- <div class="border_progress" :style="'width:'+videoProcess+'%'"></div> -->
+				<div class="bottom_tab" :class="tabIndex==0?'tab_active':''" @click="changeTab(0)">
+					<span class="bottom_tab_span " @click="home">首页</span>
+				</div>
+				<div class="bottom_tab" :class="tabIndex==1?'tab_active':''" @click="changeTab(1)">
+					<img @click="message('暂未开放')" src="http://oss.jishiyoo.com/images/file-1575427746903.png" alt="" class="bottom_tab_icon">
+				</div>
+				<div class="bottom_tab" :class="tabIndex==2?'tab_active':''" @click="changeTab(2)">
+					<span @click="message('暂未开放')" class="bottom_tab_span">我的</span>
+				</div>
+			</div>
 	</div>
 </template>
 <script>
@@ -59,6 +158,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
         data() {
             let u = navigator.userAgent;
             return {
+				bottomShow:true, // 是否显示底部菜单
 				currentY: 0,
 				showCommentList: false,
 				commentNum: 0,
@@ -79,62 +179,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
                 current: 0,
 				playList:[],
 				curVideoTime:0, // 当前视频时长
-				// curCollNum:0,// 收藏数
-				// userColl:false, // 用户是否收藏
-				// videoList:[{
-				// 	url: 'http://video.jishiyoo.com/3720932b9b474f51a4cf79f245325118/913d4790b8f046bfa1c9a966cd75099f-8ef4af9b34003bd0bc0261cda372521f-ld.mp4',//视频源
-				// 						// url:'http://192.168.1.109:8090/video/1/UNGLqF__fOI0AXT.mp4',
-				// 						// url:'http://192.168.1.109:8090/video/1/SSIS-014.mp4',
-				// 	               // cover: 'http://oss.jishiyoo.com/images/file-1575341210559.png',//封面
-				// 	               tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',//作者头像
-				// 	               fabulous: false,//是否赞过
-				// 	               tagFollow: false,//是否关注过该作者
-				// 	               author_id: 1,//作者ID
-				// 	               author: '薄荷七喜',
-				// 	               des: ''
-				// }],
-     //            videoList: [{
-     //                url: 'http://video.jishiyoo.com/3720932b9b474f51a4cf79f245325118/913d4790b8f046bfa1c9a966cd75099f-8ef4af9b34003bd0bc0261cda372521f-ld.mp4',//视频源
-					// // url:'http://192.168.1.109:8090/video/1/UNGLqF__fOI0AXT.mp4',
-					// // url:'http://192.168.1.109:8090/video/1/SSIS-014.mp4',
-     //                // cover: 'http://oss.jishiyoo.com/images/file-1575341210559.png',//封面
-     //                tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',//作者头像
-     //                fabulous: false,//是否赞过
-     //                tagFollow: false,//是否关注过该作者
-     //                author_id: 1,//作者ID
-     //                author: '薄荷七喜',
-     //                des: ''
-     //            }, {
-     //                // url: 'http://video.jishiyoo.com/1eedc49bba7b4eaebe000e3721149807/d5ab221b92c74af8976bd3c1473bfbe2-4518fe288016ee98c8783733da0e2da4-ld.mp4',
-     //                url:'http://192.168.1.109:8090/video/1/Prav8L7sWqL3xtIE.mp4',
-					// // cover: 'http://oss.jishiyoo.com/images/file-1575343195934.jpg',
-     //                tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449298299M3V50.jpg',
-     //                fabulous: true,//是否赞过
-     //                tagFollow: false,//是否关注过该作者
-     //                author_id: 2,//作者ID
-     //                author: '薄荷七喜',
-     //                des: ''
-     //            }, {
-     //                // url: 'http://video.jishiyoo.com/161b9562c780479c95bbdec1a9fbebcc/8d63913b46634b069e13188b03073c09-d25c062412ee3c4a0758b1c48fc8c642-ld.mp4',
-     //                url:'http://192.168.1.109:8090/video/1/4y6wMHYYuk9Exw_c.mp4',
-					// // cover: 'http://oss.jishiyoo.com/images/file-1575343262684.jpg',
-     //                tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',
-     //                fabulous: false,//是否赞过
-     //                tagFollow: false,//是否关注过该作者
-     //                author_id: 1,//作者ID
-     //                author: '薄荷七喜',
-     //                des: ''
-     //            }, {
-     //                // url: 'http://video.jishiyoo.com/549ed372c9d14b029bfb0512ba879055/8e2dc540573d496cb0942273c4a4c78c-15844fe70971f715c01d57c0c6595f45-ld.mp4',
-					// url:'http://192.168.1.109:8090/video/1/6DLTIrJpMPCSzyJr.mp4',
-     //                // cover: 'http://oss.jishiyoo.com/images/file-1575343508574.jpg',
-     //                tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',
-     //                fabulous: false,//是否赞过
-     //                tagFollow: false,//是否关注过该作者
-     //                author_id: 1,//作者ID
-     //                author: '薄荷七喜',
-     //                des: ''
-     //            }],
+
                 isVideoShow: true,
                 // playOrPause: true,
 				playOrPause: true,
@@ -159,6 +204,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
             }
         },
 		created(){
+			
 			this.loadData()
 
 		},
@@ -169,15 +215,21 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 			// videoelement
 		},
         watch: {
-
             //监听输入变化
             comment_text(newV, oldV) {
                 newV == '' ? this.canSend = false : this.canSend = true
             },
 			commentPop(newV, oldV) {
-			    // console.log(newV)
 				if(!newV){
 					this.closeComment()
+					setTimeout(()=>{
+						this.bottomShow = true
+					},200)
+				}else{
+					
+						this.bottomShow = false
+					
+					
 				}
 			}
         },
@@ -209,28 +261,19 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 		  }
 		},
         mounted() {
-			   // this.noSleep()
-            // try{
-            //     wx.config({
-            //         debug: false,
-            //         appId: '111',
-            //         timestamp: '111',
-            //         nonceStr: '111',
-            //         signature: '111',
-            //         jsApiList: []
-            //     })
-            // }catch (e) {
-            //     console.log(e)
-            // }
-            //获取到视频资源后默认自动播放
-            // setTimeout(() => {
-            //     this.playvideo()
-            // }, 500)
-			// this.$nextTick(function () {
-			// 	this.playvideo()
-			// })
+
         },
         methods: {
+			toQuery(){
+				let index = this.currentY / this.clientHeight
+				this.$refs.videos[index].stopProcess()
+				this.$router.push('/videosearch')
+			},
+			returnPage(){
+				let index = this.currentY / this.clientHeight
+				this.$refs.videos[index].stopProcess()
+				this.$router.push('/home')
+			},
 			scroll (pos) {
 				// console.log(pos.y)
 			  if(this.currentHeight > 0){
@@ -242,7 +285,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 			    this.currentY = Math.ceil(absY / clientHeight) * clientHeight
 			    this.$refs.scroll.scrollTo(0, -this.currentY, 500)
 				// 向下
-				console.log(this.currentY)
+				// console.log(this.currentY)
 				this.changeVideo(1)
 			  } else if (absY < this.currentY - clientHeight / 2) {
 			    this.currentY = Math.floor(absY / clientHeight) * clientHeight
@@ -269,17 +312,18 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				let totalHeight  = -(this.clientHeight * (this.playList.length - 1)) // 总高度
 				if(pos.y == totalHeight){
 					top.a = this
-					console.log(this)
-					console.log('滑到最下面》。。。。。。。。。')
+					// console.log(this)
+					// console.log('滑到最下面》。。。。。。。。。')
 					this.pageNum = this.pageNum + 1
 					this.loadData()
 					// this.$parent.$children[0].queryData()
 				}
 				// 滑到最底下加载新数据
-				console.log(this.playList)
+				// console.log(this.playList)
 				if(this.currentHeight > 0){
 					this.$refs.scroll.scrollTo(0, -this.currentHeight)
 					this.currentHeight = 0
+					
 				}
 			
 			},
@@ -340,29 +384,28 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				// 暂停上个视频
 				if(type == 1){
 					this.$refs.videos[index -1 ].video.pause()
+					this.$refs.videos[index -1 ].video.removeAttribute('src');
 				}
 				// 暂停下个视频
 				if(type == 2){
 					this.$refs.videos[index + 1].video.pause()
+					this.$refs.videos[index + 1 ].video.removeAttribute('src');
 				}
 				// this.currentHeight = clientHeight * (index + 1)
 				this.$refs.videos[index].playStatus = true
 				this.$refs.videos[index].video.el().getElementsByTagName('video')[0].currentTime = 0
 				this.$refs.videos[index].video.play()
+				this.$refs.videos[index].loadCommentAndCollectionNum(); // 加载评论和收藏数
+				// 停止记录进度条，重新记录
+				this.$refs.videos[index].stopProcess()
+				this.$refs.videos[index].startProcess()
 			},
-			
-			
-			
-			
-			
-			
 			// 开始拖动,暂停播放
 			dragStart(e){
 				clearInterval(videoProcessInterval)
 				if(!this.iconPlayShow){
 					this.playvideo()
 				}
-
 				// console.log('开始拖动')
 			},
 			// 结束拖动
@@ -380,7 +423,6 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 			// 进度条变化,且结束时候触发,用于加载当前位置视频
 			dragChange(value){
 				// alert(value)
-
 				// let duration = document.querySelectorAll('video')[this.current].duration.toFixed(0);
 				let video = document.querySelectorAll('video')[this.current]
 				// console.log('拖动结束位置' + value)
@@ -427,11 +469,12 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 			},
 			// 点击首页,直接刷新页面
 			home(){
-				this.stopProcess()
-				this.$parent.videoStatus = false
-				this.$nextTick(()=>{
-					this.$parent.videoStatus = true
-				})
+				location.reload()
+				// this.stopProcess()
+				// this.$parent.videoStatus = false
+				// this.$nextTick(()=>{
+				// 	this.$parent.videoStatus = true
+				// })
 				// this.$router.go(0)
 				// clearInterval(videoProcessInterval)
 				// this.stopProcess()
@@ -487,14 +530,15 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 					}
 				}
 				this.videoList[this.current].collNum = res.data.collectionNum
-				console.log(this.videoList[this.current])
+				// console.log(this.videoList[this.current])
 			},
 			async loadData(fun){
 				this.$msg.loading({
 				  message: '加载中...',
 				  forbidClick: true,
-				  duration:0
+				  loadingType: 'spinner'
 				});
+				
 				// this.showloading()
 				const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
 				  // typeId: categoryitem.CODE_VALUE,
@@ -506,204 +550,68 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				})
 				// console.log(res)
 				// // 追加数据
-				// if(res.data.data.list.length == 0) {
-				// 	this.$msg.fail('没有更多了...')
-				// 	return;
-				// }
+				if(res.data.data.list.length == 0) {
+					this.$msg.fail('没有更多了...')
+					return;
+				}
 				this.playList = this.playList.concat(res.data.data.list)
 				this.$msg.clear()
-				// // let tempList = []
-				// for(let i =0;i<res.data.data.list.length;i++){
-				// 	// 判断数据类型,如果是m3u8获取m3u8的请求地址
-				// 	if(res.data.data.list[i].videoType == 'm3u8'){
-				// 		let nextAddress = res.data.data.list[i].nextAddress
-				// 		nextAddress = nextAddress.split('_-')[1]
-				// 		// console.log(this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress)
-				// 		this.videoList.push({
-				// 			url: this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress,
-				// 			tag_image: this.baseURL + '/common/image?imgId=6103eed9f1a2480958525955',  // 默认使用tom猫
-				// 			fabulous:false,
-				// 			tagFollow:false,
-				// 			previewImg: this.baseURL + res.data.data.list[i].previewImg,
-				// 			author_id:1,
-				// 			videoType:res.data.data.list[i].videoType,
-				// 			id:res.data.data.list[i].id,
-				// 			isFavorite:false,
-				// 			author: '薄荷七喜',
-				// 			collNum:0,
-				// 			des: res.data.data.list[i].title,
-				// 			length: res.data.data.list[i].videoLength
-				// 		})
-				// 	} else {
-				// 		this.videoList.push({
-				// 			url: this.baseURL + res.data.data.list[i].nextAddress,
-				// 			tag_image: this.baseURL + '/common/image?imgId=6103eed9f1a2480958525955',  // 默认使用tom猫
-				// 			fabulous:false,
-				// 			previewImg: this.baseURL + res.data.data.list[i].previewImg,
-				// 			tagFollow:false,
-				// 			videoType:res.data.data.list[i].videoType,
-				// 			author_id:1,
-				// 			id:res.data.data.list[i].id,
-				// 			isFavorite:false,
-				// 			author: '薄荷七喜',
-				// 			collNum:0,
-				// 			des: res.data.data.list[i].title,
-				// 		    des : '',
-				// 			length: res.data.data.list[i].videoLength
-				// 		})
-				// 	}
-				// }
-				// // this.videoList.push({
-				// // 			url: 'http://hls01open.ys7.com/openlive/7d917f9f76554a879ad498449d497db6.m3u8',
-				// // 			tag_image: this.baseURL + '/common/image?imgId=6103eed9f1a2480958525955',  // 默认使用tom猫
-				// // 			fabulous:false,
-				// // 			tagFollow:false,
-				// // 			author_id:1,
-				// // 			videoType:'m3u8',
-				// // 			id:1,
-				// // 			isFavorite:false,
-				// // 			author: '薄荷七喜',
-				// // 			// des: res.data.data.list[i].title
-				// // 		    des : ''
-				// // 		})
+				// 把之前页的视频都清了,减少内存
+				if(this.pageNum > 1){
+					// let index = this.currentY / clientHeight
+					let index = this.playList.length - this.pageNum - 3
+					for(let i=0;i<index;i++){
+						// console.log(i)
+						// console.log(this.$refs.videos[i].video.el())
+						// this.$refs.videos[i].video.dispose()
+					}
 
-				// // this.videoList.push(...tempList)
-				// this.pageNum = this.pageNum + 1;
-
-				// if(this.current > 0 ){
-				// 	// alert('da.................')
-				// 	// console.log(this.videoList.length)
-				// 	// console.log(this.current)
-				// 	if(this.videoList.length - 1 > this.current){
-				// 		fun(this.current + 1)
-				// 		// this.current += 1
-				// 		// alert('滑动一下...')
-				// 		// 加载成功,乡下滑动一个
-				// 		// 切换到指定位置
-				// 		// this.$refs.swipe.swipeTo(this.current);
-				// 		// this.$refs.swipe.next()
-				// 		// this.$refs.swipe.resize() // 重绘
-				// 	} else {
-				// 		// 加资失败,请提示重新加资
-				// 		this.$msg.fail('加载失败,请重试')
-				// 	}
-				// }
-				// this.hideloading()
-				// // 播放视频
-				// this.$nextTick(()=>{
-				// 	this.playvideo()
-				// })
-
-				// // this.videoList = this.videoList.concat(tempList)
-				// // console.log('当前位置......' + this.current)
-				// // 隐藏显示加载中,加载后在显示回来
-				// // this.$refs.swipe.swipeTo(this.current,{
-				// // 	immediate: true
-				// // })
-				// // this.$refs.swipe.swipeTo(this.currents);
-				// // setTimeout(()=>{
-				// // 	this.$refs.swipe.swipeTo(this.current,false)
-				// 	// this.hideloading()
-				// // },500)
-				// // console.log(this.videoList)
-				// // console.log(index)
-				// // this.videoList.push({
-				// // 	url: 'http://video.jishiyoo.com/161b9562c780479c95bbdec1a9fbebcc/8d63913b46634b069e13188b03073c09-d25c062412ee3c4a0758b1c48fc8c642-ld.mp4',
-				// // 	               // url:'http://192.168.1.109:8090/video/1/4y6wMHYYuk9Exw_c.mp4',
-				// // 						// cover: 'http://oss.jishiyoo.com/images/file-1575343262684.jpg',
-				// // 	               tag_image: 'http://npjy.oss-cn-beijing.aliyuncs.com/images/file-1575449277018pF3XL.jpg',
-				// // 	               fabulous: false,//是否赞过
-				// // 	               tagFollow: false,//是否关注过该作者
-				// // 	               author_id: 1,//作者ID
-				// // 	               author: '薄荷七喜',
-				// // 	               des: ''
-				// // })
-
+				}
 
 			},
 			onSwipeLeft (a) {
+				console.log('左滑.....')
+				console.log(a)
 				// table + 1
 				// console.log(this.$parent.category.length)
-				if(this.$parent.category.length ==  this.$parent.active + 1){
-					return;
-				}
-				this.stopProcess()
-				// clearInterval(videoProcessInterval)
-				this.$parent.active += 1
-				this.$destroy()
+				// if(this.$parent.category.length ==  this.$parent.active + 1){
+				// 	return;
+				// }
+				// this.stopProcess()
+				// // clearInterval(videoProcessInterval)
+				// this.$parent.active += 1
+				// this.$destroy()
 			},
 			onSwipeRight(a){
-				if(this.$parent.active == 0){
-					return;
-				}
-				// clearInterval(videoProcessInterval)
-				this.stopProcess()
-				this.$parent.active -= 1
-				this.$destroy()
+				console.log('右滑')
+				console.log(a)
+				// if(this.$parent.active == 0){
+				// 	return;
+				// }
+				// // clearInterval(videoProcessInterval)
+				// this.stopProcess()
+				// this.$parent.active -= 1
+				// this.$destroy()
 				// console.log(a)
 			},
             //获取评论
-            async getComment() {
+            async getComment(video) {
                 //setTimeout模拟Ajax请求
                 // setTimeout(() => {
 					// 获取评论数据
-					const res = await this.$http.get("/comment/queryComment?work_id=" + this.videoList[this.current].id)
+					const res = await this.$http.get("/comment/queryComment?work_id=" + video.id)
 					// const res = await this.$http.get("/comment/queryComment?work_id=4853011")
 					// console.log(res)
 					let data = res.data.data
 					this.commentNum = data.length
-					// 循环处理数据
-					// for()
-                    // let data = [{
-                    //     "comment_id": 297,
-                    //     "p_id": 0,
-                    //     "comment_content": "你好，我叫ben",
-                    //     "love_count": 0,
-                    //     "create_time": "1月前",
-                    //     "user_id": 78634,
-                    //     "nickname": "薄荷七喜\uD83C\uDF1F",
-                    //     "avatar": "https://img1.baidu.com/it/u=2972028612,430721560&fm=26&fmt=auto&gp=0.jpg",
-                    //     "be_commented_user_id": 0,
-                    //     "be_commented_nickname": "",
-                    //     "be_commented_avatar": "",
-                    //     "child_comment": [{
-                    //         "comment_id": 298,
-                    //         "p_id": 296,
-                    //         "comment_content": "oh yeah thank sir,coming you!!!",
-                    //         "love_count": 1,
-                    //         "create_time": "7天前",
-                    //         "user_id": 55163,
-                    //         "nickname": "比利",
-                    //         "avatar": "https://img2.baidu.com/it/u=1551085455,669562283&fm=26&fmt=auto&gp=0.jpg",
-                    //         "be_commented_user_id": 78480,
-                    //         "be_commented_nickname": "chenchen",
-                    //         "be_commented_avatar": "http://thirdwx.qlogo.cn/mmopen/vi_32/icxHc0Ym1p4hQAFAUnjpxDPMkEUyojnibBj9wUSS2OmibiazdBAicSLpoicricVYP6QG6XicjTzQPx9koMPqcGfhTOy5qA/132",
-                    //         "love_comment": true
-                    //     },],
-                    //     "love_comment": false
-                    // }, {
-                    //     "comment_id": 281,
-                    //     "p_id": 0,
-                    //     "comment_content": "fuck you！！",
-                    //     "love_count": 0,
-                    //     "create_time": "1月前",
-                    //     "user_id": 74164,
-                    //     "nickname": "比利",
-                    //     "avatar": "https://img2.baidu.com/it/u=246367135,466135651&fm=26&fmt=auto&gp=0.jpg",
-                    //     "be_commented_user_id": 0,
-                    //     "be_commented_nickname": "",
-                    //     "be_commented_avatar": "",
-                    //     "child_comment": [],
-                    //     "love_comment": false
-                    // }];
 					//获取评论数据
-                    // this.videoComment = [...this.videoComment, ...data];
+					  // this.videoComment = [...this.videoComment, ...data];
 					this.videoComment = [ ...data];
-                    let to_comment_id = this.to_comment_id;
-                    if (to_comment_id != 0) {
-                        //从评论列表进来回复
-                        this.getCommentDetail(to_comment_id);
-                    }
+					  let to_comment_id = this.to_comment_id;
+					  if (to_comment_id != 0) {
+						  //从评论列表进来回复
+						  this.getCommentDetail(to_comment_id);
+					  }
                 // }, 500)
             },
             //获取单个评论
@@ -762,7 +670,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 					content:content,
 					parentId:p_id
 				})
-				console.log(res.data)
+				// console.log(res.data)
 				if(res.data.data == '评论成功'){
 					this.replayUserData = '';
 					this.isSending = false;
@@ -774,36 +682,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				}else {
 					this.$msg.fail(res.data.data)
 				}
-                // setTimeout(() => {
-                //     let newData = {
-                //         "comment_id": comment_id,
-                //         "p_id": p_id,
-                //         "comment_content": content,
-                //         "love_count": 0,
-                //         "create_time": "刚刚",
-                //         "user_id": p_user_id,
-                //         "nickname": "游客",//当前用户
-                //         "avatar": 'https://profile.csdnimg.cn/B/1/E/3_ridingfish',//当前用户头像
-                //         "be_commented_user_id": this.replayUserData.user_id,
-                //         "be_commented_nickname": this.replayUserData.nickname,
-                //     }
-                //     if (this.replayUserData == '') {
-                //         //回复作品
-                //         this.videoComment.splice(0, 0, newData)
-                //     } else {
-                //         let index = this.replayUserData.index;
-                //         let index2 = this.replayUserData.index2;
-                //         if (this.replayUserData.index2 == -1) {
-                //             //回复一级人
-                //             this.videoComment[index].child_comment.splice(0, 0, newData)
-                //         } else {
-                //             //回复二级人
-                //             this.videoComment[index].child_comment.splice(index2, 0, newData)
-                //         }
-                //     }
-                //     this.replayUserData = '';
-                //     this.isSending = false;
-                // }, 500)
+
             },
             //评论点赞
             commentLove(item, index, index2) {
@@ -888,96 +767,6 @@ import MyVideo from '@/components/MyVideo/MyVideo'
             cancelShare() {
                 this.showShareBox = false
             },
-            //滑动改变播放的视频
-            onChange(index) {
-				console.log('滑动位置.......' + index)
-				let video = document.querySelectorAll('video')[this.current];
-				// 判断视频类型加载不同
-				let videoType = video.getAttribute('videoType')
-				this.pauseVideo() // 暂停之前视频
-
-				if(videoType == 'm3u8'){
-					// clearInterval(videoProcessInterval)
-					this.stopProcess()
-					// 每次刷新index会被重置,当current不是0说明以加载一些数据,手动+1后定位过去
-					this.current = index;
-					// 向上滑动判断是否视频已经加载到最后,加载到最后加载新视频数据，然后滑动组件向下一个
-					if(this.videoList.length - 1 == this.current){
-						// 提示加载数据
-						this.loadData(function(){
-							index
-						})
-						return;
-					}
-					// this.current = index;
-					let obj = this.videoList[this.current].vObj
-					if(obj){
-						// console.log('存在操作.....')
-						this.playOrPause = true;
-						this.showShareBox = false;
-						obj.play()
-					}else {
-						this.playOrPause = true;
-						this.showShareBox = false;
-						// this.isVideoShow = false;
-						// console.log('不存在，进行添加.....')
-						let curVideo = document.querySelectorAll('video')[this.current];
-						let vdoSrc= curVideo.getAttribute('playUrl')
-						// console.log(vdoSrc)
-						// console.log(this.$refs.videoPlayer[this.current])
-						let myVideo = this.$video(
-						          this.$refs.videoPlayer[this.current],
-						          // this.options,
-								  {
-									  // autoplay: 'muted',//自动播放
-
-									  loop:true,
-									  controls: false,//用户可以与之交互的控件
-								  },
-						          function onPlayerReady() {
-										this.on("progress",function(){
-											// 5
-											// console.log("正在请求数据 ");
-											this.el_.getElementsByTagName('span')[0].innerText = ''
-										})
-								  }
-						        );
-						myVideo.src({
-						  src:vdoSrc,
-						  type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
-						})
-						myVideo.play()
-						this.videoList[this.current].vObj = myVideo
-						this.loadCollection()
-						this.loadCommentAndCollectionNum()
-					}
-					// 重新计时
-					this.startProcess()
-
-				} else {
-					//改变的时候 暂停当前播放的视频
-					// clearInterval(videoProcessInterval)
-					this.stopProcess()
-					setTimeout(() => {
-						this.pauseVideo() // 暂停之前视频
-					}, 100)
-					video.pause();
-					this.playOrPause = false;
-					this.showShareBox = false;
-					this.current = index;
-					this.isVideoShow = false;
-					// this.playvideo();// 播放当前视频
-
-					setTimeout(() => {
-						this.pauseVideo()
-					}, 100)
-				}
-
-				this.iconPlayShow = false;
-				// this.playOrPause = false;
-				// this.isVideoShow = false;
-
-            },
 			// 获取评论收藏数量
 			async loadCommentAndCollectionNum(){
 				// const res = await this.$http.get('/comment/queryCommentNumByWorkId?workId=4853011')
@@ -1008,186 +797,8 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 					video.style.paddingTop = height + 'px'
 				}
 
-			},
-            // 开始播放
-            playvideo(event) {
-				// 判断视频类型,如果m3u8和mp4加载不同
-                let video = document.querySelectorAll('video')[this.current];
-				// console.log(video)
-				let videoType = video.getAttribute('videoType')
-				if(videoType == 'm3u8'){
-
-					let vObj = this.videoList[this.current].vObj
-					if(this.videoList[this.current].vObj){
-						if (this.playOrPause) {
-							// console.log('开始......')
-							this.iconPlayShow = true;
-							// this.isVideoShow = true
-							vObj.pause()
-
-						} else {
-							// console.log('取消')
-							this.iconPlayShow = false;
-							// this.isVideoShow = true
-							vObj.play()
-						}
-						this.playOrPause = !this.playOrPause;
-						this.showShareBox = false;
-
-					}else{
-						let _this = this;
-						let vdoSrc= video.getAttribute('playUrl')
-						let myVideo = this.$video(
-						          this.$refs.videoPlayer[this.current],
-								  {
-									  // poster:this.baseURL + this.videoList[this.current].previewImg,
-									  // autoplay: 'muted',//自动播放
-									  loop:true,
-									  controls: false
-								  },
-						          function onPlayerReady() {
-										this.on("progress",function(){
-											// 5
-											// console.log("正在请求数据 ");
-											this.el_.getElementsByTagName('span')[0].innerText = ''
-										})
-								  }
-						        );
-						myVideo.src({
-						  src:vdoSrc,
-						  type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
-						})
-						myVideo.play()
-						this.videoList[this.current].vObj = myVideo
-						this.iconPlayShow = false;
-						this.isVideoShow = true;
-						// 加载收藏
-						this.loadCollection()
-						// 加载收藏数量
-						this.loadCommentAndCollectionNum()
-						this.startProcess()
-
-						// myVideo.play()
-						// this.videoList[this.current].vObj = myVideo
-						// this.iconPlayShow = false;
-						// this.isVideoShow = true;
-						// // 加载收藏
-						// this.loadCollection()
-						// // 加载收藏数量
-						// this.loadCommentAndCollectionNum()
-						// this.startProcess()
-					}
-
-
-				}else {
-					this.isVideoShow = false;
-					this.iconPlayShow = false;
-					this.showShareBox = false;
-					video.play();
-					this.startProcess()
-				}
-            },
-			// 开始计时
-			startProcess(){
-				this.maxVideoProcess = this.videoList[this.current].length // 记录当前视频长度
-				videoProcessInterval = setInterval(() => {
-					// video.style.visibility = 'visible'
-					let video = document.querySelectorAll('video')[this.current];
-				    this.changeProcess(video)
-				}, 100)
-			},
-			// 停止计时
-			stopProcess(){
-				// 视频时间重置
-				let video = document.querySelectorAll('video')[this.current];
-				video.currentTime = 0;
-				this.videoProcess = 0
-				clearInterval(videoProcessInterval)
-			},
-            pauseVideo() { //暂停\播放
-
-                try {
-                    let video = document.querySelectorAll('video')[this.current];
-					let videoType = video.getAttribute('videoType')
-                    // console.log("pauseVideo" + this.current);
-					if(videoType == 'm3u8'){
-						// console.log('暂停了.....m3u8')
-						let vObj = this.videoList[this.current]
-						if(this.playOrPause){
-							video.pause();
-							this.iconPlayShow = true;
-							// clearInterval(videoProcessInterval)
-							this.stopProcess()
-
-						}else {
-							video.play();
-							video.pause();
-							this.playOrPause = !this.playOrPause;
-							this.showShareBox = false;
-							setTimeout(() => {
-							    this.iconPlayShow = false;
-								this.startProcess()
-							}, 100)
-						}
-					} else {
-						if (this.playOrPause) {
-						    video.pause();
-						    this.iconPlayShow = true;
-						    // clearInterval(videoProcessInterval)
-							this.stopProcess()
-						} else {
-							// console.log('取消暂停。。。。')
-						    // wx.ready(() => {
-						    //     // 在微信的ready中进行播放 不管成功配置与否 都会执行ready
-						    //     video.play();
-						    // })
-						    video.play();
-						    video.pause();
-						    setTimeout(() => {
-						        video.play();
-						        this.iconPlayShow = false;
-						        // videoProcessInterval = setInterval(() => {
-						        //     this.changeProcess(video)
-						        // }, 100)
-								this.startProcess()
-						    }, 100)
-						}
-						this.playOrPause = !this.playOrPause;
-						this.showShareBox = false;
-					}
-
-                } catch (e) {
-                    // alert(e)
-                }
-            },
-            //记录播放进度
-            changeProcess() {
-				// console.log('记录播放。。。。')
-                let video = document.querySelectorAll('video')[this.current];
-                let currentTime = video.currentTime.toFixed(1);
-                let duration = video.duration.toFixed(1);
-                this.videoProcess = parseInt((currentTime / duration).toFixed(2) * 100)
-            },
-			oncanplay(){
-				// console.log('视频开始播放。。。。。。')
-				// this.playStatus = false
-			},
-            onPlayerEnded(player) { //视频结束
-
-                this.isVideoShow = true
-                this.current += this.current
-            },
-            //复制当前链接
-            copyUrl() {
-                let httpUrl = window.location.href;
-                var oInput = document.createElement('input');
-                oInput.value = httpUrl;
-                document.body.appendChild(oInput);
-                oInput.select(); // 选择对象
-                document.execCommand("Copy"); // 执行浏览器复制命令
-                oInput.className = 'oInput';
-                oInput.style.display = 'none';
-            }
+			}
+			
         }
     }
 </script>
@@ -1948,7 +1559,7 @@ body
   background black
   .play-list
     position fixed
-    z-index 9999
+    z-index 1500
     top 0
     left 0
     right 0
@@ -1982,4 +1593,831 @@ body
     top 84px
     bottom 0
     width 100%
+
+body{
+		width:100%;
+	}
+	.vjs-loading-spinner:after {
+	    content: none;
+	}
+    .clear {
+        clear: both;
+    }
+
+    .back_i {
+        position: fixed;
+        top: 20px;
+        left: 10px;
+        width: 28px;
+        z-index: 10;
+    }
+
+
+    .video-player {
+        height: 100vh;
+        width: 100vw;
+    }
+
+    .product_swiper {
+        width: 100vw;
+        height: 100vh;
+		position:relative;
+    }
+
+    .van_swipe {
+        width: 100vw;
+        height: 100vh;
+        /* max-width: 550px; */
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .van-swipe {
+        width: 100%;
+        height: 98%;
+    }
+
+    .container_box {
+        /* width: 100vw; */
+		width:100%;
+        height: 100vh;
+        background: #000;
+    }
+
+    .video_box {
+        /*object-fit: fill !important;*/
+        /*z-index: 999;*/
+		height:100%;
+        width: 100%;
+    }
+
+    video {
+        /* object-position: 0 0; */
+		/* height:100%; */
+		/* width:100%;	 */
+		/* margin-top: 73%; */
+		/* position: absolute;
+		transform: translate(-50%, -50%);
+		top: 50%;
+		bottom: 50%; */
+		position: absolute;
+		height: 100%;
+		width: 100%;
+		left: 0;
+    }
+
+    .icon_play {
+        position: absolute;
+        top: 44%;
+        right: 0;
+        left: 0;
+        bottom: auto;
+        margin: auto;
+        z-index: 999;
+        height: 60px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+    }
+
+    .play,
+    .platStart {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        width: 100%;
+        height: 100%;
+    }
+
+    /*头像， 点赞，转发 */
+    .tag_image {
+        width: 50px;
+        height: 50px;
+        border: 1px solid #fff;
+        box-sizing: border-box;
+        border-radius: 50%;
+        margin-bottom: 20px;
+        position: relative;
+        box-shadow: 0px 0px 10px #9d9d9d;
+    }
+
+    .tag_add {
+        position: absolute;
+        bottom: 12px;
+        left: 0;
+        right: 0;
+        border-radius: 67px;
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        margin: 0 auto;
+        z-index: 1;
+        font-size: 20px;
+        color: #f44;
+        background: #fff;
+    }
+
+    .tag_dui {
+        position: absolute;
+        bottom: 12px;
+        left: 0;
+        right: 0;
+        border-radius: 67px;
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        margin: 0 auto;
+        z-index: 1;
+        font-size: 11px;
+        color: #f44;
+        background: #fff;
+    }
+
+    .tag_dui_active {
+        opacity: 0;
+        animation: showFollow 1.4s ease-in-out 0s;
+    }
+
+    .tag_add_num {
+        position: absolute;
+        bottom: 0px;
+        left: 0;
+        right: 0;
+    }
+
+    @keyframes showFollow {
+        0% {
+            opacity: 1;
+            color: #fff;
+            background: #F44;
+            transform: rotate(-180deg) scale(1);
+        }
+        35% {
+            opacity: 1;
+            color: #f44;
+            background: #fff;
+            transform: rotate(0deg) scale(1.2);
+        }
+        80% {
+            opacity: 1;
+            color: #f44;
+            transform: scale(1.2);
+        }
+        100% {
+            opacity: 0;
+            display: none;
+            color: #f44;
+            transform: scale(0);
+        }
+    }
+
+    .tools_right {
+        z-index: 1001;
+        position: absolute;
+        right: 16px;
+        bottom: 180px
+    }
+
+    .tools_r_li {
+        margin-bottom: 20px;
+        color: #fff;
+        font-size: 14px;
+        position: relative;
+    }
+
+    .tools_r_li:last-child {
+        margin-bottom: 0px;
+    }
+
+    .icon_right {
+        margin-bottom: 5px;
+        font-size: 42px;
+        display: block;
+        text-shadow: 0px 0px 10px #9d9d9d;
+        /*transition: .5s;*/
+    }
+
+    .production_box {
+        z-index: 1001;
+        position: absolute;
+        /* right: 16px; */
+        bottom: 48px;
+        text-align: left;
+        padding: 0 15px 15px 15px;
+        color: #fff;
+        width: 100%;
+        left: 0;
+        box-sizing: border-box;
+        background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0));
+        /* Safari 5.1 - 6.0 */
+        background: -o-linear-gradient(top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0));
+        /* Opera 11.1 - 12.0 */
+        background: -moz-linear-gradient(top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0));
+        /* Firefox 3.6 - 15 */
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0));
+        /* 标准的语法 */
+    }
+
+    .production_name {
+        font-weight: 700;
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .production_des {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        min-height: 40px;
+        font-size: 13px;
+
+    }
+
+	.production_length {
+	    overflow: hidden;
+	    text-overflow: ellipsis;
+	    display: -webkit-box;
+	    -webkit-line-clamp: 3;
+	    -webkit-box-orient: vertical;
+	    /* min-height: 62px; */
+	    font-size: 14px;
+		float: right;
+	}
+
+    .container_bottom {
+		z-index:2001;
+		/* z-index:200; */
+		/* padding-bottom:5%; */
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        height: 48px;
+        /*border-top: 1px solid rgba(255, 255, 255, 0.7);*/
+        /* max-width: 550px; */
+    }
+
+    .production_top {
+        display: inline-block;
+        padding: 6px;
+        margin-bottom: 5px;
+        background: rgba(0, 0, 0, .3);
+        border-radius: 6px;
+        margin-top: 5px;
+    }
+
+    .product_go {
+        color: #fbdd21;
+    }
+
+    .production_title {
+        margin-left: 4px;
+    }
+
+    .border_progress {
+        width: 0;
+        height: 1px;
+        background: #bababa;
+        position: absolute;
+        top: 0;
+        transition: .1s all;
+    }
+
+    .bottom_tab {
+        width: 33%;
+        text-align: center;
+        float: left;
+        color: #c9c9c9;
+        padding: 10px 0;
+    }
+
+    .bottom_tab_icon {
+        width: 44px;
+    }
+
+    .bottom_tab_span {
+        line-height: 28px;
+        border-bottom: 2px solid transparent;
+        font-weight: 600;
+        font-size: 16px;
+        display: inline-block;
+        padding: 0 4px;
+        transition: .5s all;
+    }
+
+    .tab_active .bottom_tab_span {
+        border-bottom: 2px solid #fff;
+        color: #fff;
+    }
+
+    .icon-shoucang {
+        transition: .5s all;
+    }
+
+    .fabulous_active {
+        color: #f44;
+        animation: showHeart .5s ease-in-out 0s;
+    }
+
+    /*animation-name：用来调用@keyframes定义好的动画，与@keyframes定义的动画名称一致*/
+    /*animation-duration ：指定元素播放动画所持续的时间*/
+    /*animatino-timing-function ： 和transition中的transition-timing-function 中的值一样。根据上面@keframes中分析的animation中可能存在多个小动画，因此这里的值设置是针对每一个小动画所在时间范围内的属性变换速率。*/
+    /*animation-delay：定义在浏览器开始执行动画之前等待的时间，这里是指整个animation执行之前的等待时间，而不是上面说的多个小动画*/
+    /*animation-iteration-count：定义动画的播放次数，其通常为整数，默认是1,；取值为infinite，动画将无限次的播放。*/
+    /*animation-direction：主要用来设置动画播放方向*/
+    @keyframes showHeart {
+        0% {
+            color: #f44;
+            transform: scale(1);
+        }
+
+        25% {
+            color: #fff;
+            transform: scale(0);
+        }
+
+        80% {
+            color: #f44;
+            transform: scale(1.2);
+        }
+
+        100% {
+            color: #f44;
+            transform: scale(1);
+        }
+    }
+
+    /*分享样式*/
+    .share_hover {
+        position: fixed;
+        display: none;
+
+    }
+
+    .share_box {
+        position: fixed;
+        bottom: -300px;
+        width: 100%;
+        z-index: 1002;
+        background: #fff;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        transition: .5s;
+    }
+
+    .share_tips {
+        text-align: center;
+        line-height: 38px;
+        color: #333;
+    }
+
+    .share_ul {
+        box-sizing: border-box;
+        padding: 0 25px 25px;
+        border-bottom: 1px solid #e8e8e8;
+    }
+
+    .share_li {
+        float: left;
+        width: 33%;
+        text-align: center;
+    }
+
+    .share_li i {
+        font-size: 44px;
+    }
+
+    .share_cancel {
+        text-align: center;
+        line-height: 48px;
+        color: #777;
+        text-align: center;
+    }
+
+    .pengyouquan {
+        color: #47D000;
+
+    }
+
+    .pengyouquan_li {
+        animation: rotating 8s linear infinite
+    }
+
+    @keyframes rotating {
+        from {
+            transform: rotate(0)
+        }
+
+        to {
+            transform: rotate(360deg)
+        }
+    }
+
+    .weixin {
+        color: #20CA2E;
+    }
+
+    .lianjie {
+        color: #cdcdcd;
+    }
+
+    .share_active {
+        bottom: 0px;
+    }
+
+    /*评论样式*/
+    ::-webkit-input-placeholder {
+        color: rgba(0, 0, 0, 0.20);
+    }
+
+    :-moz-placeholder {
+        color: rgba(0, 0, 0, 0.20);;
+    }
+
+    ::-moz-placeholder {
+        color: rgba(0, 0, 0, 0.20);
+    }
+
+    :-ms-input-placeholder {
+        color: rgba(0, 0, 0, 0.20);
+    }
+
+    .comment_container {
+		z-index:9999;
+        width: 100%;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+
+    .comment_box {
+        padding: 0 15px 52px 15px;
+    }
+
+    .comment_top {
+        text-align: center;
+        font-size: 12px;
+        color: #000;
+        line-height: 40px;
+    }
+
+    .guanbi3 {
+        float: right;
+        font-size: 12px;
+        padding: 0 10px;
+        position: absolute;
+        right: 6px;
+    }
+
+    .comment_li {
+        margin-bottom: 20px;
+        font-size: 14px;
+        text-align: left;
+    }
+
+    .comment_author_left {
+        float: left;
+    }
+
+    .comment_author_left img {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+    }
+
+    .comment_author_right {
+        margin-left: 46px;
+        padding-top: 4px;
+    }
+
+    .comment_author_top {
+        position: relative;
+    }
+
+    .comment_author_name {
+        margin-bottom: 6px;
+        color: #777;
+    }
+
+    .icon-shoucang1_box {
+        position: absolute;
+        right: 0px;
+        top: 0;
+        text-align: center;
+        color: #777;
+    }
+
+    .comment_author_text {
+        color: #555;
+        margin-bottom: 10px;
+        padding-right: 35px;
+    }
+
+    .comment_replay_box {
+        padding-left: 46px;
+        box-sizing: border-box;
+    }
+
+    .comment_replay_li {
+        margin-bottom: 10px;
+    }
+
+    .comment_replay_left {
+        float: left;
+    }
+
+    .comment_replay_left img {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+    }
+
+    .comment_replay_right {
+        margin-left: 35px;
+        padding-top: 2px;
+    }
+
+    .comment_replay_top {
+        position: relative;
+        margin-bottom: 6px;
+    }
+
+    .comment_replay_text {
+        padding-right: 35px;
+        margin-bottom: 10px;
+        color: #555;
+    }
+
+    .comment_author_text span, .comment_replay_text span {
+        color: #999;
+        font-size: 13px;
+        margin-left: 6px;
+    }
+
+    .shoucang1_num {
+        text-align: center;
+        width: 30px;
+        font-size: 12px;
+        /* right: -4px; */
+        position: relative;
+    }
+
+    .comment_ul {
+        height: 400px;
+        overflow-y: auto;
+    }
+
+    .comment_input_box {
+        position: fixed;
+        bottom: 0;
+        z-index: 2999;
+        width: 100%;
+        border-top: 1px solid #e8e8e8;
+        background: #fff;
+        padding: 10px 15px;
+        box-sizing: border-box;
+    }
+
+    /*.comment_form {*/
+    /**/
+    /*}*/
+
+    .comment_input {
+        border: none;
+        resize: none;
+        width: 80%;
+        float: left;
+        color: #555;
+        caret-color: #f44;
+        line-height: .44rem;
+    }
+
+    .comment_input_right {
+        float: right;
+    }
+
+    .comment_i {
+        font-size: 22px;
+        color: #999;
+        transition: .3s;
+    }
+
+    .comment_i_active {
+        color: #f44;
+    }
+
+    .icon-zanwupinglun {
+        font-size: 100px;
+        color: #777;
+    }
+
+    .v-enter,
+    .v-leave-to {
+        opacity: 0;
+        transform: translateY(80px);
+    }
+
+    .v-enter-active,
+    .v-leave-active {
+        transition: all .5s ease;
+    }
+
+    /*添加进场效果*/
+    .v-move {
+        transition: all 1s ease;
+    }
+
+    .v-leave-active {
+        position: absolute;
+    }
+
+    .list-complete-item {
+        transition: all 1s;
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+    .list-complete-enter, .list-complete-leave-to {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    .list-complete-leave-active {
+        position: absolute;
+    }
+
+    .love_active {
+        color: #f44;
+    }
+	.play, .platStart{
+		position: fixed;
+		    margin: auto;
+		    top: 0;
+		    left: 0;
+		    z-index: 999;
+		    width: 100%;
+		    height: 100%;
+		    border: none;
+	}
+	/* .van-swipe-item{
+		position: relative;
+		    -webkit-flex-shrink: 0;
+		    flex-shrink: 0;
+		    width: 100%;
+		    height: 100%;
+			width: 300px;
+	} */
+	/* .van-swipe div{
+			-webkit-transform: inherit;
+	} */
+    /*评论样式*/
+	.production_center{
+		verflow: hidden;
+		    text-overflow: ellipsis;
+		    display: -webkit-box;
+		    -webkit-line-clamp: 3;
+		    -webkit-box-orient: vertical;
+		    /* min-height: 62px; */
+		    font-size: 14px;
+			float:left;
+	}
+	@media screen and (width: 375px) and (height: 812px){
+	    .button {
+	        padding-bottom: 34px;
+	    }
+	}
+
+	/* 适配iphoneX顶部填充*/
+	@supports (top: env(safe-area-inset-top)){
+	  body,
+	  .header{
+	      padding-top: constant(safe-area-inset-top);
+	      padding-top: env(safe-area-inset-top);
+	  }
+	}
+	/* 判断iphoneX 将 footer 的 padding-bottom 填充到最底部 */
+	@supports (bottom: env(safe-area-inset-bottom)){
+	    body,
+	    .footer{
+	        padding-bottom: constant(safe-area-inset-bottom);
+	        padding-bottom: env(safe-area-inset-bottom);
+	    }
+	}
+	/* iphone x / xs / 11 pro*/
+	@media only screen and (device-width: 375px) and (device-height: 690px) and (-webkit-device-pixel-ratio: 3) {
+	    header{
+	        padding-top: 44px;
+	    }
+	    footer {
+	        padding-bottom:34px;
+	    }
+	}
+	/* iphone xr / 11 */
+	@media only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) {
+
+	}
+	/* iphone xs max / 11 pro max */
+	@media only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
+
+	}
+	body{
+		margin:0;
+		padding:0;
+	    padding-top: env(safe-area-inset-top);
+	    padding-left: env(safe-area-inset-left);
+	    padding-right: env(safe-area-inset-right);
+	    padding-bottom: env(safe-area-inset-bottom);
+	}
+	/* .van-toast{
+		position: fixed;
+		    top: 50%;
+		    left: 50%;
+		    display: -webkit-box;
+		    display: -webkit-flex;
+		    display: flex;
+		    -webkit-box-orient: vertical;
+		    -webkit-box-direction: normal;
+		    -webkit-flex-direction: column;
+		    flex-direction: column;
+		    -webkit-box-align: center;
+		    -webkit-align-items: center;
+		    align-items: center;
+		    -webkit-box-pack: center;
+		    -webkit-justify-content: center;
+		    justify-content: center;
+		    box-sizing: content-box;
+		    width: 88px;
+		    max-width: 70%;
+		    min-height: 88px;
+			z-index:99999;
+		    padding: 16px;
+		    color: #fff;
+		    font-size: 14px;
+		    line-height: 20px;
+		    white-space: pre-wrap;
+		    text-align: center;
+		    word-wrap: break-word;
+		    background-color: rgba(50,50,51,.88);
+		    border-radius: 4px;
+		    -webkit-transform: translate3d(-50%,-50%,0);
+		    transform: translate3d(-50%,-50%,0);
+	} */
+	
+
+    .production_top {
+        display: inline-block;
+        padding: 6px;
+        margin-bottom: 5px;
+        background: rgba(0, 0, 0, .3);
+        border-radius: 6px;
+        margin-top: 5px;
+    }
+
+    .product_go {
+        color: #fbdd21;
+    }
+
+    .production_title {
+        margin-left: 4px;
+    }
+
+    .border_progress {
+        width: 0;
+        height: 1px;
+        background: #bababa;
+        position: absolute;
+        top: 0;
+        transition: .1s all;
+    }
+
+    .bottom_tab {
+        width: 33%;
+        text-align: center;
+        float: left;
+        color: #c9c9c9;
+        padding: 10px 0;
+    }
+
+    .bottom_tab_icon {
+        width: 44px;
+    }
+
+    .bottom_tab_span {
+        line-height: 28px;
+        border-bottom: 2px solid transparent;
+        font-weight: 600;
+        font-size: 16px;
+        display: inline-block;
+        padding: 0 4px;
+        transition: .5s all;
+    }
+
+    .tab_active .bottom_tab_span {
+        border-bottom: 2px solid #fff;
+        color: #fff;
+    }
 </style>

@@ -1,15 +1,14 @@
 <template>
   <div class="home" v-if="category">
-    <nav-bar v-show="tabActive != 1" :style="{height : active == 1 ? '0px' : 'auto'}"></nav-bar>
+    <nav-bar></nav-bar>
 	<!-- home -->
-    <div class="categorytab" v-show="tabActive == 0">
+    <div class="categorytab"  v-show="tabActive == 0">
 		
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <van-tabs v-model="active" swipeable sticky animated >
         <van-tab v-for="(item,index) in category" :key="index" v-if="item.CODE_VALUE != 5" :title="item.DICT_NAME" scrollspy  >
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
             <van-list 
-			 v-show="active != 1"
 			  style="padding-bottom: 20%;"
               v-model="item.loading"
               :immediate-check="false"
@@ -71,6 +70,7 @@ import hot from './hot'
 export default {
   data() {
     return {
+		token: 'Bearer ' + localStorage.token,
 	  curScroll:0,
 		curVideo:'',
 	  curTableHeight:0, // 当前table高度
@@ -140,7 +140,7 @@ export default {
   methods: {
 	  hit(){
 		  this.beforetabActive = this.tabActive 
-		  this.$msg('功能开发中')
+		  // this.$msg('功能开发中')
 	  },
 	  dynamic(){
 		  this.beforetabActive = this.tabActive 
@@ -200,7 +200,8 @@ export default {
 			})
 			for(let i =0;i<res.data.data.list.length;i++){
 				res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
-				res.data.data.list[i].previewImg = '/common/image?imgId=' + res.data.data.list[i].person_photp
+				res.data.data.list[i].previewImg = '/common/image?imgId=' + res.data.data.list[i].person_photp + '&token=' + this.token
+				console.log(res.data.data.list[i].previewImg)
 				res.data.data.list[i].title = res.data.data.list[i].person_name
 			}
 			// console.log(res)
@@ -267,39 +268,29 @@ export default {
   watch: {
     active(current,before) {
 		// 记录头部高度
-		if(this.curTableHeight == 0) {
-			this.curTableHeight = $('.van-tabs__wrap').height()
-		}
+		// if(this.curTableHeight == 0) {
+		// 	this.curTableHeight = $('.van-tabs__wrap').height()
+		// }
 		// 视频下隐藏头部和table
-		if(current == 1){
-            // 记录滚动高度
-			this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
-			// 隐藏头部
-			$('.van-tabs__wrap').height(0)
-			this.tabbarStatus = false;
-		} else {
-			// alert(this.curTableHeight)
-			$('.van-tabs__wrap').height(this.curTableHeight) // 显示头部
-			this.tabbarStatus = true;
-			this.$nextTick(()=>{
-				// alert('首页高度....' + this.curScroll)
-				scroll(0,this.curScroll)
-			})
-		}
+		
+			// this.$nextTick(()=>{
+			// 	// alert('首页高度....' + this.curScroll)
+			// 	scroll(0,this.curScroll)
+			// })
 		
 		
 		
-		// console.log(e,a)
+		console.log(current,before)
 		// 		// console.log('qieh....')
 		// 		console.log(document.body.getBoundingClientRect())
-      // const categoryitem = this.categoryItem();
+      const categoryitem = this.categoryItem();
 	  // 切换时候记录之前位置
 	  // this.recordScroll(before)
 	  // console.log(categoryitem)
-      // if (!categoryitem.list.length) {
-      //   this.selectArticle();
+      if (!categoryitem.list.length) {
+        this.selectArticle();
       //   // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
-      // }
+      }
 	  // 定位指定位置
 	 //  if(categoryitem.scroll){
 	 //  	// console.log('开始定位...' + categoryitem.scroll)
@@ -310,20 +301,21 @@ export default {
 	 //  }
     },
 	tabActive(cur){
-		if(cur != 0){
-			// console.log('记录高度。。。。。。。。。。。。。。。。。。' + (document.documentElement.scrollTop ))
-			this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
-			// alert('首页高度' + this.curScroll)
-		}else{
-			if(this.curScroll > 0){
-				this.$nextTick(()=>{
-					// alert('首页高度....' + this.curScroll)
-					scroll(0,this.curScroll)
-				})
-			} else {
-				scroll(0,0)
-			}
-		}
+		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+		// if(cur != 0){
+		// 	// console.log('记录高度。。。。。。。。。。。。。。。。。。' + (document.documentElement.scrollTop ))
+		// 	this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+		// 	// alert('首页高度' + this.curScroll)
+		// }else{
+		// 	if(this.curScroll > 0){
+		// 		this.$nextTick(()=>{
+		// 			// alert('首页高度....' + this.curScroll)
+		// 			scroll(0,this.curScroll)
+		// 		})
+		// 	} else {
+		// 		scroll(0,0)
+		// 	}
+		// }
 	}
   },
   created() {

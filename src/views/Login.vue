@@ -20,7 +20,7 @@
 
         <login-btn BtnText="登录" @TextClick="AjaxInsert"></login-btn>
 		<div v-if="uuidShow">{{uuid}}</div>
-
+		
   </div>
 </template>
 
@@ -59,6 +59,7 @@ export default {
 				  forbidClick: true,
 				  duration:0
 				});
+				// return;
                 const res =  await this.$http.post('/admin/login',this.model,{timeout:this.httpTimeout})
 				// this.$msg.clear()
                 if(res.data.code == 404 || res.data.code == 401){
