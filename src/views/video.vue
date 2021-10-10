@@ -20,96 +20,20 @@
 			  @scroll="scroll"
 			  @scrollEnd="scrollEnd">
 			  <div>
-				<my-video v-for="(item, index) in playList"
-				  ref="videos"
+				<!-- <my-video v-for="(item, index) in playList"
+				  :ref="'videos'+item.id" -->
+				  <my-video v-for="(item, index) in playList"
+				    ref="videos"
 				  :key="item.id"
 					:index="index"
+					:bottomComment="false"
 				  @playVideo="playHandler"
 				  :VideoItem="item"
 				  @showCommentList="fetchCommentsAndShowList"></my-video>
 			  </div>
 			</scroll>
 			<!--留言弹窗-->
-			<van-popup v-model="commentPop"  closeable :overlay="true" class="comment_container" position="bottom">
-				<div class="comment_box">
-					<div class="comment_top">
-						{{commentNum}}条评论
-						<i class="iconfont icon-guanbi1 guanbi3" @click="closeComment"></i>
-					</div>
-					<ul class="comment_ul">
-						<div v-if="videoComment.length!=0">
-							<transition-group appear>
-								<li class="comment_li" v-for="(item,index) in videoComment" :key="index"
-									@click="replayUser(item,index,-1)">
-									<div class="comment_author_left">
-										<img :src="baseURL + '/common/image?imgId=' +item.avatar +'&token=' + token">
-									</div>
-									<div class="comment_author_right">
-										<div class="comment_author_top">
-											<div class="comment_author_name">@{{item.nickname}}</div>
-											<!-- <div class="icon-shoucang1_box" @click.stop="commentLove(item,index,-1)">
-												<div class="icon_right_change"
-													 :class="item.love_comment?'love_active':''">
-													<i class="iconfont icon-shoucang icon-shoucang1"></i>
-												</div>
-												<div class="shoucang1_num">{{item.love_count}}</div>
-											</div> -->
-										</div>
-										<div class="comment_author_text">
-											{{item.comment_content}}<span>{{item.create_time}}</span>
-										</div>
-									</div>
-									<div class="clear"></div>
-									<div class="comment_replay_box">
-										<transition-group appear>
-											<div class="comment_replay_li" v-for="(item2,index2) in item.child_comment"
-												 :key="index2" @click.stop="replayUser(item2,index,index2)">
-												<div class="comment_replay_left">
-													<img :src="baseURL + '/common/image?imgId=' + item2.avatar + '&token=' + token">
-												</div>
-												<div class="comment_replay_right">
-													<div class="comment_replay_top">
-														<div class="comment_replay_name">@{{item2.nickname}}</div>
-														<!-- <div class="icon-shoucang1_box"
-															 @click.stop="commentLove(item2,index,index2)">
-															<div class="icon_right_change"
-																 :class="item2.love_comment?'love_active':''">
-																<i class="iconfont icon-shoucang icon-shoucang1"></i>
-															</div>
-															<div class="shoucang1_num">{{item2.love_count}}</div>
-														</div> -->
-													</div>
-													<div class="comment_replay_text">
-														<!-- <span v-if="item.user_id!=item2.be_commented_user_id && item.user_id!=item2.user_id">回复 {{item2.be_commented_nickname}}：</span> -->
-														<span v-if="item.user_id!=item2.be_commented_user_id">回复 {{item2.be_commented_nickname}}：</span>
-														{{item2.comment_content}}
-														<span>{{item2.create_time}}</span></div>
-												</div>
-												<div class="clear"></div>
-											</div>
-										</transition-group>
-									</div>
-								</li>
-							</transition-group>
-						</div>
-						<div class="no_message" v-if="videoComment.length==0">
-							<i class="iconfont iconfont_style icon-zanwupinglun"></i>
-							<div class="no_message_tips">暂无评论</div>
-						</div>
-					</ul>
-				</div>
-			</van-popup>
-			<!--留言输入-->
-			<div class="comment_input_box_hover"></div>
-			<div class="comment_input_box" v-show="commentPop">
-				<!--<form action="#" class="comment_form">-->
-				<input :placeholder="commentPlaceholder" class="comment_input" v-model="comment_text" ref="content"
-					   @keyup.enter="checkComment"/>
-				<!--</form>-->
-				<div class="comment_input_right" @click="checkComment">
-					<i class="iconfont icon-fasong comment_i" :class="canSend?'comment_i_active':''"></i>
-				</div>
-			</div>
+			<comment ref="comment" @commentNum="getCommentNum"></comment>
 			</div>
 			<!--底部操作栏-->
 			<div class="container_bottom" v-show="bottomShow">
@@ -128,6 +52,7 @@
 </template>
 <script>
 // import PlayList from '@/components/PlayList/PlayList'
+import comment from '@/components/comment'
 import Scroll from '@/base/scroll/scroll'
 import MyVideo from '@/components/MyVideo/MyVideo'
 	// import videoelement from '../components/videoelement.vue'
@@ -160,9 +85,9 @@ import MyVideo from '@/components/MyVideo/MyVideo'
             return {
 				bottomShow:true, // 是否显示底部菜单
 				currentY: 0,
-				showCommentList: false,
-				commentNum: 0,
-				commentList: [],
+				// showCommentList: false,
+				// commentNum: 0,
+				// commentList: [],
 				page: 0,
 				currentCommentVideoId: '',
 				isEnd: false,
@@ -209,30 +134,31 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 
 		},
 		components:{
+			comment,
 			Scroll,
 			MyVideo
 			
 			// videoelement
 		},
-        watch: {
-            //监听输入变化
-            comment_text(newV, oldV) {
-                newV == '' ? this.canSend = false : this.canSend = true
-            },
-			commentPop(newV, oldV) {
-				if(!newV){
-					this.closeComment()
-					setTimeout(()=>{
-						this.bottomShow = true
-					},200)
-				}else{
+   //      watch: {
+   //          //监听输入变化
+   //          comment_text(newV, oldV) {
+   //              newV == '' ? this.canSend = false : this.canSend = true
+   //          },
+			// commentPop(newV, oldV) {
+			// 	if(!newV){
+			// 		this.closeComment()
+			// 		setTimeout(()=>{
+			// 			this.bottomShow = true
+			// 		},200)
+			// 	}else{
 					
-						this.bottomShow = false
+			// 			this.bottomShow = false
 					
 					
-				}
-			}
-        },
+			// 	}
+			// }
+   //      },
 		filters:{
 			// 根据秒获取时间
 			getDateBysecond(second){
@@ -264,6 +190,16 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 
         },
         methods: {
+			getCommentNum(video,commentNum){
+				// console.log(video)
+				// console.log('ping论数量' + commentNum)
+				// console.log(this.$refs.comment)
+				// 获取高度,以及y轴高度,还有视频数量总高度
+				let clientHeight = this.clientHeight
+				let index = this.currentY / clientHeight
+				// let id = video.id.replace('_html5_api','')
+				this.$refs['videos'][index].setCommentNum(commentNum)
+			},
 			toQuery(){
 				let index = this.currentY / this.clientHeight
 				this.$refs.videos[index].stopProcess()
@@ -365,17 +301,86 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 			    })
 			  }
 			},
+			// changeVideo(type){
+			// 	// console.log('切换视频')
+			// 	if(!this.$refs.videos){
+			// 		return;
+			// 	}
+			// 	// 切换视频,所有进度归0
+			// 	if(this.currentY == 0){
+			// 		if(this.$refs.videos[1]){
+			// 			// 暂停上个视频
+			// 			this.$refs.videos[1].video.pause()
+			// 		}
+			// 		if(this.$refs.videos[0].video){
+			// 			this.$refs.videos[0].playStatus = true
+			// 			this.$refs.videos[0].video.el().getElementsByTagName('video')[0].currentTime = 0
+			// 			this.$refs.videos[0].video.play()
+			// 		}else{
+			// 			// 创建视频
+			// 			this.$refs.videos[0].createVideo()
+			// 		}
+			
+			// 		return;
+			// 	}
+			// 	// 获取高度,以及y轴高度,还有视频数量总高度
+			// 	let clientHeight = this.clientHeight
+			// 	let index = this.currentY / clientHeight
+			// 	// 暂停上个视频
+			// 	if(type == 1){
+			// 		// this.currentHeight = clientHeight * (index + 1)
+			// 		if(this.$refs.videos[index -1 ].video){
+			// 			this.$refs.videos[index -1 ].video.pause()
+			// 			// this.$refs.videos[index -1 ].video.removeAttribute('src');
+			// 		}/*else{
+			// 			this.$refs.videos[index -1].createVideo()
+			// 		}*/
+			
+			// 	}
+			// 	// 暂停下个视频
+			// 	if(type == 2){
+			// 		if(this.$refs.videos[index +1 ].video){
+			// 			this.$refs.videos[index + 1].video.pause()
+			// 			// this.$refs.videos[index + 1 ].video.removeAttribute('src');
+			// 		}/*else{
+			// 			this.$refs.videos[index +1].createVideo()
+			// 		}*/
+			
+			// 	}
+			// 	this.currentHeight = clientHeight * index
+			// 	if(this.$refs.videos[index].video){
+			// 		this.$refs.videos[index].playStatus = true
+			// 		this.$refs.videos[index].video.el().getElementsByTagName('video')[0].currentTime = 0
+			// 		this.$refs.videos[index].video.play()
+			// 		this.$refs.videos[index].loadCommentAndCollectionNum(); // 加载评论和收藏数
+			// 		// 停止记录进度条，重新记录
+			// 		this.$refs.videos[index].stopProcess()
+			// 		this.$refs.videos[index].startProcess()
+			// 	}else{
+			// 		this.$refs.videos[index].createVideo()
+			// 	}
+			
+			// },
 			changeVideo(type){
+				// console.log('切换视频')
 				if(!this.$refs.videos){
 					return;
 				}
 				// 切换视频,所有进度归0
 				if(this.currentY == 0){
-					// 暂停上个视频
-					this.$refs.videos[1].video.pause()
-					this.$refs.videos[0].playStatus = true
-					this.$refs.videos[0].video.el().getElementsByTagName('video')[0].currentTime = 0
-					this.$refs.videos[0].video.play()
+					if(this.$refs.videos[1].video){
+						// 暂停上个视频
+						this.$refs.videos[1].video.pause()
+					}
+					if(this.$refs.videos[0].video){
+						this.$refs.videos[0].playStatus = true
+						// this.$refs.videos[0].video.el().getElementsByTagName('video')[0].currentTime = 0
+						this.$refs.videos[0].video.play()
+					}else{
+						// 创建视频
+						this.$refs.videos[0].createVideo()
+					}
+			
 					return;
 				}
 				// 获取高度,以及y轴高度,还有视频数量总高度
@@ -383,22 +388,59 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				let index = this.currentY / clientHeight
 				// 暂停上个视频
 				if(type == 1){
-					this.$refs.videos[index -1 ].video.pause()
-					this.$refs.videos[index -1 ].video.removeAttribute('src');
+					// this.currentHeight = clientHeight * (index + 1)
+					if(this.$refs.videos[index -1 ].video){
+						this.$refs.videos[index -1 ].video.pause()
+						// this.$refs.videos[index -1 ].video.removeAttribute('src');
+					}/*else{
+						this.$refs.videos[index -1].createVideo()
+					}*/
+			
 				}
 				// 暂停下个视频
 				if(type == 2){
-					this.$refs.videos[index + 1].video.pause()
-					this.$refs.videos[index + 1 ].video.removeAttribute('src');
+					if(this.$refs.videos[index +1 ].video){
+						this.$refs.videos[index + 1].video.pause()
+						// this.$refs.videos[index + 1 ].video.removeAttribute('src');
+					}/*else{
+						this.$refs.videos[index +1].createVideo()
+					}*/
+			
 				}
-				// this.currentHeight = clientHeight * (index + 1)
-				this.$refs.videos[index].playStatus = true
-				this.$refs.videos[index].video.el().getElementsByTagName('video')[0].currentTime = 0
-				this.$refs.videos[index].video.play()
-				this.$refs.videos[index].loadCommentAndCollectionNum(); // 加载评论和收藏数
-				// 停止记录进度条，重新记录
-				this.$refs.videos[index].stopProcess()
-				this.$refs.videos[index].startProcess()
+				this.currentHeight = clientHeight * index
+				if(this.$refs.videos[index].video){
+					this.$refs.videos[index].playStatus = true
+					// this.$refs.videos[index].video.el().getElementsByTagName('video')[0].currentTime = 0
+					this.$refs.videos[index].video.play()
+					this.$refs.videos[index].loadCommentAndCollectionNum(); // 加载评论和收藏数
+					// 停止记录进度条，重新记录
+					this.$refs.videos[index].stopProcess()
+					this.$refs.videos[index].startProcess()
+				}else{
+					this.$refs.videos[index].createVideo()
+				}
+				// 将视频前后的两个视频以为的视频都销毁,最多五个视频同时存在
+				let videoLength = this.playList.length// 视频数据
+				// console.log('视频总数' + videoLength)
+				let startLength = index - 2; // 开始销毁位置
+				let endLength = index + 2;// 结束销毁位置
+				while(startLength > 0){
+					startLength -= 1;
+					if(this.$refs.videos[startLength].video){
+						// console.log('开始视频' + startLength)
+						this.$refs.videos[startLength].video.dispose()
+						this.$refs.videos[startLength].video = null;
+					}
+				}
+				while(endLength < videoLength ){
+					if(this.$refs.videos[endLength].video){
+						// console.log('结束视频' + endLength)
+						this.$refs.videos[endLength].video.dispose()
+						this.$refs.videos[endLength].video = null;
+					}
+					endLength += 1
+				}
+			
 			},
 			// 开始拖动,暂停播放
 			dragStart(e){
@@ -556,17 +598,27 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				}
 				this.playList = this.playList.concat(res.data.data.list)
 				this.$msg.clear()
-				// 把之前页的视频都清了,减少内存
-				if(this.pageNum > 1){
-					// let index = this.currentY / clientHeight
-					let index = this.playList.length - this.pageNum - 3
-					for(let i=0;i<index;i++){
-						// console.log(i)
-						// console.log(this.$refs.videos[i].video.el())
-						// this.$refs.videos[i].video.dispose()
+				// 判断,如果是第一个索引,判断视频是否创建,没创建进行创建
+				top.a = this
+				this.$nextTick(()=>{
+					if(this.currentHeight == 0){
+						if(!this.$refs.videos[0].video){
+							this.$refs.videos[0].createVideo()
+						}
 					}
+				})
 
-				}
+				// 把之前页的视频都清了,减少内存
+				// if(this.pageNum > 1){
+				// 	// let index = this.currentY / clientHeight
+				// 	let index = this.playList.length - this.pageNum - 3
+				// 	for(let i=0;i<index;i++){
+				// 		// console.log(i)
+				// 		// console.log(this.$refs.videos[i].video.el())
+				// 		// this.$refs.videos[i].video.dispose()
+				// 	}
+
+				// }
 
 			},
 			onSwipeLeft (a) {
@@ -594,156 +646,156 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				// this.$destroy()
 				// console.log(a)
 			},
-            //获取评论
-            async getComment(video) {
-                //setTimeout模拟Ajax请求
-                // setTimeout(() => {
-					// 获取评论数据
-					const res = await this.$http.get("/comment/queryComment?work_id=" + video.id)
-					// const res = await this.$http.get("/comment/queryComment?work_id=4853011")
-					// console.log(res)
-					let data = res.data.data
-					this.commentNum = data.length
-					//获取评论数据
-					  // this.videoComment = [...this.videoComment, ...data];
-					this.videoComment = [ ...data];
-					  let to_comment_id = this.to_comment_id;
-					  if (to_comment_id != 0) {
-						  //从评论列表进来回复
-						  this.getCommentDetail(to_comment_id);
-					  }
-                // }, 500)
-            },
-            //获取单个评论
-            getCommentDetail(to_comment_id) {
-				// console.log('......' + to_comment_id)
-                let obj = {
-                    action: 'show_comment_info',
-                    comment_id: to_comment_id
-                };
-                setTimeout(() => {
-                    let index;
-                    let item = res.data;
-                    this.videoComment.map((v, i) => {
-                        v.child_comment.map((v2, i2) => {
-                            if (v2.comment_id == to_comment_id) {
-                                index = i;
-                            }
-                        });
-                    });
-                    setTimeout(() => {
-                        //对评论重新排序，存在to_comment_id的时候排至第一个
-                        let firstComment = this.videoComment.splice(index, 1);
-                        this.videoComment.unshift(firstComment[0]);
-                        //重设回复人
-                        item.index = 0;
-                        item.index2 = 0;
-                        this.replayUserData = item;
-                        this.commentPlaceholder = `回复 @${item.nickname}：`;
-                        this.$refs.content.focus();
-                    }, 10)
-                }, 500)
-            },
-            //检测评论内容
-            checkComment() {
-                if (this.comment_text == '') {
-                    this.$msg.fail('评论内容不能为空')
-                } else {
-                    let comment_id = 0, p_id = '', p_user_id = '', content = this.comment_text;
-                    if (this.replayUserData != '') {
-                        comment_id = this.replayUserData.comment_id;
-                        p_id = this.replayUserData.p_id;
-                        p_user_id = this.replayUserData.user_id;
-                    }
-                    this.sendComment(comment_id, p_id, p_user_id, content)
-                }
-            },
-            //发送评论
-            async sendComment(comment_id, p_id, p_user_id, content) {
-                this.comment_text = '';
-                this.isSending = true;
-				const res = await this.$http.post('/comment/addComment',{
-					workId:this.videoList[this.current].id,
-					// workId:'4853011',
-					commentType:'OTHER',
-					be_commented_user_id:p_user_id ? p_user_id : 0,
-					content:content,
-					parentId:p_id
-				})
-				// console.log(res.data)
-				if(res.data.data == '评论成功'){
-					this.replayUserData = '';
-					this.isSending = false;
-					// 清空回复
-					this.commentPlaceholder = '留下你精彩的评论吧';
-					this.replayUserData = '';
-					// 刷新评论数据
-					this.getComment()
-				}else {
-					this.$msg.fail(res.data.data)
-				}
+    //         //获取评论
+    //         async getComment(video) {
+    //             //setTimeout模拟Ajax请求
+    //             // setTimeout(() => {
+				// 	// 获取评论数据
+				// 	const res = await this.$http.get("/comment/queryComment?work_id=" + video.id)
+				// 	// const res = await this.$http.get("/comment/queryComment?work_id=4853011")
+				// 	// console.log(res)
+				// 	let data = res.data.data
+				// 	this.commentNum = data.length
+				// 	//获取评论数据
+				// 	  // this.videoComment = [...this.videoComment, ...data];
+				// 	this.videoComment = [ ...data];
+				// 	  let to_comment_id = this.to_comment_id;
+				// 	  if (to_comment_id != 0) {
+				// 		  //从评论列表进来回复
+				// 		  this.getCommentDetail(to_comment_id);
+				// 	  }
+    //             // }, 500)
+    //         },
+    //         //获取单个评论
+    //         getCommentDetail(to_comment_id) {
+				// // console.log('......' + to_comment_id)
+    //             let obj = {
+    //                 action: 'show_comment_info',
+    //                 comment_id: to_comment_id
+    //             };
+    //             setTimeout(() => {
+    //                 let index;
+    //                 let item = res.data;
+    //                 this.videoComment.map((v, i) => {
+    //                     v.child_comment.map((v2, i2) => {
+    //                         if (v2.comment_id == to_comment_id) {
+    //                             index = i;
+    //                         }
+    //                     });
+    //                 });
+    //                 setTimeout(() => {
+    //                     //对评论重新排序，存在to_comment_id的时候排至第一个
+    //                     let firstComment = this.videoComment.splice(index, 1);
+    //                     this.videoComment.unshift(firstComment[0]);
+    //                     //重设回复人
+    //                     item.index = 0;
+    //                     item.index2 = 0;
+    //                     this.replayUserData = item;
+    //                     this.commentPlaceholder = `回复 @${item.nickname}：`;
+    //                     this.$refs.content.focus();
+    //                 }, 10)
+    //             }, 500)
+    //         },
+    //         //检测评论内容
+    //         checkComment() {
+    //             if (this.comment_text == '') {
+    //                 this.$msg.fail('评论内容不能为空')
+    //             } else {
+    //                 let comment_id = 0, p_id = '', p_user_id = '', content = this.comment_text;
+    //                 if (this.replayUserData != '') {
+    //                     comment_id = this.replayUserData.comment_id;
+    //                     p_id = this.replayUserData.p_id;
+    //                     p_user_id = this.replayUserData.user_id;
+    //                 }
+    //                 this.sendComment(comment_id, p_id, p_user_id, content)
+    //             }
+    //         },
+    //         //发送评论
+    //         async sendComment(comment_id, p_id, p_user_id, content) {
+    //             this.comment_text = '';
+    //             this.isSending = true;
+				// const res = await this.$http.post('/comment/addComment',{
+				// 	workId:this.videoList[this.current].id,
+				// 	// workId:'4853011',
+				// 	commentType:'OTHER',
+				// 	be_commented_user_id:p_user_id ? p_user_id : 0,
+				// 	content:content,
+				// 	parentId:p_id
+				// })
+				// // console.log(res.data)
+				// if(res.data.data == '评论成功'){
+				// 	this.replayUserData = '';
+				// 	this.isSending = false;
+				// 	// 清空回复
+				// 	this.commentPlaceholder = '留下你精彩的评论吧';
+				// 	this.replayUserData = '';
+				// 	// 刷新评论数据
+				// 	this.getComment()
+				// }else {
+				// 	this.$msg.fail(res.data.data)
+				// }
 
-            },
-            //评论点赞
-            commentLove(item, index, index2) {
-                let comment_id = item.comment_id,
-                    user_id = item.user_id,
-                    love_comment = item.love_comment,
-                    love_flag = 0;//0:取消点赞；1：点赞
-                if (love_comment) {
-                    //取消点赞
-                    love_flag = 0
-                } else {
-                    //添加点赞
-                    love_flag = 1
-                }
-                //setTimeout模拟Ajax请求
-                setTimeout(() => {
-                    if (index2 == -1) {
-                        //点赞一级评论
-                        this.videoComment[index].love_comment = !this.videoComment[index].love_comment;
-                        if (love_flag == 1) {
-                            this.videoComment[index].love_count++
-                        } else {
-                            this.videoComment[index].love_count--
-                        }
-                    } else {
-                        //点赞二级评论
-                        this.videoComment[index].child_comment[index2].love_comment = !this.videoComment[index].child_comment[index2].love_comment
-                        if (love_flag == 1) {
-                            this.videoComment[index].child_comment[index2].love_count++
-                        } else {
-                            this.videoComment[index].child_comment[index2].love_count--
-                        }
-                    }
-                }, 500)
-            },
-            //点击回复
-            replayUser(item, index, index2) {
-                item.index = index;
-                item.index2 = index2;
-                this.replayUserData = item;
-				// console.log(item)
-				// 下级回复设置Pid为回复的数据id
-				if(!this.replayUserData.p_id || this.replayUserData.p_id == 0){
-					this.replayUserData.p_id = this.replayUserData.id
-				}
+    //         },
+    //         //评论点赞
+    //         commentLove(item, index, index2) {
+    //             let comment_id = item.comment_id,
+    //                 user_id = item.user_id,
+    //                 love_comment = item.love_comment,
+    //                 love_flag = 0;//0:取消点赞；1：点赞
+    //             if (love_comment) {
+    //                 //取消点赞
+    //                 love_flag = 0
+    //             } else {
+    //                 //添加点赞
+    //                 love_flag = 1
+    //             }
+    //             //setTimeout模拟Ajax请求
+    //             setTimeout(() => {
+    //                 if (index2 == -1) {
+    //                     //点赞一级评论
+    //                     this.videoComment[index].love_comment = !this.videoComment[index].love_comment;
+    //                     if (love_flag == 1) {
+    //                         this.videoComment[index].love_count++
+    //                     } else {
+    //                         this.videoComment[index].love_count--
+    //                     }
+    //                 } else {
+    //                     //点赞二级评论
+    //                     this.videoComment[index].child_comment[index2].love_comment = !this.videoComment[index].child_comment[index2].love_comment
+    //                     if (love_flag == 1) {
+    //                         this.videoComment[index].child_comment[index2].love_count++
+    //                     } else {
+    //                         this.videoComment[index].child_comment[index2].love_count--
+    //                     }
+    //                 }
+    //             }, 500)
+    //         },
+    //         //点击回复
+    //         replayUser(item, index, index2) {
+    //             item.index = index;
+    //             item.index2 = index2;
+    //             this.replayUserData = item;
+				// // console.log(item)
+				// // 下级回复设置Pid为回复的数据id
+				// if(!this.replayUserData.p_id || this.replayUserData.p_id == 0){
+				// 	this.replayUserData.p_id = this.replayUserData.id
+				// }
 
-                this.commentPlaceholder = `回复 @${item.nickname}：`;
-                this.$refs.content.focus();
-            },
-            //弹出评论窗口
-            changeComment() {
-                this.commentPop = true;
-                this.videoComment = [];
-                this.getComment()
-            },
-            //关闭评论弹窗
-            closeComment() {
-                this.commentPop = false;
-                this.commentPlaceholder = '留下你精彩的评论吧';
-                this.replayUserData = '';
-            },
+    //             this.commentPlaceholder = `回复 @${item.nickname}：`;
+    //             this.$refs.content.focus();
+    //         },
+    //         //弹出评论窗口
+    //         changeComment() {
+    //             this.commentPop = true;
+    //             this.videoComment = [];
+    //             this.getComment()
+    //         },
+    //         //关闭评论弹窗
+    //         closeComment() {
+    //             this.commentPop = false;
+    //             this.commentPlaceholder = '留下你精彩的评论吧';
+    //             this.replayUserData = '';
+    //         },
             //关注该作者
             checkSubscribe(item, index) {
                 this.videoList.map(v => {

@@ -25,7 +25,8 @@
         },
         "Events" : {
             "description" : "应用扩展事件"
-        }
+        },
+        "UIWebview" : {}
     },
     "plus" : {
         "allowsInlineMediaPlayback" : true, // 禁止自动全屏

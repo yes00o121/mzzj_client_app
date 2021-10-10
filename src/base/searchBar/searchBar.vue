@@ -27,6 +27,12 @@ export default {
       this.query = ''
     },
     queryData(){
+	  this.$msg.loading({
+	    message: '加载中...',
+	  		duration:0,
+	    forbidClick: true,
+	    loadingType: 'spinner'
+	  });
       this.page += 1
       this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
         loadMode: '4',
@@ -34,7 +40,8 @@ export default {
         pageSize: this.pagesize,
         search: this.query
       }).then(res=>{
-        console.log(res.data.data.list)
+        // console.log(res.data.data.list)
+		this.$msg.clear()
         this.$emit('query', res.data.data.list)
       })
     },
@@ -45,16 +52,22 @@ export default {
   created () {
     // 防抖函数
       this.$watch('query', debounce((newQuery,befQuery) => {
-        console.log('搜索了......' + newQuery + '---' + befQuery )
+        // console.log('搜索了......' + newQuery + '---' + befQuery )
 		if(!newQuery){
 			this.queryData()
 			return;
 		}
 		if(newQuery != befQuery){
 			// 清除父数组
-			this.$parent.searches = []
+			// top.a = this
+			this.$parent.$parent.CLEAN_PLAYLIST()
+			this.$parent.$parent.searches = []
+			this.$parent.$parent.isEnd = false
+			this.page = 0
 			this.queryData()
+			return;
 		}
+
         // this.$emit('query', newQuery)
         // async queryVideo(){
 

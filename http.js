@@ -13,6 +13,7 @@ import Vue from 'vue'
 // const baseURL = 'http://127.0.0.1:8090'
 const baseURL = 'http://192.168.1.4:8090'
 // const baseURL = 'http://121.201.2.228:10824'
+// const baseURL = 'http://121.201.2.228:10958'
 Vue.prototype.baseURL = baseURL
 const http = axios.create({
 	baseURL
@@ -39,7 +40,8 @@ http.interceptors.response.use(function (response) {
     return response;
   }, function (error) {
 	  console.log(error)
-	  Vue.prototype.hideloading()
+	  // Vue.prototype.hideloading()
+	  this.$msg.clear()
      if(!error.response || error.response.status == 401 || error.response.status == 402){
          router.push('/')
 		 console.log(error.message)
@@ -50,9 +52,10 @@ http.interceptors.response.use(function (response) {
 			 // Vue.prototype.$msg.fail('没有权限...')
 			 Vue.prototype.$msg.fail('加载超时拉...')
 		 }
-         
-		 
      }
+	 if(error.response.status == 500){
+		 Vue.prototype.$msg.fail('操作失败...')
+	 }
 
     return Promise.reject(error);
   });

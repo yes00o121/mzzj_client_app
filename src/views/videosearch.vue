@@ -1,6 +1,7 @@
 <template>
-<div class="searchWrap">
-  <div class="topBar">
+<div class="searchWrap" :style="searches.length == 0 ? ('height:' + windowWidth + 'px') : ''">
+	<van-sticky>
+  <div class="topBar" >
     <span class="iconfont icon-left" @click="$router.go(-1)"></span>
     <search-bar
     class="searchBar"
@@ -16,32 +17,39 @@
       <span class="tab-link">用户</span>
     </router-link> -->
   </div>
+  </van-sticky>
+  <!-- <v-touch v-on:swipeup="onSwipeup" v-on:swipeleft="onSwipeLeft" class="search-list" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}"> -->
   <router-view
+    v-if="searches.length > 0"
     :searches="searches"
     @select="selectItem"
     @chooseVideo="chooseVideo"
     @scrollToEnd="scrollToEnd"></router-view>
+	<!-- </v-touch> -->
   <transition name="left">
     <play-list
       class="play-list"
       ref="playList"
       v-show="showPlayList"
       @close="showPlayList=false"></play-list>
+	 
   </transition>
 </div>
 </template>
 
 <script>
+
 import PlayList from '@/components/PlayList/PlayList'
 import SearchBar from '@/base/searchBar/searchBar'
 import { mapGetters, mapMutations } from 'vuex'
-const PER_PAGE_LIMIT_NUM = 21
+const PER_PAGE_LIMIT_NUM = 10
 export default {
   data () {
     return {
       querykey: '',
       searches: [],
       page: 0,
+	  pagesize:10,
       isEnd: false,
       showPlayList: false
     }
@@ -71,10 +79,35 @@ export default {
     ])
   },
   methods: {
-
+	  getCommentNum(video,commentNum){
+	  	// console.log(video)
+	  	// console.log('ping论数量' + commentNum)
+	  	// console.log(this.$refs.comment)
+	  	// 获取高度,以及y轴高度,还有视频数量总高度
+	  	let clientHeight = this.clientHeight
+	  	let index = this.currentY / clientHeight
+	  	// let id = video.id.replace('_html5_api','')
+	  	this.$refs['videos'][index].setCommentNum(commentNum)
+	  },
+	onSwipeLeft () {
+	    console.log('页面左滑')
+	  // this.$router.go(-1)
+	},
+	onSwipeRight(){
+	    console.log('页面右滑')
+	    // this.$router.go(-1)
+	},
+	onSwipeup(){
+		console.log('滚动监听................')
+	},
     scrollToEnd () {
       if (this.isEnd) return
-      // let routeName = this.$route.name
+	  		console.log('到底了.....................' + this.$route.name)
+      let routeName = this.$route.name
+	  if(routeName == 'videosearch/video'){
+		  // this.page++
+		  this.fetchSearchUserList()
+	  }
       // if (routeName === 'search/user') {
       //   this.page++
       //   this.fetchSearchUserList()
@@ -84,18 +117,20 @@ export default {
       // }
     },
     query (q) {
-	  console.log(this.SET_PLAYLIST)
-      console.log('chaxun 回调...')
-      console.log(q)
-      // if (q.length < PER_PAGE_LIMIT_NUM) {
-          // this.isEnd = true
-      //   }
+	  // console.log(this.SET_PLAYLIST)
+   //    console.log('chaxun 回调...')
+   //    console.log(q)
+      if (q.length < PER_PAGE_LIMIT_NUM) {
+          this.isEnd = true
+        }
 		// if(q.length)
 		if(this.searches.length > 0){
 			// console.log(this.searches)
 			this.APPEND_PLAYLIST(q)
 			this.searches = this.searches.concat(q)
+			console.log(this.searches)
 		}else{
+			this.APPEND_PLAYLIST(q)
 			this.searches = this.searches.concat(q)
 		}
 
@@ -119,14 +154,35 @@ export default {
     },
     fetchSearchUserList () {
       if (this.isEnd) return
-      this.$axios.post(`/api/user/${this.loginInfo.userId}/searchUser/${this.page}`, {
-        key: this.querykey
-      }).then(r => {
-        if (r.data.data.length < PER_PAGE_LIMIT_NUM) {
-          this.isEnd = true
-        }
-        this.searches = this.searches.concat(r.data.data)
-      })
+	  console.log('----------------------------------------')
+	  console.log(this)
+	  top.a = this
+	  this.$refs['searchBar'].queryData()
+	 //  this.$msg.loading({
+	 //    message: '加载中...',
+	 //  		duration:0,
+	 //    forbidClick: true,
+	 //    loadingType: 'spinner'
+	 //  });
+	 //  this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
+	 //    loadMode: '4',
+	 //    pageNum: this.page,
+	 //    pageSize: this.pagesize,
+	 //    search: this.querykey
+	 //  }).then(res=>{
+	 //    console.log(res.data.data.list)
+		// this.$msg.clear()
+		// this.searches = this.searches.concat(res.data.data.list)
+	 //    // this.$emit('query', res.data.data.list)
+	 //  })
+      // this.$axios.post(`/api/user/${this.loginInfo.userId}/searchUser/${this.page}`, {
+      //   key: this.querykey
+      // }).then(r => {
+        // if (r.data.data.length < PER_PAGE_LIMIT_NUM) {
+        //   this.isEnd = true
+        // }
+      //   this.searches = this.searches.concat(r.data.data)
+      // })
     },
     fetchSearchVideoList () {
       if (this.isEnd) return
@@ -158,7 +214,7 @@ export default {
   },
   components: {
     SearchBar,
-    PlayList
+    PlayList,
   }
 }
 </script>
@@ -182,13 +238,14 @@ body
   background black
   .play-list
     position fixed
-    z-index 9999
+    z-index 1500
     top 0
     left 0
     right 0
     bottom 0
     background $color-background
   .tab
+    background black
     display flex
     .tab-item
       flex 1
@@ -202,6 +259,7 @@ body
           color $color-white
           /* border-bottom 2px solid $color-point */
   .topBar
+    background black
     display flex
     .searchBar
       flex 1

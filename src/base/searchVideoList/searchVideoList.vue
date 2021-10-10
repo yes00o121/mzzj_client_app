@@ -1,8 +1,9 @@
 <template>
 <scroll class="search-list"
   @scrollToEnd="scrollToEnd"
+  :data="searches"
   :pullup="true">
-  <!-- <v-touch v-on:swipeleft="onSwipeLeft" class="search-list" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}"> -->
+<!--  <v-touch v-on:swipeleft="onSwipeLeft" class="search-list" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}"> -->
   <!-- <tip ref="tip"></tip> -->
   <ul class="container">
     <!-- {{searches}} -->
@@ -25,6 +26,7 @@
       </div>
     </li>
   </ul>
+  </div>
 <!-- </v-touch> -->
 </scroll>
 </template>
