@@ -6,12 +6,13 @@ if(this.activeIndicator <= 0){
 		  this.initialize();
   }
   来确保数据追加后不被重新初始化
+  -- 废弃使用Scroll代替，不使用swipe了  2021-10-25
 ********/
 import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
-// const baseURL = 'http://127.0.0.1:8090'
-const baseURL = 'http://192.168.1.4:8090'
+const baseURL = 'http://127.0.0.1:8095'
+// const baseURL = 'http://192.168.1.4:8090'
 // const baseURL = 'http://121.201.2.228:10824'
 // const baseURL = 'http://121.201.2.228:10958'
 Vue.prototype.baseURL = baseURL
@@ -44,7 +45,7 @@ http.interceptors.response.use(function (response) {
 	  this.$msg.clear()
      if(!error.response || error.response.status == 401 || error.response.status == 402){
          router.push('/')
-		 console.log(error.message)
+		 // console.log(error.message)
 		 // alert(response.messag)
 		 if(error.message.startsWith('timeout')){
 			 Vue.prototype.$msg.fail('系统维护中...')

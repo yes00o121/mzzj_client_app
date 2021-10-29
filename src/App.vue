@@ -1,15 +1,22 @@
 <template>
-  <div id="app">
 
-        <keep-alive >
+	  <div id="app" >
+			<keep-alive >
+				<!-- <transition :name="transitionName"> -->
+				<router-view v-if="$route.meta.keepalive && !equipmentCheck" />
+				<!-- </transition> -->
+			</keep-alive>
 			<!-- <transition :name="transitionName"> -->
-            <router-view v-if="$route.meta.keepalive" />
+				<router-view v-if="!$route.meta.keepalive && !equipmentCheck"></router-view>
 			<!-- </transition> -->
-        </keep-alive>
-		<!-- <transition :name="transitionName"> -->
-            <router-view v-if="!$route.meta.keepalive"></router-view>
-		<!-- </transition> -->
-  </div>
+			  <div v-if="equipmentCheck" style="position: absolute;
+			  right: 50%;
+			  top: 50%;color: black;">
+					<strong>
+						请使用移动设备进行访问
+					</strong>
+			  </div>
+	  </div>
 </template>
 
 <script>
@@ -27,38 +34,48 @@ export default{
 	//     }
 	//   },
 	created(){
-		// 建立websocket连接
-		let websocketUrl = this.baseURL.replace('http','ws') + '/websocket?token=' + localStorage.getItem('token')
-		// let websocketUrl = 'ws://192.168.1.113:8095/websocket?token='
-		this.websocket = new WebSocket(websocketUrl);
-
-		this.websocket.onclose=function(){//连接关闭监听
-		    console.log('websocket连接关闭');
+		// 判断当前设置,如果是电脑禁止访问
+		if(navigator.appVersion.indexOf('Mobile') == -1){
+			this.equipmentCheck = true
+		}else{
+				  this.equipmentCheck = false
+		    if(localStorage.getItem('token')){
+				// 建立websocket连接
+				let websocketUrl = this.baseURL.replace('http','ws') + '/websocket?token=' + localStorage.getItem('token')
+				// let websocketUrl = 'ws://192.168.1.113:8095/websocket?token='
+				this.websocket = new WebSocket(websocketUrl);
+				
+				this.websocket.onclose=function(){//连接关闭监听
+					console.log('websocket连接关闭');
+				}
+				this.websocket.onmessage = (event=>{
+						  //接收消息方法
+						  console.log(event)
+						  console.log('websocket接收消息');
+						  console.log(this.dynamicNum)
+						  if(this.dynamicNum == null){
+							this.dynamicNum = 1
+						  } else {
+							this.dynamicNum += 1;
+						  }
+						   console.log(this.dynamicNum)
+				})
+				//连接响应
+				this.websocket.onopen = function(){
+				  console.log('websocket连接达成');
+				}
+				this.websocket.onerror = function(){
+				  console.log('websocket错误');
+				}
+				window.onbeforeunload = ()=>{
+				   if(this.websocket != null){
+					   this.websocket.close();
+				   }
+				}
+			}
+			
 		}
-		this.websocket.onmessage = (event=>{
-				  //接收消息方法
-				  console.log(event)
-				  console.log('websocket接收消息');
-				  console.log(this.dynamicNum)
-				  if(this.dynamicNum == null){
-				  	this.dynamicNum = 1
-				  } else {
-				  	this.dynamicNum += 1;
-				  }
-				   console.log(this.dynamicNum)
-		})
-		//连接响应
-		this.websocket.onopen = function(){
-		  console.log('websocket连接达成');
-		}
-		this.websocket.onerror = function(){
-		  console.log('websocket错误');
-		}
-		window.onbeforeunload = ()=>{
-		   if(this.websocket != null){
-		       this.websocket.close();
-		   }
-		}
+		
 	},
 	mounted(){
 

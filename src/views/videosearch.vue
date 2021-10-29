@@ -1,22 +1,26 @@
 <template>
-<div class="searchWrap" :style="searches.length == 0 ? ('height:' + windowWidth + 'px') : ''">
+<div class="searchWrap " :style="searches.length == 0 ? ('height:' + windowWidth + 'px') : ''">
 	<van-sticky>
-  <div class="topBar" >
-    <span class="iconfont icon-left" @click="$router.go(-1)"></span>
-    <search-bar
-    class="searchBar"
+  <div class="topBar defaultBackground" >
+    <span class="iconfont icon-left defaultBackground" @click="$router.go(-1)" ></span>
+   <search-bar
+    class="searchBar defaultBackground"
     :placeholder="placeholder"
     ref="searchBar"
     @query="query"></search-bar>
+	<div class="search-button defaultBackground" >
+		搜索
+	</div>
   </div>
   <div class="tab">
-    <router-link tag="div" class="tab-item" to="/videosearch/video">
+    <!-- <router-link tag="div" class="tab-item" to="/videosearch/video">
       <span class="tab-link">视频</span>
-    </router-link>
+    </router-link> -->
     <!-- <router-link tag="div" class="tab-item" to="/search/user">
       <span class="tab-link">用户</span>
     </router-link> -->
   </div>
+  <search-tool :show="showSearchTool" @search= "search"></search-tool>
   </van-sticky>
   <!-- <v-touch v-on:swipeup="onSwipeup" v-on:swipeleft="onSwipeLeft" class="search-list" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}"> -->
   <router-view
@@ -31,8 +35,7 @@
       class="play-list"
       ref="playList"
       v-show="showPlayList"
-      @close="showPlayList=false"></play-list>
-	 
+      @close="showPlayList=false;"></play-list>
   </transition>
 </div>
 </template>
@@ -41,11 +44,13 @@
 
 import PlayList from '@/components/PlayList/PlayList'
 import SearchBar from '@/base/searchBar/searchBar'
+import searchTool from '@/components/searchTool'
 import { mapGetters, mapMutations } from 'vuex'
 const PER_PAGE_LIMIT_NUM = 10
 export default {
   data () {
     return {
+		showSearchTool:true, // 是否显示查询工具
       querykey: '',
       searches: [],
       page: 0,
@@ -72,13 +77,26 @@ export default {
       // } else if (routeName === 'search/video') {
       //   return '输入关键字进行搜索（视频描述）'
       // }
-      return '输入关键字进行搜索（视频描述）'
+      // return '输入关键字进行搜索（视频描述）'
+	  return '输入关键字进行搜索'
     },
     ...mapGetters([
       'loginInfo'
     ])
   },
   methods: {
+	  // 条件回调查询
+	  search(data){
+		console.log('search.......................')  
+		console.log(data)
+		this.$refs.searchBar.searchSortType = data.value
+		// 初始化配置
+		this.CLEAN_PLAYLIST()
+		this.$refs.searchBar.page = 0
+		this.searches = []
+		this.isEnd = false
+		this.$refs.searchBar.queryData()
+	  },
 	  getCommentNum(video,commentNum){
 	  	// console.log(video)
 	  	// console.log('ping论数量' + commentNum)
@@ -154,9 +172,6 @@ export default {
     },
     fetchSearchUserList () {
       if (this.isEnd) return
-	  console.log('----------------------------------------')
-	  console.log(this)
-	  top.a = this
 	  this.$refs['searchBar'].queryData()
 	 //  this.$msg.loading({
 	 //    message: '加载中...',
@@ -203,7 +218,7 @@ export default {
 	  console.log(this.searches)
 	  this.CLEAN_PLAYLIST()
       this.SET_PLAYLIST(this.searches)
-	  console.log('索引' + index)
+	  // console.log('索引' + index)
       this.$refs.playList.scrollToIndex(index)
     },
     ...mapMutations([
@@ -215,12 +230,17 @@ export default {
   components: {
     SearchBar,
     PlayList,
+	searchTool
   }
 }
 </script>
 
 <style scoped lang='stylus'>
 @import '~@/common/stylus/variable'
+.search-button
+   line-height 44px
+   text-align center
+   padding 0 10px
 body
    padding 0
    border 0
@@ -235,7 +255,7 @@ body
   transform translateX(100%)
 .searchWrap
   width 100%
-  background black
+  /* background black */
   .play-list
     position fixed
     z-index 1500
@@ -245,7 +265,7 @@ body
     bottom 0
     background $color-background
   .tab
-    background black
+    /* background black */
     display flex
     .tab-item
       flex 1
@@ -259,19 +279,26 @@ body
           color $color-white
           /* border-bottom 2px solid $color-point */
   .topBar
-    background black
+    /* background black */
     display flex
     .searchBar
       flex 1
-      margin-right 10px
+      /* margin-right 10px */
     .icon-left
+      color black
       text-align center
       width 44px
       line-height 44px
   .search-list-wrap
+    background white
     overflow hidden
     position absolute
     top 84px
     bottom 0
     width 100%
+
+.defaultBackground{
+	background:white;
+	z-index:1400;
+}
 </style>

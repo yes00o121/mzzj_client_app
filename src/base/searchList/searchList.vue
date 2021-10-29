@@ -1,5 +1,5 @@
 <template>
-<div class="search-list">
+<div class="search-list" style="background: white;">
   <ul>
     <li class="search-item" v-for="item in searches" :key="item.id" @click="selectItem(item)">
       <img class="avatar" :src="`${baseURL + item.userAvatar}`" width="50" height="50">
@@ -50,7 +50,8 @@ export default {
 <style scoped lang='stylus'>
 @import '~@/common/stylus/variable'
 .search-list
-  background $color-background
+  /* background $color-background */
+  background white
   .search-item
     display flex
     align-items center

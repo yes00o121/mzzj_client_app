@@ -1,13 +1,7 @@
 <template>
 	<div >
- <v-touch v-on:panstart="panstart" v-on:panend="panend" v-on:panleft="panLeft" v-on:panright="panRight"  v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
+ <v-touch v-on:panup="panup" v-on:panstart="panstart" v-on:panend="panend" v-on:panleft="panLeft" v-on:panright="panRight"  v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
   <div class="my-video" :id="'div_' + VideoItem.id" :style="VideoItemHeightStyle" @click.stop="playVideo()" >
-	  <!-- 滑动偏移量展示 -->
-<!-- 		<div  style="text-align: initial;text-align: initial;
-		position: absolute;
-		top: 66px;
-		color: white;
-		right: 11px;">{{ getVideo() ? parseInt(getVideo().currentTime) : '' | getDateBysecond}} | {{VideoItem.videoLength | getDateBysecond}}</div> -->
     <!-- <video class="video" :src="baseURL + VideoItem.videoPath"
       :poster="VideoItem.videoCover"
       webkit-playsinline
@@ -29,7 +23,7 @@
 	  object-fit="fill"
 	  ></video> -->
     <div class="side-bar">	
-      <div class="avatar">
+      <div class="avatar" @click.stop="">
        <!-- <img :src="`${baseURL}${VideoItem.userAvatar}`" alt="" width="40" height="40"
           @click="chooseUser"> -->
 		  <img :src="`${baseURL}/common/image?imgId=6103eed9f1a2480958525955&token=${token}`" alt="" width="40" height="40"
@@ -48,15 +42,32 @@
 	  <div class="comment iconfont icon-message" @click.stop="changeComment()">
         <span class="commentnum">{{commentNum}}</span>
       </div>
-      <div class="share iconfont icon-share" @click="$msg.fail('分析功能关闭')">
+      <div class="share iconfont icon-share" @click.stop="$msg.fail('分析功能关闭')">
         <!-- <span class="sharenum">{{commentNum}}</span> -->
-		<span class="sharenum">0</span>
+		<!-- <span class="sharenum">0</span> -->
       </div>
     </div>
+	<div class="label-wrap">
+		<div style="text-align: left;margin-right: 20px;box-sizing: border-box;
+    margin-right: 8px;
+	margin-top: 10px;
+    padding: 3px 6px;
+	float: left;
+    font-size: 12px;
+    background-color: #fff;
+    border: 1px solid #eaeaef;
+    height: 24px;
+    line-height: 17px;
+    border-radius: 2px;
+    display: inline-block;" :key="item.code" v-for="item in VideoItem.labelList" @click.stop="labelSave(item)">
+	<span :style="item.status == '1' ? ('color: #F8355F;') : ('color: #5094d5;')">
+			{{item.name}} 
+	</span>
+		</div>
+	</div>
     <div class="text-wrap">
       <!-- <div class="name">@{{VideoItem.userNickname}}</div> -->
       <div class="desc van-multi-ellipsis--l2" style="text-align: initial;">{{VideoItem.title}}</div>
-	 
     </div>
 	 <div  style="text-align: initial;text-align: initial;
     position: absolute;
@@ -108,7 +119,6 @@ export default {
    },
   data () {
     return {
-		isDeviation:false,// 是否偏移量,是否滑动视频
   		commentPop:false,
   		// replayUserData: '',
   		// to_comment_id: '',
@@ -129,7 +139,9 @@ export default {
   	  playStatus:true ,// 播放状态,默认播放
   	  videoProcess:0 ,// 进度条位置
   	  maxVideoProcess: 0, // 当前视频长度
-  	  videoProcessInterval:null
+  	  videoProcessInterval:null,
+	  videoMessage: null, // 视频滑动进度消息对象
+	  upOrDown:false // 是否上下滑动,用于控制左右滑动失效
     }
   },
   watch:{
@@ -147,7 +159,7 @@ export default {
 		// 根据秒获取时间
 		getDateBysecond(second){
 			if(second < 60){
-				return '0:' + (second <= 9 ? '0' + second: second);
+				return '00:' + (second <= 9 ? '0' + second: second);
 			}
 			let minute = parseInt(second/60)
 			let s = second - (minute * 60)
@@ -180,6 +192,26 @@ export default {
     ])
   },
   methods: {
+	  // 用户保存删除标签
+	  async labelSave(label){
+		  if(label.status == 1){
+			  // 已收藏,取消收藏
+			  const res = await this.$http.post('/label/deleteLabelUserByUserIdAndLabelCode/',{labelCode:label.code})
+			  // console.log(res)
+			  if(res.data.message == '操作成功'){
+			  				  // 修改标签状态和颜色
+				  label.status = 0
+			  }
+		  } else {
+			  // 未收藏,收藏
+			  const res = await this.$http.post('/label/insertLabelUser/',{labelCode:label.code})
+			  // console.log(res.data.message)
+			  if(res.data.message == '操作成功'){
+				  // 修改标签状态和颜色
+				  label.status = 1
+			  }
+		  }
+	  },
 	  onSwipeLeft () {
 	  	// alert('页面右滑')
 	      // console.log('页面左滑')
@@ -192,55 +224,103 @@ export default {
 	  	// alert('漫画高度' + this.curScroll)
 	      // this.$router.go(-1)
 	  },
+	  // 向下滑动
+	  pandown(){
+		  this.upOrDown = true
+		  // this.$msg.clear()
+	  },
+	  // 向上滑动
+	  panup(){
+		this.upOrDown = true
+		// this.$msg.clear()
+	  },
 	  panLeft(point){
-		// console.log('左滑')
-		  // console.log(point)
-		  // let clientWidth = top.document.body.clientWidth // 宽度
-		  // // 滑动的x轴,对应宽度位置,根据x轴计算视频进度条位置
-		  // let curX = point.deltaX
-		  // console.log(curX)
-		  // this.deviation = curX
+		// console.log('左滑' + document.body.scrollHeight)
+		// 如果是上下滑动,不触发
+		if(this.upOrDown){
+		  return;
+		}
+		if(!this.videoMessage){
+		  // 获取当前视频进度,设置为初始值
 		  let video = this.getVideo()
-		  // 获取当前视频进度,在进度上减少进度,显示出来
-		  // console.log(video.currentTime)
-		  // if((video.currentTime - curX) <0){
-			 //  return;
-		  // }
-		  if(this.currentTime < 0){
-			  video.currentTime = 0
-			  return;
-		  }
-		  video.currentTime -=1
-		  
-		  
-		  
-		  // let lenght = clientWidth - curX // 得到需要倒退的宽度
-		  // // 获取视频长度,除以宽度,再乘以需要倒退的长度
-		  // let videoLength = this.VideoItem.videoLength
-		  // let signleLength = videoLength / clientWidth
-		  // 不计算了,直接每个1个像素算一秒钟
-		  
+		  this.videoMessage = this.$msg({
+			  message:0,
+			  duration:0,
+			  curNum:parseInt(video.currentTime)
+		  })
+		}
+		  this.videoMessage.curNum -=1
+		  this.progressSpeed()
+	  },
+	  // 显示进度条
+	  progressSpeed(){
+			// 如果滑动超过视频长度,把滑动长度改成和视频长度一致
+			if(this.videoMessage.curNum > this.VideoItem.videoLength){
+				this.videoMessage.curNum = this.VideoItem.videoLength
+			}
+			let curTime = this.getDateBysecond(this.videoMessage.curNum) // 当前滑动进度
+			let videoLength = this.getDateBysecond(this.VideoItem.videoLength) // 视频总长度
+			this.videoMessage.message = curTime + '/' + videoLength
 	  },
 	  // 开始拖动
 	  panstart(){
-		  this.isDeviation = true
+		  // 判断高度,如果是上滚动,不执行
+		  // console.log('开始滑动....' + document.body.scrollHeight)
+		  this.upOrDown = false
 	  },
 	  // 拖动结束
 	  panend(){
-		  // console.log('结束了......')
-		  // 获取偏移量
-		  this.isDeviation = false
+		  
+		  if(this.upOrDown){
+			  this.upOrDown = false
+			   this.$msg.clear()
+			  return;
+		  }
+		  // 结束时,获取视频时间位置,定位到那个地方
+		  let video = this.getVideo()
+		  video.currentTime = this.videoMessage.curNum
+		  this.$msg.clear()
+		  this.videoMessage = null;
 	  },
 	  panRight(point){
-		  // this.isDeviation = true
-		  // console.log('右滑')  
-		  let video = this.getVideo()
-		  // 获取当前视频进度,在进度上减少进度,显示出来
-		  // console.log(video.currentTime)
-		  video.currentTime +=1
+		  // 如果是上下滑动,不触发
+		  if(this.upOrDown){
+			  return;
+		  }
+		  if(!this.videoMessage){
+			  // 获取当前视频进度,设置为初始值
+			  let video = this.getVideo()
+			  this.videoMessage = this.$msg({
+			  			  message:0,
+			  			  duration:0,
+			  			  curNum:parseInt(video.currentTime)
+			  })
+		  }
+		  this.videoMessage.curNum +=1
+		  this.progressSpeed()
+		  console.log('右滑' + document.body.scrollHeight)  
+		  // let video = this.getVideo()
+		  // // 获取当前视频进度,在进度上减少进度,显示出来
+		  // video.currentTime +=1
+	  },
+	  // 根据秒获取时间
+	  getDateBysecond(second){
+		  if(second <= 0){
+			   return '00:00'
+		  }
+	  	if(second < 60){
+	  		return '00:' + (second <= 9 ? '0' + second: second);
+	  	}
+	  	let minute = parseInt(second/60)
+	  	let s = second - (minute * 60)
+	  	if(minute < 60){
+	  		return (minute <= 9 ? '0' + minute : minute) + ':' + (s <= 9 ? '0' + s : s);
+	  	}
+	  	return '';
 	  },
 	  // 创建html标签
 	  getVideoHtml(){
+		  // visibility: hidden;
 		  // console.log('销毁重新创建......')
 		  let html = `<video id="${this.VideoItem.id}"   class="video"
 	  style="width:100%;height:100%;"
@@ -295,6 +375,11 @@ export default {
 						 this.loadCommentAndCollectionNum();
 						this.stopProcess()
 						this.startProcess();
+						this.recordFlowNum()
+						
+						// 记录视频流量
+						
+						
 						// console.log($('.my-video'))
 						// $('.my-video').each((index,e)=>{alert($(e).height())})
 						 // 延迟0.5秒,等待滚动事件加载完成
@@ -307,11 +392,15 @@ export default {
 				  }
 		})  
 	  },
+	  recordFlowNum(){
+		// this.$http.get('')  
+		this.$http.get('/webInfoVideo/recordFlowNum?id=' + this.VideoItem.id)
+	  },
 	 //  //弹出评论窗口
 	  changeComment() {
 		  // 暂停当前视频
-		  this.video.pause()
-		  this.playStatus = false
+		  // this.video.pause()
+		  // this.playStatus = false
 		  this.$parent.$parent.$refs.comment.commentPop = true
 		  this.$parent.$parent.$refs.comment.videoComment = [];
 		  this.$parent.$parent.$refs.comment.getComment(this.getVideo())
@@ -500,7 +589,7 @@ export default {
     left 0
     bottom auto
     margin auto
-    z-index 999
+    /* z-index 999 */
     height 60px
     background: rgba(0, 0, 0, 0.5);
     border-radius: 50%;
@@ -530,6 +619,13 @@ export default {
     display block
     width 100%
     height 100%
+  .label-wrap
+    /* display flex */
+    /* color #e8e8e9 */
+    position absolute
+    left 10px
+    bottom 100px
+    width 70%
   .text-wrap
     position absolute
     left 10px

@@ -11,6 +11,7 @@ const upload = ()=>import('@/components/common/upload.vue')
 const manga = ()=>import('@/views/mangaMenu.vue')
 const mangaDetail = ()=>import('@/views/mangaMenuDetail.vue')
 const person = ()=>import('@/views/person.vue')
+const personWork = ()=>import('@/views/personWork.vue')
 const search = ()=>import('@/views/search.vue')
 const video = ()=> import('@/views/video.vue')
 const videosearch = () => import('@/views/videosearch.vue')
@@ -88,6 +89,10 @@ Vue.use(VueRouter)
 	{
 	  path:'/person/:id',
 	  component:person
+	},
+	{
+	  path:'/personWork/:id',
+	  component:personWork
 	},
 	{
 	  path:'/search',

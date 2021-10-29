@@ -8,6 +8,41 @@
       <van-tabs v-model="active" swipeable sticky animated >
         <van-tab v-for="(item,index) in category" :key="index" v-if="item.CODE_VALUE != 5" :title="item.DICT_NAME" scrollspy  >
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
+			  <!-- <van-swipe :autoplay="3000">
+			    <van-swipe-item v-for="(image, index) in item.flowData" :key="index" :loop="false" :width="300">
+				  <van-image
+				    width="22rem"
+				    height="18rem"
+				    fit="cover"
+				    :src="baseURL +   image.previewImg + '&token=' + token" rel="external nofollow" 
+				  >
+					
+				  </van-image>
+				  <div class="swipe-text van-ellipsis">
+					  {{image.title}}
+				  </div>
+			    </van-swipe-item>
+			  </van-swipe> -->
+			  <!-- <van-grid :border="false" :column-num="5">
+			    <van-grid-item v-for="(image, index) in item.flowData" :key="index">
+					<van-image
+					  width="3.5rem"
+					  height="2rem"
+					  fit="cover"
+					  scale-down="contain"
+					  :src="baseURL +   image.previewImg + '&token=' + token" rel="external nofollow" 
+					/> -->
+			    </van-grid-item>
+			   <!-- <van-grid-item>
+			      <van-image src="https://img.yzcdn.cn/vant/apple-2.jpg" rel="external nofollow"  />
+			    </van-grid-item>
+			    <van-grid-item>
+			      <van-image src="https://img.yzcdn.cn/vant/apple-3.jpg" rel="external nofollow"  />
+			    </van-grid-item>
+				<van-grid-item>
+				  <van-image src="https://img.yzcdn.cn/vant/apple-3.jpg" rel="external nofollow"  />
+				</van-grid-item> -->
+			  </van-grid>
             <van-list 
 			  style="padding-bottom: 20%;"
               v-model="item.loading"
@@ -31,12 +66,12 @@
       </van-tabs>
 	  <!-- <shortvideo v-if="active == 1 && videoStatus"></shortvideo>ss -->
     </div>
-	<!-- <div v-if="tabActive == 1" style="heihgt:800px">
-		<video controls :src="'http://121.201.2.228:10824/video/person/香港美少女(HongKongDoll)/video/' + curVideo"></video>
+	<div v-if="tabActive == 2" style="heihgt:800px">
+		<video controls :src="'http://192.168.1.4:8090/video/' + curVideo"></video>
 			  <div v-for="item in videoList">
 				  <van-button type="info" @click="curVideo = item">{{item}}</van-button>
 			  </div>
-	</div> -->
+	</div>
 	<keep-alive >
 	<userinfo v-if="tabActive == 3"></userinfo>
 	</keep-alive >
@@ -70,6 +105,10 @@ import hot from './hot'
 export default {
   data() {
     return {
+		images: [
+		        'https://img.yzcdn.cn/vant/apple-1.jpg',
+		        'https://img.yzcdn.cn/vant/apple-2.jpg'
+		      ],
 		token: 'Bearer ' + localStorage.token,
 	  curScroll:0,
 		curVideo:'',
@@ -165,10 +204,12 @@ export default {
       if(localStorage.getItem('newCat')) {
         return
       }
-	  // this.videoList = []
-	  //  const res1 = await this.$http.get("/webInfoDetailData/queryVideoRandom");
-	  		// console.log(res1)
-	  // this.videoList = res1.data
+	  // 临时视频开始
+	  this.videoList = []
+	   const res1 = await this.$http.get("/webInfoDetailData/queryVideoRandom");
+	  		console.log(res1)
+	  this.videoList = res1.data
+	  // 临时视频结束
 	  // console.log(this.videoList)
       const res = await this.$http.get("/webInfoDetailData/queryMenu",{timeout:this.httpTimeout});
       this.category = this.changeCategory(res.data.data);
@@ -185,6 +226,18 @@ export default {
         item.finished = false;
         item.loading = true;
         item.pagesize = 20;
+		console.log(item)
+		// if(item.CODE_VALUE == 8){
+		// 	// 初始化的时候追加热门数据
+		// 	this.$http.post("/ranking/queryLatelyFlowData", {
+		// 		dataType: 2
+		// 	}).then(res=>{
+		// 		// console.log(res)
+		// 		item.flowData = res.data.data
+		// 	})
+			
+		// }
+		
         return item;
       });
       return category1;
@@ -267,26 +320,9 @@ export default {
   },
   watch: {
     active(current,before) {
-		// 记录头部高度
-		// if(this.curTableHeight == 0) {
-		// 	this.curTableHeight = $('.van-tabs__wrap').height()
-		// }
-		// 视频下隐藏头部和table
-		
-			// this.$nextTick(()=>{
-			// 	// alert('首页高度....' + this.curScroll)
-			// 	scroll(0,this.curScroll)
-			// })
-		
-		
-		
-		console.log(current,before)
-		// 		// console.log('qieh....')
-		// 		console.log(document.body.getBoundingClientRect())
       const categoryitem = this.categoryItem();
 	  // 切换时候记录之前位置
-	  // this.recordScroll(before)
-	  // console.log(categoryitem)
+
       if (!categoryitem.list.length) {
         this.selectArticle();
       //   // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
@@ -319,6 +355,7 @@ export default {
 	}
   },
   created() {
+	  
 	  this.$msg.loading({
 	    message: '加载中...',
 	    forbidClick: true,
@@ -354,5 +391,18 @@ export default {
     background-color: white;
   }
 }
-
+.swipe-text{
+	position: absolute;
+	    bottom: 0.2rem;
+	    margin-left: 0.75rem;
+	    height: 30px;
+	    line-height: 30px;
+	    font-family: "Microsoft YaHei";
+	    font-size: 16px;
+	    position: absolute;
+	    background: #5fa3ea;
+		color:white;
+		padding: 0 1rem;
+		max-width:19rem;
+}
 </style>

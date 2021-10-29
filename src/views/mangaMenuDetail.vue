@@ -3,14 +3,24 @@
 <!-- 				{{$route.params.pxh}}-----------------{{chapterList.length - 1}} -->
   <div class="home">
     <div class="categorytab">
-		<van-sticky v-show="bottom" style="position: absolute;width: 100%;z-index:9999">
+		<!-- <van-sticky v-show="bottom" style="position: absolute;width: 100%;z-index:9999">
 			<van-cell style="z-index:2999;background: black;color:white;opacity: 0.7;"  icon="arrow-left" :title="(chapterList[this.$route.params.pxh - 1] ? chapterList[this.$route.params.pxh - 1].title : '')"  @click="$router.go(-1)"/>
-		</van-sticky>
+		</van-sticky> -->
+		<van-popup
+			  style="background: black;opacity: 0.7;"
+			    v-model="bottom"
+			    position="top"
+			    :style="{ height: '5%' ,overflow: 'hidden'}"
+				@open="changeSlider"
+			  >
+			  <van-cell style="background: black;color:white;"  icon="arrow-left" :title="(chapterList[this.$route.params.pxh - 1] ? chapterList[this.$route.params.pxh - 1].title : '')"  @click="$router.go(-1)"/>
+		</van-popup>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
 		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"> </van-image>
           </van-pull-refresh>
 		  <!-- 底部弹出 -->
 		  <van-popup
+		  :overlay-style="{zIndex:'2000'}"
 		  style="background: black;
     opacity: 0.7;"
 		    v-model="bottom"
@@ -135,13 +145,14 @@ export default {
 	  imgShow: false, // 画质选择
 	  chapter:false, // 章节窗口
 	  // 清晰度选择栏
-	  actions: [ 
-		  { name: '低',value: '0.2' },
-		  { name: '中',value: '0.5' },
-		  { name: '高',value: '0.8' },
-		  { name: '原画',value: '1'}
-		],
-	  imgQuality:'',// 图片清晰度
+	 //  actions: [ 
+		//   { name: '低',value: '0.2' },
+		//   { name: '中',value: '0.5' },
+		//   { name: '高',value: '0.8' },
+		//   { name: '原画',value: '1'}
+		// ],
+		actions:[],
+	  imgQuality:{},// 图片清晰度
 	  chapterList:[], // 章节数据集合
 	  mangaMode:'1' ,// 漫画模式,1略所模式,2列表模式
 	  chapterTopSize: document.body.clientHeight * 0.35 // 章节菜单高度距离顶部距离像素
@@ -217,14 +228,15 @@ export default {
 		if(type == '2'){
 			// this.screenStatus = type
 			// this.longitudinal();
-			this.transverse()
-		}
-		if(type == '2'){
-			// this.screenStatus = '1'
 			// this.transverse()
-			this.longitudinal()
+			this.$msg.fail('横屏功能暂时关闭')
 		}
-		this.screenStatus = type
+		// if(type == '2'){
+		// 	// this.screenStatus = '1'
+		// 	// this.transverse()
+		// 	this.longitudinal()
+		// }
+		// this.screenStatus = type
 	},
 	changePage(type){
 		var pxh = parseInt(this.$route.params.pxh)
@@ -357,7 +369,8 @@ export default {
 		if(data.uId){
 			this.$http.post('/config/updateUserConfigValueById',{
 				configValue: data.configValue,
-				id:data.uId
+				configKey:data.configKey,
+				// configId:data.id
 			}).then(res=>{
 				if(res.data.code == 200){
 					this.mangaList = []
@@ -369,11 +382,13 @@ export default {
 		} else {
 			// 配置不存在走新增
 			this.$http.post('/config/insertConfigValue',{
-				configId:data.id,
-				configName: data.configName,
-				configValue: data.configValue
+				configValue: data.configValue,
+				configKey:data.configKey,
+				configId:data.id
 			}).then(res=>{
 				if(res.data.code == 200){
+					// uId添加随机值,让其走更新
+					data.uId = '1'
 					this.mangaList = []
 					this.selectCategory()
 				}else {
@@ -395,11 +410,26 @@ export default {
 		}
 	},
 	async initConfig(){
+		// 用户配置信息
+		const res2 = await this.$http.get('/admin/queryConfig?key=manga_tpqxd')
 		// 获取画质配置信息
-		const res = await this.$http.post('/config/queryConfigAll/',{
-				  id:1
+		const res = await this.$http.post('/config/queryConfigDetail',{
+			configKey:'manga_tpqxd'
 		})
-		this.imgQuality = res.data[0]
+		if(res.data.code == 200){
+			for(let i =0;i<res.data.data.length;i++){
+				this.actions.push({
+					name:res.data.data[i].configName,
+					value:res.data.data[i].configValue
+				})
+				if(res2.data.data == res.data.data[i].configValue){
+					this.imgQuality.uId = res.data.data[i].uId
+					this.imgQuality.configValue = res2.data.data
+					this.imgQuality.configKey = res.data.data[i].configKey
+					this.imgQuality.id = res.data.data[i].id
+				}
+			}
+		}
 	},
 	async initChapter(){
 		// 获取漫画章节数据
@@ -445,8 +475,6 @@ export default {
 				 }
 				 this.slideTo(curHeight + '',this.$refs['chapterPanl'].$el)
 			 },50)
-
-			 top.a = this
 		 }
 	  },
 	  $route() {

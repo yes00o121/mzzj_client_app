@@ -230,7 +230,6 @@ export default {
 		// 结束将当前高度设置为0
 		let totalHeight  = -(this.clientHeight * (this.playList.length - 1)) // 总高度
 		if(pos.y == totalHeight){
-			// top.a = this
 			// console.log(this)	
 			// console.log('滑到最下面》。。。。。。。。。')
 			this.$parent.$children[0].$children[0].queryData()

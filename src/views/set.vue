@@ -1,7 +1,16 @@
 <template>
 	<div>
 		<van-cell icon="arrow-left" title="设置"  @click="$router.go(-1)"/>
-		  <h2 class="van-doc-demo-block__title">图片画质</h2>
+		<div v-for="(item,index) in configList" :key="index">
+		<h2 class="van-doc-demo-block__title">{{item.configName}}</h2>
+			<van-radio-group v-model="item.configValue" direction="horizontal" style="padding-left: 1rem;" >
+			  <van-radio  v-for="(it,i) in item.detail" :name="it.detailConfigValue" @click="change(it)">{{it.detailConfigName}} </van-radio>
+			<!--  <van-radio name="2"  @click="changeImage('2')">中</van-radio>
+						<van-radio name="3"  @click="changeImage('3')">高</van-radio>
+						<van-radio name="4"  @click="changeImage('4')">原画</van-radio> -->
+			</van-radio-group>
+		</div>
+		  <!-- <h2 class="van-doc-demo-block__title">图片画质</h2>
 		  <van-radio-group v-model="radio" direction="horizontal" style="padding-left: 16px;" >
 		    <van-radio name="1" @click="changeImage('1')">低</van-radio>
 		    <van-radio name="2"  @click="changeImage('2')">中</van-radio>
@@ -14,6 +23,12 @@
 		    <van-radio name="2" @click="changeSort('2')">倒序</van-radio>
 			<van-radio name="3" @click="changeSort('3')">随机</van-radio>
 		  </van-radio-group>
+		  <h2 class="van-doc-demo-block__title">视频重复过滤</h2>
+		  <van-radio-group v-model="radioNum" direction="horizontal" style="padding-left: 16px;" >
+		    <van-radio name="1" @click="changeVideoRule('0')">不过滤</van-radio>
+		    <van-radio name="2" @click="changeVideoRule('1')">今日</van-radio>
+			<van-radio name="2" @click="changeVideoRule('2')">七日</van-radio>
+		  </van-radio-group> -->
 		</van-radio-group>
 		
 	</div>
@@ -23,10 +38,12 @@
 export default{
 	data(){
 		return {
+			configList:[],// 配置集合
 			radio:'2', // 图片画质
 			radioNum:'1', // 排序方式
 			imgQuality:'' ,
 			loadMode:'',
+			videoRule:'',
 			// initStatus:true // 页面初始化状态,初始化时候不执行change方法
 		}
 	},
@@ -35,12 +52,15 @@ export default{
 	},
 	methods:{
 		async queryConfigAll(){
+			this.configList = []
 			// 查询用户配置信息
 			const res = await this.$http.post('/config/queryConfigAll/',{})
-			// console.log(res)
-			this.initImgQuality(res);
-			this.initSort(res)
-			// this.initStatus = false;
+			console.log(res.data)
+			let keys = Object.keys(res.data)
+			for(let i =0;i<keys.length;i++){
+				this.configList.push(res.data[keys[i]])
+			}
+			console.log(this.configList)
 		},
 		// 初始化图片清晰度
 		initImgQuality(res){
@@ -63,19 +83,32 @@ export default{
 		// 初始化排序方式
 		initSort(res){
 			this.loadMode = res.data[1]
-			console.log(this.loadMode)
 			this.radioNum = this.loadMode.configValue
 		},
+		// 初始化配置
+		initConfig(res){
+			// console.log(res)
+			let data = res.data
+			console.log(data)
+		},
+		// 视频规则
+		// initVideoRule(res){
+		// 	this.videoRule = res.data[1]
+		// 	this.radioNum = this.videoRule.configValue
+		// },
 		// 修改配置方法
-		changeConfig(data){
+		change(data){
+			// console.log(data)
+			// return;
 			// if(this.initStatus){
 			// 	return;
 			// }
 			// 配置存在，走修改
 			if(data.uId){
 				this.$http.post('/config/updateUserConfigValueById',{
-					configValue: data.configValue,
-					id:data.uId
+					configValue: data.detailConfigValue,
+					configKey:data.configKey,
+					configId:data.id
 				}).then(res=>{
 					console.log(res)
 					if(res.data.code == 200){
@@ -89,9 +122,9 @@ export default{
 				
 				// 配置不存在走新增
 				this.$http.post('/config/insertConfigValue',{
-					configId:data.id,
-					configName: data.configName,
-					configValue: data.configValue
+					configKey:data.configKey,
+					configValue: data.detailConfigValue,
+					configId:data.id
 				}).then(res=>{
 					// console.log(res)
 					if(res.data.code == 200){
@@ -102,6 +135,20 @@ export default{
 					}
 				})
 			}
+		},
+		// 视频重复规则
+		changeVideoRule(index){
+			// if(index == '0'){
+			// 	this.imgQuality.configValue = '0'
+			// }
+			// if(index == '1'){
+				
+			// }
+			// if(index == '2'){
+				
+			// }
+			this.imgQuality.configValue = index
+			
 		},
 		changeImage(index){
 			if(index == '1'){

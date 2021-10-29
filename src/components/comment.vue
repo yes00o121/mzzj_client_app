@@ -551,7 +551,7 @@ export default{
 	
 	    .container_bottom {
 			z-index:2001;
-			/* z-index:200; */
+			/* z-index:1500; */
 			/* padding-bottom:5%; */
 	        position: fixed;
 	        bottom: 0;
@@ -874,7 +874,7 @@ export default{
 	    .comment_input_box {
 	        position: fixed;
 	        bottom: 0;
-	        z-index: 2999;
+	        z-index: 3500;
 	        width: 100%;
 	        border-top: 1px solid #e8e8e8;
 	        background: #fff;
@@ -893,7 +893,7 @@ export default{
 	        float: left;
 	        color: #555;
 	        caret-color: #f44;
-	        line-height: .44rem;
+	        line-height: 1.44rem;
 	    }
 	
 	    .comment_input_right {
