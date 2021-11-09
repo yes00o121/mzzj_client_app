@@ -6,7 +6,7 @@
 		
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <van-tabs v-model="active" swipeable sticky animated >
-        <van-tab v-for="(item,index) in category" :key="index" v-if="item.CODE_VALUE != 5" :title="item.DICT_NAME" scrollspy  >
+        <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy  >
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
 			  <!-- <van-swipe :autoplay="3000">
 			    <van-swipe-item v-for="(image, index) in item.flowData" :key="index" :loop="false" :width="300">
@@ -272,6 +272,32 @@ export default {
 			  search: ''
 			})
 			
+			categoryitem.list.push(...res.data.data.list);
+			categoryitem.loading = false;
+			if (res.data.length < categoryitem.pagesize) {
+			  categoryitem.loading = true;
+			  categoryitem.finished = true;
+			}
+		}
+		if(categoryitem.CODE_VALUE == 5){
+			// 请求视频
+			const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
+			  // typeId: categoryitem.CODE_VALUE,
+			  pageNum: categoryitem.page,
+			  pageSize: categoryitem.pagesize,
+			  loadMode:'6',
+			  search: ''
+			})
+			for(let i =0;i< res.data.data.list.length;i++){
+				let videoAddress =  res.data.data.list[i].videoAddress
+				// res.data.data.list[i].previewImg = res.data.data.list[i].videoAddress''
+				let length = videoAddress.lastIndexOf('/')
+				videoAddress = videoAddress.substring(0,length)
+				let length2  = videoAddress.lastIndexOf('/')
+				videoAddress = videoAddress.substring(0,length2 + 1)
+				res.data.data.list[i].previewImg = '/video/' + videoAddress + 'cover.jpg?'
+				// console.log(res.data.data.list[i].previewImg)
+			}
 			categoryitem.list.push(...res.data.data.list);
 			categoryitem.loading = false;
 			if (res.data.length < categoryitem.pagesize) {

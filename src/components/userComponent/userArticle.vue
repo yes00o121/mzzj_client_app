@@ -254,6 +254,10 @@ export default {
 		      this.$router.push(`/article/${detailitem.id}/${detailitem.loadMode}`)
 		  }
 		}
+		// 漫画页面
+		if(detailitem.loadMode == 2){
+			this.$router.push(`/manga/${detailitem.id}`)
+		}
 		// 漫画明细页面
 		if(detailitem.loadMode == 5){
 		  // alert('漫画')

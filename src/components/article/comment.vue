@@ -129,8 +129,12 @@ export default {
   	filterTime(val) {
   	  if(val){
 		  let time = val.split('T')
-		  let m = time[1].substring(0,8)
-  	    return time[0] + ' ' + m;
+		  if(time[1]){
+			  let m = time[1].substring(0,8)
+			  return time[0] + ' ' + m;
+		  }
+		  
+  	    return time[0];
   	  }
   	  return "";
   	},

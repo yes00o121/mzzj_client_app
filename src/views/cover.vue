@@ -50,7 +50,7 @@ created(){
 				this.$router.push(`/person/${this.detailitem.id}`)
 			}
             // 视频页面
-            if(loadMode == 4){
+            if(loadMode == 4 || loadMode == 6){
               if(this.$route.path != `/article/${this.detailitem.id}/${this.detailitem.loadMode}`) {
                   this.$router.push(`/article/${this.detailitem.id}/${this.detailitem.loadMode}`)
               }

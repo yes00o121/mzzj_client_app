@@ -2,11 +2,16 @@
 <template>
    <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div">
   <div v-if="model">
-      <nav-bar></nav-bar>
+      <!-- <nav-bar></nav-bar> -->
+	  <van-sticky >
+	  	<van-cell  style="z-index:99999;width: 95%;" class="van-ellipsis" icon="arrow-left" :title="model.title"  @click="returnPage"/>
+	  </van-sticky>
       <div class="detailinfo">
          <div class="video">
               <!-- <video controls="controls" :src="model.content"></video> -->
-              <video  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" controls="controls"></video>
+			   <!-- style="visibility: hidden;" -->
+              <video v-if="model.loadMode == 4"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" controls="controls"></video>
+			  <video v-if="model.loadMode == 6" style="height:15rem;visibility: hidden;"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" :src="baseURL + '/video/'+model.videoAddress+'?token=' + token" controls="controls"></video>
          </div>
          <div class="detailinfoText">
               <div>
@@ -56,6 +61,7 @@ import comment from '@/components/article/comment.vue'
 export default {
     data() {
         return {
+			token: 'Bearer ' + localStorage.token,
             model:null,
             commendList:null,
             lens:null,
@@ -80,13 +86,17 @@ export default {
 	filters:{
 		filterTime(val) {
 		  if(val){
-		    return val.split('T')[0]
+		    return val.split('T') ? val.split('T')[0] : ''
 		  }
 		  return "";
 		},
 	},
     methods:{
-
+		returnPage(){
+			this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+			// alert('漫画高度' + this.curScroll)
+			this.$router.go(-1)
+		},
         onSwipeLeft () {
             // console.log('页面左滑')
           // this.$router.go(-1)
@@ -95,28 +105,46 @@ export default {
             // console.log('页面右滑')
             this.$router.go(-1)
         },
+		// 获取本地视频
+		async getVideo(){
+			// const res = await this.$http.get('/webInfoDetailData/queryDetailDataByTypeId?id=' + this.$route.params.id)
+			const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
+			  id:this.$route.params.id,
+			  pageNum: 1,
+			  pageSize: 10,
+			  search: ''
+			})
+			console.log(res)
+			this.model = res.data.data.list[0]
+		},
         //获取文章信息
         async articleitemData() {
+			this.$msg.loading({
+			  message: '加载中...',
+			  forbidClick: true,
+			  loadingType: 'spinner'
+			});
             // 获取数据类型,判断加载页面
             // let loadMode = this.$route.params.loadMode;
             // if(loadMode == 4){
-               const res = await this.$http.get('/webInfoVideo/getVideoMenuDataByWebInfoDetailDataId?webInfoDetailDataId=' + this.$route.params.id)
-               // console.log(res)
-               this.model = res.data.data
-			   // console.log(this.model)
-               // 提取视频地址
-               let html = this.model.html
-               let start = html.indexOf('src="') + 5
-               let end = html.indexOf('" type')
-               this.model.content = html.substring(start,end)
-               this.model.content = this.model.content.replace('http://121.201.2.228:10824',this.baseURL)
-               // console.log(this.model)
-               if(this.model) {
-                   this.subscritionInit()
-               }
-               this.$nextTick(()=> {
-                 this.play(this.model.content)
-               })
+		   const res = await this.$http.get('/webInfoVideo/getVideoMenuDataByWebInfoDetailDataId?webInfoDetailDataId=' + this.$route.params.id)
+		   // console.log(res)
+		   this.model = res.data.data
+		   // console.log(this.model)
+		   // 提取视频地址
+		   let html = this.model.html
+		   let start = html.indexOf('src="') + 5
+		   let end = html.indexOf('" type')
+		   this.model.content = html.substring(start,end)
+		   this.model.content = this.model.content.replace('http://121.201.2.228:10824',this.baseURL)
+		   // console.log(this.model)
+		   if(this.model) {
+			   this.subscritionInit()
+		   }
+		   this.$nextTick(()=> {
+			 this.play(this.model.content)
+		   })
+		   this.$msg.clear()
             // }
 
         },
@@ -254,13 +282,17 @@ export default {
          }
     },
     created() {
-
-        this.myVideo = null;
-        // $('#myVideo').empty()
-      if(this.myVideo){
-        this.myVideo.destory();
-      }
-         this.articleitemData()
+		if(this.$route.params.loadMode == 6){
+			this.getVideo()
+		}else{
+			this.myVideo = null;
+			  // $('#myVideo').empty()
+			if(this.myVideo){
+			  this.myVideo.destory();
+			}
+			   this.articleitemData()
+		}
+       
          // this.commendData()
          this.collectionInit()
     },
