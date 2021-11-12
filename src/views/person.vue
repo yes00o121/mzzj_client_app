@@ -3,11 +3,12 @@
 	<van-sticky >
 		<van-cell  style="z-index:99999;"  icon="arrow-left" :title="person.person_name"  @click="returnPage"/>
 	</van-sticky>
+	<back-top :showHeight="300"></back-top>
 	<div class="userdetail">
 	  <div>
 	    <div class="user_img">
-	      <img :src="baseURL + '/common/image?imgId=' + person.photy" alt="" v-if="person.photy"  > 
-	      <img src="@/assets/default_img.jpg" alt v-else  />
+	      <img :src="baseURL + person.person_head" alt="" v-if="person.person_head"  > 
+	      <img src="@/assets/nowprinting.gif" alt v-else  />
 	    </div>
 	    <div class="user_edit">
 	      <div >
@@ -65,11 +66,11 @@
                   v-for="(categoryitem,categoryindex) in item.list"
                   :key="categoryindex"
                 /> -->
-				<div @click="pathPush" ref="wrapper" v-for="(categoryitem,categoryindex) in item.list" :key="categoryindex"  class="detailitem">
-				    <div class="detailItem">
+				<div  ref="wrapper" v-for="(categoryitem,categoryindex) in item.list" :key="categoryindex"  class="detailitem" @click="pathPush(categoryitem)">
+				    <div class="detailItem" >
 				        <div class="imgparent">
 				             <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
-							   <van-image lazy-load :src="baseURL +   categoryitem.previewImg + '&width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:57.778vw;"/>
+							   <van-image lazy-load :src="baseURL +   categoryitem.previewImg + '?width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:57.778vw;"/>
 				            <div class="bottom">
 				                <!-- <div class="icon-play2"><span class="video">&nbsp;{{detailitem.flowNum}}</span></div> -->
 								  <div v-if="categoryitem.flowNum"><span class="video"><van-icon name="eye-o" />&nbsp;{{categoryitem.flowNum}}</span></div>
@@ -92,6 +93,7 @@
 <script>
 import NavBar from "@/components/common/Navbar.vue";
 import cover from "@/views/cover";
+import backTop from '@/components/backTop'
 export default {
   data() {
     return {
@@ -106,16 +108,33 @@ export default {
       isLoading: false,   //是否处于下拉刷新状态
     };
   },
+  watch:{
+  	$route(to,from) {
+		if(from.path.startsWith('/person')){
+			return;
+		}
+		this.$msg.loading({
+		  message: '加载中...',
+		  forbidClick: true,
+		  loadingType: 'spinner'
+		});
+  		scroll(0,0)
+		this.person = {}
+		const categoryitem = this.categoryItem();
+		categoryitem.list = []
+		categoryitem.page = 0
+		categoryitem.finished = false;
+		categoryitem.loading = true;
+		this.initPersonData()
+		this.selectArticle();
+		this.$msg.clear()
+		// this.selectArticle()
+  	}
+  },
   components: {
     NavBar,
-    cover
-  },
-  activated() {
-    if(localStorage.getItem('newCat')) {
-        let newCat = JSON.parse(localStorage.getItem('newCat'))
-        this.category = this.changeCategory(newCat)
-        this.selectArticle();
-    }
+    cover,
+	backTop
   },
   filters:{
 	dataChkeck(val){
@@ -123,9 +142,6 @@ export default {
 	}  
   },
   methods: {
-    onScroll(){
-      // console.log('2222222222222222')
-    },
 	returnPage(){
 		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 		this.$router.go(-1)
@@ -134,11 +150,18 @@ export default {
       if(localStorage.getItem('newCat')) {
         return
       }
+	  this.$msg.loading({
+	    message: '加载中...',
+	    forbidClick: true,
+	    loadingType: 'spinner'
+	  });
       // const res = await this.$http.get("/webInfoDetailData/queryMenu");
       // console.log(res)
       const menu = [{DICT_NAME:'作品'}/*,{DICT_NAME:'评论'}*/]
       this.category = this.changeCategory(menu);
+	  console.log(this.category)
       this.selectArticle();
+	  this.$msg.clear()
     },
     changeCategory(data) {
       const category1 = data.map((item, index) => {
@@ -152,13 +175,9 @@ export default {
       return category1;
     },
     async selectArticle() {	
+		// alert(1)
       const categoryitem = this.categoryItem();
       if(categoryitem.DICT_NAME == '作品'){
-		  // 擦
-		  // const res = await this.$http.post("/person/queryPerson", {
-		  //   personType:'SEX'
-		  // })
-        // console.log(categoryitem)
         const res = await this.$http.post("/person/queryPersonWork", {
           // typeId: categoryitem.CODE_VALUE,
 		  personId: this.$route.params.id,
@@ -170,20 +189,16 @@ export default {
           categoryitem.finished = true;
           return
         }
+		// console.log(this.person.person_nationality)
 		for(let i =0;i<res.data.data.list.length;i++){
 			res.data.data.list[i].flowNum = res.data.data.list[i].works_flow_num
-			res.data.data.list[i].previewImg = '/common/image?imgId=' + res.data.data.list[i].works_photo
+			res.data.data.list[i].previewImg = '/video/person/' + encodeURI(this.person.person_nationality) + '/' + encodeURI(this.person.person_name) + '/' + res.data.data.list[i].works_number + '/' + 'cover.jpg'
 			res.data.data.list[i].title = res.data.data.list[i].works_name
 		}
+		console.log(res)
         categoryitem.list.push(...res.data.data.list);
         categoryitem.loading = false;
         if (res.data.data.list.length < categoryitem.pagesize) {
-          categoryitem.finished = true;
-        }
-      }
-      if(categoryitem.DICT_NAME == '评论'){
-        categoryitem.loading = false;
-        if(res.data.data.list == 0){
           categoryitem.finished = true;
         }
       }
@@ -202,7 +217,6 @@ export default {
             },
     onLoad() {
       const categoryitem = this.categoryItem();
-	  // console.log(categoryitem)
 	  if(categoryitem.list.length == 0){
 		  categoryitem.finished = true
 	  }
@@ -217,36 +231,25 @@ export default {
       return categoryitem;
     },
 	async initPersonData(){
+		const categoryitem = this.categoryItem();
 		const res = await this.$http.post("/person/queryPerson", {
-		  pageNum: 0,
-		  pageSize: 1,
+		  pageNum: categoryitem.page,
+		  pageSize: categoryitem.pagesize,
 		  personType:'SEX',
 		  personId: this.$route.params.id
 		})
+		// res.data.data.list[0].person_head = '/video/person/' + encodeURI(res.data.data.list[0].person_nationality) + '/' + encodeURI(res.data.data.list[0].person_name) + '/head.jpg' + '?token=' + this.token
 		this.person = res.data.data.list[0]
-		console.log(this.person)
-		// this.height = this.$refs.wrapper.clientHeight
-		// this.width = this.$refs.wrapper.clientWidth
-		this.height = '300px'
-		// console.log('......查询人员数据........ss')
+
 	},
-	pathPush(){
-		this.$router.push(`/personWork/${this.$route.params.id}`)
+	pathPush(item){
+		this.$router.push(`/personWork/${item.id}`)
 	}
   },
-  watch: {
-    active() {
-      const categoryitem = this.categoryItem();
-      if (!categoryitem.list.length) {
-        this.selectArticle();
-
-        // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
-      }
-    }
-  },
   created() {
+	  this.selectCategory()
 	  this.initPersonData();
-      this.selectCategory();
+      
   }
 };
 </script>

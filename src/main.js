@@ -17,6 +17,8 @@ import { SwipeCell } from 'vant';
 import 'video.js/dist/video-js.css'
 import videojs from 'video.js';
 import NoSleep from "nosleep.js/dist/NoSleep.min.js";
+import VueClipboard from 'vue-clipboard2' // 复制包
+Vue.use(VueClipboard)
  Vue.prototype.$NoSleep = NoSleep;
 
 // import VueVideoPlayer from 'vue-video-player'

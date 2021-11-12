@@ -88,11 +88,17 @@ Vue.use(VueRouter)
 	},
 	{
 	  path:'/person/:id',
-	  component:person
+	  component:person,
+	  meta:{
+		  keepalive:true
+	  }
 	},
 	{
 	  path:'/personWork/:id',
-	  component:personWork
+	  component:personWork,
+	  meta:{
+		keepalive:true  
+	  }
 	},
 	{
 	  path:'/search',

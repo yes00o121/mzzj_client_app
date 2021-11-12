@@ -323,7 +323,7 @@ export default {
 		  // visibility: hidden;
 		  // console.log('销毁重新创建......')
 		  let html = `<video id="${this.VideoItem.id}"   class="video"
-	  style="width:100%;height:100%;visibility: hidden;"
+	  style="width:100%;height:100%;"
 	  poster="${this.baseURL}${this.VideoItem.previewImg}&token=${this.token}"
 	  webkit-playsinline="true" x5-video-player-type="h5-page"
 	  x5-playsinline  x-webkit-airplay="allow"

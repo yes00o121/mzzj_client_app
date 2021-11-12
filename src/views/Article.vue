@@ -11,7 +11,7 @@
               <!-- <video controls="controls" :src="model.content"></video> -->
 			   <!-- style="visibility: hidden;" -->
               <video v-if="model.loadMode == 4"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" controls="controls"></video>
-			  <video v-if="model.loadMode == 6" style="height:15rem;visibility: hidden;"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" :src="baseURL + '/video/'+model.videoAddress+'?token=' + token" controls="controls"></video>
+			  <video v-if="model.loadMode == 6" style="height:15rem;"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" :src="baseURL + '/video/'+model.videoAddress+'?token=' + token" controls="controls"></video>
          </div>
          <div class="detailinfoText">
               <div>

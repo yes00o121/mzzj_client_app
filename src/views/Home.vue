@@ -212,6 +212,7 @@ export default {
 	  // 临时视频结束
 	  // console.log(this.videoList)
       const res = await this.$http.get("/webInfoDetailData/queryMenu",{timeout:this.httpTimeout});
+	  console.log(res)
       this.category = this.changeCategory(res.data.data);
       this.selectArticle();
     },
@@ -251,10 +252,11 @@ export default {
 			  pageSize: categoryitem.pagesize,
 			  personType:'SEX'
 			})
+			console.log(res)
 			for(let i =0;i<res.data.data.list.length;i++){
 				res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
-				res.data.data.list[i].previewImg = '/common/image?imgId=' + res.data.data.list[i].person_photp + '&token=' + this.token
-				console.log(res.data.data.list[i].previewImg)
+				// res.data.data.list[i].previewImg = '/common/image?imgId=' + res.data.data.list[i].person_photp + '&token=' + this.token
+				// res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
 				res.data.data.list[i].title = res.data.data.list[i].person_name
 			}
 			// console.log(res)
