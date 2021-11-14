@@ -2,13 +2,21 @@
 <template>
 	<div style="background:white;">
 		<van-sticky >
-			<van-cell class="van-ellipsis"  style="z-index:99999;width:100%"  icon="arrow-left" :title="work.works_name1"  @click="returnPage"/>
+			<van-cell class="van-ellipsis"  style="width:100%"  icon="arrow-left" :title="work.works_number"  @click="returnPage">
+				<van-icon
+				    slot="right-icon"
+				    name="wap-home-o"
+					size="1.2rem"
+				    style="line-height: inherit;"
+					@click.stop="$router.push('/')"
+				  />
+			</van-cell>
 		</van-sticky>
 		<!-- 作品数据 -->
 		<div style="justify-content: space-around;flex-wrap: wrap;display: flex;padding: 0px 1rem;">
 			<div>{{work.works_name}}</div>
 			<!-- <div> -->
-				<van-image :src="baseURL + work.conver + '?token=' + token" style="width:100%;height:78.778vw;margin-top:1rem"/>
+				<van-image fit="cover" :src="baseURL + work.conver + '?token=' + token" style="width:100%;height:70.778vw;margin-top:1rem" @click="bigImagePreview"/>
 			<!-- </div> -->
 			
 		</div>
@@ -30,7 +38,7 @@
 				<van-cell title="演员" value="" />
 			</van-cell-group>
 			<div style="flex-wrap: wrap;display: flex;">
-				<div v-for="(item,index) in participates" :key = "index" style="width:30%;padding: .3rem;">
+				<div v-for="(item,index) in participates" :key = "index" style="width:30%;padding: .3rem;" @click="pathPush(item)">
 					<div>
 						<van-image v-if="item.personNationality"  lazy-load :src="baseURL +   item.personNationality + '?token=' + token" class="participates-photo" >
 							<template v-slot:error>
@@ -50,7 +58,8 @@
 			<div style="flex-wrap: wrap;display: flex;">
 				<div v-for="(item,index) in workImages" :key = "index" style="width:45%;padding: .3rem;">
 					<div>
-						<van-image  lazy-load :src="baseURL +   item.content + '?token=' + token" class="participates-photo" @click="imagePreview(item)" />
+						<van-image style="width:100%" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +   item.content + '?token=' + token" class="participates-photo" @click="imagePreview(item)" />
+						<!-- <van-image style="width:100%"  lazy-load :src="baseURL +   item.content + '?token=' + token" @click="imagePreview(item)" /> -->
 					</div>
 				</div>
 			</div>
@@ -60,6 +69,9 @@
 				<van-cell title="磁力" value="" />
 			</van-cell-group>
 			<van-cell :title="item.torrentName" v-for="(item,index) in magnetList" :key="index">
+				<div style="margin-left: 2rem;float: left;">
+					{{item.size}}
+				</div>
 			  <!-- 使用 right-icon 插槽来自定义右侧图标 -->
 			  <van-button type="default" size="mini" v-clipboard:copy="item.magnet" v-clipboard:success="onCopy" v-clipboard:error="onError">复制</van-button>
 			</van-cell>
@@ -76,6 +88,7 @@ export default{
 			work:{},
 			participates:[], // 出演人员
 			workImages:[],// 预览图片
+			converPreviews:[],// 大图预览
 			imagePreviews:[], // 预览图片查看数组
 			magnetList:[],// 磁力数组
 			token: 'Bearer ' + localStorage.token,
@@ -86,7 +99,18 @@ export default{
 			if(from.path.startsWith('/personWork')){
 				return;
 			}
+			if(to.params.id == this.work.id){
+				scroll(0,0)
+				return;
+			}
+			if(!to.path.startsWith('/person')){
+				return;
+			}
+			// console.log(to)
+			// console.log(from)
 			scroll(0,0)
+			this.converPreviews = []
+			this.imagePreviews = []// 清空之前预览图
 			// 作品数据
 			this.initPersonWorkData()
 			// 演员数据
@@ -97,6 +121,13 @@ export default{
 		}
 	},
 	methods:{
+		pathPush(item){
+			// this.$router.push(`/personWork/${item.id}`)
+			if(item.person_id){
+				this.$router.push(`/person/${item.person_id}`)
+			}
+
+		},
 		// 复制成功
 		onCopy(){
 			this.$msg.success('复制成功')
@@ -111,6 +142,11 @@ export default{
 			ImagePreview({
 				images: this.imagePreviews,
 				startPosition:item.works_content_number -1 
+			})
+		},
+		bigImagePreview(){
+			ImagePreview({
+				images:this.converPreviews
 			})
 		},
 		returnPage(){
@@ -131,11 +167,15 @@ export default{
 			
 			res.data.data.list[0].conver = '/video/person/' + encodeURI(res.data.data.list[0].person_nationality) + '/' + encodeURI(res.data.data.list[0].person_name) + '/' + res.data.data.list[0].works_number + '/bigCover.jpg'
 			this.work = res.data.data.list[0]
+			this.converPreviews.push(this.baseURL +  this.work.conver+ '?token=' + this.token)
 			this.$msg.clear()
 			// 磁力数据
 			this.initMagnet();
 		},
 		async initPersonWorkParticipate(){
+			if(!this.$route.params.id){
+				return;
+			}
 			const res = await this.$http.post("/person/queryPersonWorkParticipate", {
 			  workId: this.$route.params.id
 			})
@@ -149,18 +189,22 @@ export default{
 			}
 			
 		},
-		async initPersonWorkImage(){
-			const res = await this.$http.post("/person/queryPersonWorkDetail", {
+		initPersonWorkImage(){
+			this.$http.post("/person/queryPersonWorkDetail", {
 			  workId: this.$route.params.id
+			}).then(res=>{
+				this.workImages = res.data.data
+				for(let i =0;i<this.workImages.length;i++){
+					this.imagePreviews.push(this.baseURL + this.workImages[i].content + '?token=' + this.token)
+				}
 			})
-			this.workImages = res.data.data
-			for(let i =0;i<this.workImages.length;i++){
-				this.imagePreviews.push(this.baseURL + this.workImages[i].content + '?token=' + this.token)
-			}
+			
 		},
-		async initMagnet(){
-			const res = await this.$http.get("/magnet/queryMagnet?name=" + this.work.works_number)
-			this.magnetList = res.data
+		initMagnet(){
+			this.$http.get("/magnet/queryMagnet?name=" + this.work.works_number).then(res=>{
+				this.magnetList = res.data
+			})
+
 		}
 	},
 	created(){
@@ -178,8 +222,11 @@ export default{
 
 <style scoped>
 .participates-photo{
+	/* -webkit-box-shadow: 0 1px 3px rgba(0,0,0,.3); */
 	width:100%;
-	height:30.778vw;
+	 height:30.778vw; 
+	/* height:100%; */
+	/* height:90px; */
 	margin:.0rem .3rem;
 	/* float:left */
 }

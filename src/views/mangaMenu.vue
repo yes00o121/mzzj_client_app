@@ -19,7 +19,7 @@
 	</div>
     <div class="categorytab" >
 	  <back-top :showHeight="300"></back-top>
-      <van-tabs v-model="active" swipeable sticky animated>
+      <van-tabs v-model="active" swipeable animated>
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
             <van-list

@@ -16,6 +16,7 @@ const search = ()=>import('@/views/search.vue')
 const video = ()=> import('@/views/video.vue')
 const videosearch = () => import('@/views/videosearch.vue')
 const set = () => import('@/views/set.vue')
+const magnet = ()=>import('@/views/magnet.vue')
 
 // const dynamic = ()=>import('@/views/dynamic.vue')
 Vue.use(VueRouter)
@@ -84,6 +85,13 @@ Vue.use(VueRouter)
 	  meta:{
 		  index:3,
 	  //   keepalive:false
+	  }
+	},
+	{
+	  path:'/magnet',
+	  component:magnet,
+	  meta:{
+		  keepalive:true
 	  }
 	},
 	{

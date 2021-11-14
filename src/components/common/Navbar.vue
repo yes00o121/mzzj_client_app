@@ -4,6 +4,9 @@
           <img src="@/assets/mzzj120.png" style="height:40px;width:40px" alt="" @click="$router.push('/')">
 		  <span style="font-size:12px">漫宅之家</span>
       </div>
+<!-- 	  <div>
+		  <div><van-icon name="search" class="iconNav"/></div>
+	  </div> -->
       <div @click="toSearch()">
           <div> <van-icon name="search"  class="iconNav"/></div>
       </div>
@@ -12,6 +15,7 @@
           <img style="border-radius:50%" src="@/assets/default_img.jpg" alt="" @click="$router.push('/userinfo')"  v-else> -->
 		  <!-- <img style="border-radius:50%" :src="imgUrl" alt=""  v-if="imgUrl"> -->
 		  <!-- <img style="border-radius:50%" src="@/assets/default_img.jpg" alt=""   v-else> -->
+		  <van-icon name="search" size="1.5rem" @click="$router.push('/magnet')"/>
 		  <van-icon name="video-o" size="1.5rem" @click="$router.push('/video')"/>
           <!-- <div>下载App</div> -->
       </div>

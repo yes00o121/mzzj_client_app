@@ -1,6 +1,7 @@
 <template>
 	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
   <div>
+	  <van-sticky>
   <van-search
   v-model="search"	
     show-action
@@ -10,7 +11,13 @@
 	autofocus="autofocus"
 	ref="search"
   />
+  </van-sticky>
   <div >
+<!-- 	  	<van-sticky>
+	  	<van-dropdown-menu :z-index="9999" @change="searchChange">
+	  	   <van-dropdown-item :value=" value1 " :options=" option1 " />
+	  	</van-dropdown-menu>
+	  	</van-sticky> -->
 	  <van-collapse v-model="activeNames" >
 		  <van-collapse-item title="搜索历史" name="1">
 			  <van-button style="margin:3px" round  hairline type="default" @click="onSearch(item.content)"  v-for="item in searchList">{{item.content}}</van-button>
@@ -19,9 +26,9 @@
   </div>
   <div class="categorytab">
     <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
-    <van-tabs v-model="active" swipeable sticky animated>
+    <van-tabs v-model="active" swipeable animated>
 		
-      <van-tab v-for="(item,index) in category" v-if="item.CODE_VALUE != 5" :key="index" :title="item.DICT_NAME" scrollspy>
+      <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
         <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
           <van-list
             v-model="item.loading"
@@ -54,7 +61,7 @@ export default {
         return {
 			curScroll:0, // 滚动位置
 			curPage:'',// 当前页面标识
-			activeNames: ['1'],
+			activeNames: ['0'],
 			search:'', // 查询条件
 			beforeSearch:'',// 之前查询的zhi,用于比对
             isaa:false,
@@ -62,6 +69,19 @@ export default {
 			searchList:[],
 			active: 0,
 			isLoading: false,   //是否处于下拉刷新状态
+			token: 'Bearer ' + localStorage.token,
+			option1: [
+			      { text: '全部商品', value: 0 },
+			      { text: '新款商品', value: 1 },
+			      { text: '活动商品', value: 2 },
+			    ],
+					  option2: [
+					        { text: '默认排序', value: 'a' },
+					        { text: '好评排序', value: 'b' },
+					        { text: '销量排序', value: 'c' },
+					      ],
+						  value1: 0,
+						      value2: 'a',
         }
     },
 	components: {
@@ -170,6 +190,7 @@ export default {
 	  async selectArticle() {
 
 	    const categoryitem = this.categoryItem();
+		console.log(categoryitem)
 		if(!this.search){
 			categoryitem.finished = true;
 			return;
@@ -177,17 +198,19 @@ export default {
 			categoryitem.finished = false;
 		}
 		
-		
 			// 如果categoryitem.CODE_VALUE等于9,但是查询女优数据
 			if(categoryitem.CODE_VALUE == 9){
+				console.log('.......')
 				const res = await this.$http.post("/person/queryPerson", {
 				  pageNum: categoryitem.page,
 				  pageSize: categoryitem.pagesize,
-				  personType:'SEX'
+				  personType:'SEX',
+				  personName:this.search
 				})
 				for(let i =0;i<res.data.data.list.length;i++){
 					res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
-					res.data.data.list[i].previewImg = '/common/image?imgId=' + res.data.data.list[i].person_photp
+					res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
+					// res.data.data.list[i].previewImg = '/common/image?imgId=' + res.data.data.list[i].person_photp
 					res.data.data.list[i].title = res.data.data.list[i].person_name
 				}
 				// console.log(res)
@@ -259,6 +282,17 @@ export default {
 		this.onSearchRecord()
 	    this.selectCategory();
 		this.hideloading()
+	},
+	watch:{
+		active(current,before) {
+		  const categoryitem = this.categoryItem();
+		  // 切换时候记录之前位置
+			// alert(this.active)
+		  if (!categoryitem.list.length) {
+		    this.selectArticle();
+		  //   // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
+		  }
+		},
 	}
 }
 </script>

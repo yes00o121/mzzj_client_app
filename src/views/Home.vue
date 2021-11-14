@@ -1,12 +1,19 @@
 <template>
   <div class="home" v-if="category">
+	  <van-sticky>
     <nav-bar></nav-bar>
+	</van-sticky>
+<!-- 	<van-sticky>
+	<van-dropdown-menu :z-index="9999" @change="searchChange">
+	   <van-dropdown-item :value=" value1 " :options=" option1 " />
+	</van-dropdown-menu>
+	</van-sticky> -->
 	<!-- home -->
     <div class="categorytab"  v-show="tabActive == 0">
-		
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
-      <van-tabs v-model="active" swipeable sticky animated >
+      <van-tabs v-model="active" swipeable sticky  animated offset-top="40">
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy  >
+			
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
 			  <!-- <van-swipe :autoplay="3000">
 			    <van-swipe-item v-for="(image, index) in item.flowData" :key="index" :loop="false" :width="300">
@@ -32,7 +39,7 @@
 					  scale-down="contain"
 					  :src="baseURL +   image.previewImg + '&token=' + token" rel="external nofollow" 
 					/> -->
-			    </van-grid-item>
+			    <!-- </van-grid-item> -->
 			   <!-- <van-grid-item>
 			      <van-image src="https://img.yzcdn.cn/vant/apple-2.jpg" rel="external nofollow"  />
 			    </van-grid-item>
@@ -42,7 +49,8 @@
 				<van-grid-item>
 				  <van-image src="https://img.yzcdn.cn/vant/apple-3.jpg" rel="external nofollow"  />
 				</van-grid-item> -->
-			  </van-grid>
+			  <!-- </van-grid> -->
+			 
             <van-list 
 			  style="padding-bottom: 20%;"
               v-model="item.loading"
@@ -66,12 +74,12 @@
       </van-tabs>
 	  <!-- <shortvideo v-if="active == 1 && videoStatus"></shortvideo>ss -->
     </div>
-	<div v-if="tabActive == 2" style="heihgt:800px">
+	<!-- <div v-if="tabActive == 2" style="heihgt:800px">
 		<video controls :src="'http://192.168.1.4:8090/video/' + curVideo"></video>
 			  <div v-for="item in videoList">
 				  <van-button type="info" @click="curVideo = item">{{item}}</van-button>
 			  </div>
-	</div>
+	</div> -->
 	<keep-alive >
 	<userinfo v-if="tabActive == 3"></userinfo>
 	</keep-alive >
@@ -102,6 +110,7 @@ import dynamic from "./dynamic"
 import userinfo from './userinfo'
 // import shortvideo from './video'
 import hot from './hot'
+
 export default {
   data() {
     return {
@@ -127,7 +136,8 @@ export default {
 	  },
 	  videoHead:{
 		  height:'400px',
-	  }
+	  },
+
     };
   },
   // 跳转其他页面之前
@@ -177,6 +187,9 @@ export default {
 	//     }
   },
   methods: {
+	  searchChange(){
+		console.log('....')  
+	  },
 	  hit(){
 		  this.beforetabActive = this.tabActive 
 		  // this.$msg('功能开发中')
@@ -207,12 +220,12 @@ export default {
 	  // 临时视频开始
 	  this.videoList = []
 	   const res1 = await this.$http.get("/webInfoDetailData/queryVideoRandom");
-	  		console.log(res1)
+	  		// console.log(res1)
 	  this.videoList = res1.data
 	  // 临时视频结束
 	  // console.log(this.videoList)
       const res = await this.$http.get("/webInfoDetailData/queryMenu",{timeout:this.httpTimeout});
-	  console.log(res)
+	  // console.log(res)
       this.category = this.changeCategory(res.data.data);
       this.selectArticle();
     },
@@ -227,7 +240,7 @@ export default {
         item.finished = false;
         item.loading = true;
         item.pagesize = 20;
-		console.log(item)
+		// console.log(item)
 		// if(item.CODE_VALUE == 8){
 		// 	// 初始化的时候追加热门数据
 		// 	this.$http.post("/ranking/queryLatelyFlowData", {
@@ -252,12 +265,18 @@ export default {
 			  pageSize: categoryitem.pagesize,
 			  personType:'SEX'
 			})
-			console.log(res)
+			// console.log(res)
 			for(let i =0;i<res.data.data.list.length;i++){
 				res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
-				// res.data.data.list[i].previewImg = '/common/image?imgId=' + res.data.data.list[i].person_photp + '&token=' + this.token
-				// res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
+				res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
 				res.data.data.list[i].title = res.data.data.list[i].person_name
+				res.data.data.list[i].descript = ''
+				// if(res.data.data.list[i].person_birthday){
+				// 	res.data.data.list[i].descript += '生日：' + res.data.data.list[i].person_birthday
+				// }
+				// if(res.data.data.list[i].person_cup){
+				// 	res.data.data.list[i].descript += '罩杯：' + res.data.data.list[i].person_cup
+				// }
 			}
 			// console.log(res)
 			categoryitem.list.push(...res.data.data.list);
@@ -265,6 +284,7 @@ export default {
 			if (res.data.length < categoryitem.pagesize) {
 			  categoryitem.finished = true;
 			}
+			return;
 		}
 		if(categoryitem.CODE_VALUE != 5){
 			const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {

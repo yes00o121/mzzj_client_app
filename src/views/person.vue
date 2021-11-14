@@ -1,7 +1,15 @@
 <template>
 <div>
 	<van-sticky >
-		<van-cell  style="z-index:99999;"  icon="arrow-left" :title="person.person_name"  @click="returnPage"/>
+		<van-cell  style="z-index:99999;"  icon="arrow-left" :title="person.person_name"  @click="returnPage">
+			<van-icon
+			    slot="right-icon"
+			    name="wap-home-o"
+				size="1.2rem"
+			    style="line-height: inherit;"
+				@click.stop="$router.push('/')"
+			  />
+		</van-cell>
 	</van-sticky>
 	<back-top :showHeight="300"></back-top>
 	<div class="userdetail">
@@ -49,7 +57,8 @@
     <div class="categorytab">
 
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
-      <van-tabs v-model="active" swipeable sticky animated>
+      <!-- <van-tabs v-model="active" swipeable sticky animated offset-top="40"> -->
+	  <van-tabs v-model="active" swipeable  animated>
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
             <van-list
@@ -70,14 +79,21 @@
 				    <div class="detailItem" >
 				        <div class="imgparent">
 				             <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
-							   <van-image lazy-load :src="baseURL +   categoryitem.previewImg + '?width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:57.778vw;"/>
+							   <van-image lazy-load :src="baseURL +   categoryitem.previewImg + '?width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:55.778vw;"/>
 				            <div class="bottom">
 				                <!-- <div class="icon-play2"><span class="video">&nbsp;{{detailitem.flowNum}}</span></div> -->
 								  <div v-if="categoryitem.flowNum"><span class="video"><van-icon name="eye-o" />&nbsp;{{categoryitem.flowNum}}</span></div>
 				                <!-- <div class="icon-file-text"> <span class="comment">{{!detailitem.commentlen ? 66 : detailitem.commentlen}}</span> </div> -->
 				            </div>
 				        </div>
-				        <p>{{categoryitem.title}}</p>
+				        <div class="van-multi-ellipsis--l3" style="font-size: 12px;
+    color: #333;
+    line-height: 1rem;">{{categoryitem.title}}</div>
+						<div style="color:#c00;font-size:12px;padding-top:.3rem;text-align: left;">
+							<span>{{categoryitem.works_number}}</span>
+							<span>&nbsp;/&nbsp;</span>
+							<span>{{categoryitem.works_time}}</span>
+						</div>
 				    </div>
 				</div>
               </div>
@@ -110,25 +126,29 @@ export default {
   },
   watch:{
   	$route(to,from) {
-		if(from.path.startsWith('/person')){
+        // 跳转明细页面不刷新
+	    if(to.path.startsWith('/personWork')){
 			return;
 		}
-		this.$msg.loading({
-		  message: '加载中...',
-		  forbidClick: true,
-		  loadingType: 'spinner'
-		});
+		// id相同不刷新
+		if(to.params.id == this.person.id){
+			scroll(0,0)
+			return;
+		}
+		// console.log(from)
+		// 跳转其他页面
+		if(!to.path.startsWith('/person')){
+			return;
+		}
+		
   		scroll(0,0)
 		this.person = {}
 		const categoryitem = this.categoryItem();
 		categoryitem.list = []
-		categoryitem.page = 0
+		categoryitem.page = 1
 		categoryitem.finished = false;
 		categoryitem.loading = true;
-		this.initPersonData()
 		this.selectArticle();
-		this.$msg.clear()
-		// this.selectArticle()
   	}
   },
   components: {
@@ -159,14 +179,14 @@ export default {
       // console.log(res)
       const menu = [{DICT_NAME:'作品'}/*,{DICT_NAME:'评论'}*/]
       this.category = this.changeCategory(menu);
-	  console.log(this.category)
+	  // console.log(this.category)
+	  // this.initPersonData();
       this.selectArticle();
-	  this.$msg.clear()
     },
     changeCategory(data) {
       const category1 = data.map((item, index) => {
         item.list = [];
-        item.page = 0;
+        item.page = 1;
         item.finished = false;
         item.loading = true;
         item.pagesize = 10;
@@ -174,36 +194,42 @@ export default {
       });
       return category1;
     },
-    async selectArticle() {	
-		// alert(1)
-      const categoryitem = this.categoryItem();
-      if(categoryitem.DICT_NAME == '作品'){
-        const res = await this.$http.post("/person/queryPersonWork", {
-          // typeId: categoryitem.CODE_VALUE,
-		  personId: this.$route.params.id,
-          pageNum: categoryitem.page,
-          pageSize: categoryitem.pagesize,
-          // search: ''
-        })
-        if(res.data.data.list == 0){
-          categoryitem.finished = true;
-          return
-        }
-		// console.log(this.person.person_nationality)
+    selectArticle() {	
+	  if(!this.person.person_name){
+		  this.initPersonData();
+		  return;
+	  }
+
+	  this.loadData()
+    },
+	// 加载数据
+	async loadData(){
+		// console.log('-------')
+		const categoryitem = this.categoryItem();
+		if(categoryitem.DICT_NAME == '作品'){
+		  const res = await this.$http.post("/person/queryPersonWork", {
+		    // typeId: categoryitem.CODE_VALUE,
+				  personId: this.$route.params.id,
+		    pageNum: categoryitem.page,
+		    pageSize: categoryitem.pagesize,
+		    // search: ''
+		  })
+		  if(res.data.data.list == 0){
+		    categoryitem.finished = true;
+		    return
+		  }
 		for(let i =0;i<res.data.data.list.length;i++){
 			res.data.data.list[i].flowNum = res.data.data.list[i].works_flow_num
 			res.data.data.list[i].previewImg = '/video/person/' + encodeURI(this.person.person_nationality) + '/' + encodeURI(this.person.person_name) + '/' + res.data.data.list[i].works_number + '/' + 'cover.jpg'
 			res.data.data.list[i].title = res.data.data.list[i].works_name
 		}
-		console.log(res)
-        categoryitem.list.push(...res.data.data.list);
-        categoryitem.loading = false;
-        if (res.data.data.list.length < categoryitem.pagesize) {
-          categoryitem.finished = true;
-        }
-      }
-
-    },
+		  categoryitem.list.push(...res.data.data.list);
+		  categoryitem.loading = false;
+		  if (res.data.data.list.length < categoryitem.pagesize) {
+		    categoryitem.finished = true;
+		  }
+		}
+	},
     onRefresh() {       //下拉刷新
                 setTimeout(() => {
                     this.finished = false;
@@ -231,6 +257,11 @@ export default {
       return categoryitem;
     },
 	async initPersonData(){
+		this.$msg.loading({
+		  message: '加载中...',
+		  forbidClick: true,
+		  loadingType: 'spinner'
+		});
 		const categoryitem = this.categoryItem();
 		const res = await this.$http.post("/person/queryPerson", {
 		  pageNum: categoryitem.page,
@@ -238,9 +269,14 @@ export default {
 		  personType:'SEX',
 		  personId: this.$route.params.id
 		})
-		// res.data.data.list[0].person_head = '/video/person/' + encodeURI(res.data.data.list[0].person_nationality) + '/' + encodeURI(res.data.data.list[0].person_name) + '/head.jpg' + '?token=' + this.token
+		if(res.data.data.list.length == 0){
+			categoryitem.finished = true;
+			return;
+		}
+		res.data.data.list[0].person_head = '/video/person/' + encodeURI(res.data.data.list[0].person_nationality) + '/' + encodeURI(res.data.data.list[0].person_name) + '/head.jpg' + '?token=' + this.token
 		this.person = res.data.data.list[0]
-
+		this.loadData()
+		this.$msg.clear()
 	},
 	pathPush(item){
 		this.$router.push(`/personWork/${item.id}`)
@@ -248,13 +284,12 @@ export default {
   },
   created() {
 	  this.selectCategory()
-	  this.initPersonData();
       
   }
 };
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .home {
   background-color: white;
 }
