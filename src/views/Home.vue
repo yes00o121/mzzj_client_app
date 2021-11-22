@@ -3,18 +3,17 @@
 	  <van-sticky>
     <nav-bar></nav-bar>
 	</van-sticky>
-<!-- 	<van-sticky>
-	<van-dropdown-menu :z-index="9999" @change="searchChange">
-	   <van-dropdown-item :value=" value1 " :options=" option1 " />
-	</van-dropdown-menu>
-	</van-sticky> -->
 	<!-- home -->
     <div class="categorytab"  v-show="tabActive == 0">
+		
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <van-tabs v-model="active" swipeable sticky  animated offset-top="40">
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy  >
-			
+			<van-sticky>
+				<person-search-tool :show = "categoryItem().CODE_VALUE == '9'" @search = "personSearch"></person-search-tool>
+			</van-sticky>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
+			  
 			  <!-- <van-swipe :autoplay="3000">
 			    <van-swipe-item v-for="(image, index) in item.flowData" :key="index" :loop="false" :width="300">
 				  <van-image
@@ -100,6 +99,7 @@
 	  <van-tabbar-item icon="user-o" @click="my">我的</van-tabbar-item>
 	  <!-- <van-tabbar-item icon="underway-o" v-show="dynamicNum >0" :info="dynamicNum" @click="dynamic">动态</van-tabbar-item> -->
 	</van-tabbar>
+	
   </div>
 </template>	
 
@@ -110,10 +110,12 @@ import dynamic from "./dynamic"
 import userinfo from './userinfo'
 // import shortvideo from './video'
 import hot from './hot'
-
+import personSearchTool from '@/components/personSearchTool'
 export default {
   data() {
     return {
+	    personParams:{},// 人员参数
+		result: ['a', 'b'],
 		images: [
 		        'https://img.yzcdn.cn/vant/apple-1.jpg',
 		        'https://img.yzcdn.cn/vant/apple-2.jpg'
@@ -137,6 +139,27 @@ export default {
 	  videoHead:{
 		  height:'400px',
 	  },
+	  accountName: '筛选',
+      licensePlate: '车牌号',
+      debt: '是否欠款',
+      accountNameValue: '',
+      licensePlateValue: '',
+      debtValue: '',
+      accountNameOptions: [
+        { text: '全部', value: 0 },
+        { text: '测试账户1', value: 1 },
+        { text: '测试账户2', value: 2 },
+      ],
+      licensePlateOptions: [
+        { text: '全部', value: 0 },
+        { text: '皖A78956', value: 1 },
+        { text: '皖A75236', value: 2 },
+      ],
+      debtOptions: [
+        { text: '不限', value: 0 },
+        { text: '是', value: 1 },
+        { text: '否', value: 2 },
+      ],
 
     };
   },
@@ -165,7 +188,8 @@ export default {
     cover,
 	userinfo,
 	dynamic,
-	hot
+	hot,
+	personSearchTool
 	// shortvideo
   },
   activated() {
@@ -187,6 +211,28 @@ export default {
 	//     }
   },
   methods: {
+	  openMenu(index){
+		   // $('.van-dropdown-item--down').css('top','50px')
+		   // 动态调整下拉菜单位置、为index*高度
+		   // if(index == 0){
+			  //  return;
+		   // }
+		   // $('#down_1 .van-dropdown-item--down').css('marginLet', this.windowWidth + 'px')
+		   
+		   
+	  },
+	  toggleAccountName(value) {
+	        this.accountName = this.accountNameOptions[value].text
+	        this.accountNameValue = value
+	      },
+	      toggleLicensePlate(value) {
+	        this.licensePlate = this.licensePlateOptions[value].text
+	        this.licensePlateValue = value
+	      },
+	      toggleDebt(value) {
+	        this.debt = this.debtOptions[value].text
+	        this.debtValue = value
+	      },
 	  searchChange(){
 		console.log('....')  
 	  },
@@ -256,34 +302,66 @@ export default {
       });
       return category1;
     },
+	// 查询人员数据
+	async selectPerson(){
+		const categoryitem = this.categoryItem();
+		const res = await this.$http.post("/person/queryPerson", Object.assign({
+			pageNum: categoryitem.page,
+			pageSize: categoryitem.pagesize,
+			personType:'SEX'
+		},this.personParams))
+		// console.log(res)
+		for(let i =0;i<res.data.data.list.length;i++){
+			res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
+			res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
+			res.data.data.list[i].title = res.data.data.list[i].person_name
+			res.data.data.list[i].descript = ''
+			// if(res.data.data.list[i].person_birthday){
+			// 	res.data.data.list[i].descript += '生日：' + res.data.data.list[i].person_birthday
+			// }
+			// if(res.data.data.list[i].person_cup){
+			// 	res.data.data.list[i].descript += '罩杯：' + res.data.data.list[i].person_cup
+			// }
+		}
+		// console.log(res)
+		categoryitem.list.push(...res.data.data.list);
+		categoryitem.loading = false;
+		if (res.data.data.list.length < categoryitem.pagesize) {
+			categoryitem.loading = true;
+		  categoryitem.finished = true;
+		}
+	},
+	
     async selectArticle() {
       const categoryitem = this.categoryItem();
 		// 如果categoryitem.CODE_VALUE等于9,但是查询女优数据
 		if(categoryitem.CODE_VALUE == 9){
-			const res = await this.$http.post("/person/queryPerson", {
-			  pageNum: categoryitem.page,
-			  pageSize: categoryitem.pagesize,
-			  personType:'SEX'
-			})
-			// console.log(res)
-			for(let i =0;i<res.data.data.list.length;i++){
-				res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
-				res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
-				res.data.data.list[i].title = res.data.data.list[i].person_name
-				res.data.data.list[i].descript = ''
-				// if(res.data.data.list[i].person_birthday){
-				// 	res.data.data.list[i].descript += '生日：' + res.data.data.list[i].person_birthday
-				// }
-				// if(res.data.data.list[i].person_cup){
-				// 	res.data.data.list[i].descript += '罩杯：' + res.data.data.list[i].person_cup
-				// }
-			}
-			// console.log(res)
-			categoryitem.list.push(...res.data.data.list);
-			categoryitem.loading = false;
-			if (res.data.length < categoryitem.pagesize) {
-			  categoryitem.finished = true;
-			}
+			console.log('??????')
+			// const res = await this.$http.post("/person/queryPerson", {
+			  // pageNum: categoryitem.page,
+			  // pageSize: categoryitem.pagesize,
+			  // personType:'SEX'
+			// })
+			// // console.log(res)
+			// for(let i =0;i<res.data.data.list.length;i++){
+			// 	res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
+			// 	// res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
+			// 	res.data.data.list[i].title = res.data.data.list[i].person_name
+			// 	res.data.data.list[i].descript = ''
+			// 	// if(res.data.data.list[i].person_birthday){
+			// 	// 	res.data.data.list[i].descript += '生日：' + res.data.data.list[i].person_birthday
+			// 	// }
+			// 	// if(res.data.data.list[i].person_cup){
+			// 	// 	res.data.data.list[i].descript += '罩杯：' + res.data.data.list[i].person_cup
+			// 	// }
+			// }
+			// // console.log(res)
+			// categoryitem.list.push(...res.data.data.list);
+			// categoryitem.loading = false;
+			// if (res.data.length < categoryitem.pagesize) {
+			//   categoryitem.finished = true;
+			// }
+			this.selectPerson(this.personParams)
 			return;
 		}
 		if(categoryitem.CODE_VALUE != 5){
@@ -364,6 +442,16 @@ export default {
 		
 		let rect = document.body.getBoundingClientRect()
 		categoryitem.scroll = Math.abs(rect.top)
+	},
+	personSearch(params){
+		console.log('人员查询.....')
+		const categoryitem = this.categoryItem();
+		categoryitem.page = 1
+		categoryitem.pagesize = 20 
+		categoryitem.list = []
+		categoryitem.finished = false;
+		this.personParams = params
+		this.selectPerson()
 	}
   },
   watch: {
@@ -452,5 +540,19 @@ export default {
 		color:white;
 		padding: 0 1rem;
 		max-width:19rem;
+}
+
+.cell-distance{
+	padding: 10px 16px;
+}
+
+.custom-button {
+  width: 26px;
+  color: #fff;
+  font-size: 10px;
+  line-height: 18px;
+  text-align: center;
+  background-color: #ee0a24;
+  border-radius: 100px;
 }
 </style>

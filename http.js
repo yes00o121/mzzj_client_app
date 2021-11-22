@@ -11,8 +11,8 @@ if(this.activeIndicator <= 0){
 import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
-// const baseURL = 'http://127.0.0.1:8095'
-// const baseURL = 'http://192.168.1.107:8095'
+// const baseURL = 'http://127.0.0.1:8098'
+// const baseURL = 'http://192.168.1.109:8099'
 // const baseURL = 'http://121.201.2.228:10824'
 const baseURL = 'http://121.201.2.228:10958'
 Vue.prototype.baseURL = baseURL

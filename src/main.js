@@ -32,7 +32,11 @@ import '../public/static/css/iconfont.css'
 import utils from 'km-vue-utils'
 import { Lazyload } from 'vant';
 import { Dialog } from 'vant';
+import { DatetimePicker } from 'vant';
+import { Slider } from 'vant';
 
+Vue.use(Slider);
+Vue.use(DatetimePicker);
 // 全局注册
 Vue.use(Dialog);
 
@@ -84,7 +88,9 @@ Vue.prototype.getUser = async  function(){
 
 Vue.prototype.httpTimeout = 5000; // http接口超时时长
 
-Vue.prototype.windowWidth = screen.height // 获取用户屏幕高度
+Vue.prototype.windowHeight = screen.height // 获取用户屏幕高度
+
+Vue.prototype.windowWidth = screen.width // 获取用户屏幕宽度
 
 // 跳转到指定y轴位置
 Vue.prototype.slideTo = function(targetPageY,el) {

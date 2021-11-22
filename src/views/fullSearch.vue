@@ -1,7 +1,7 @@
 <template>
 <div>
 	<van-sticky >
-		<van-cell  style="z-index:99999;"  icon="arrow-left" :title="person.person_name"  @click="returnPage">
+		<van-cell  style="z-index:99999;"  icon="arrow-left" title="全文检索"  @click="returnPage">
 			<van-icon
 			    slot="right-icon"
 			    name="wap-home-o"
@@ -11,54 +11,28 @@
 			  />
 		</van-cell>
 	</van-sticky>
+	<!-- 搜索栏 -->
+	<van-sticky>
+		<van-search
+
+		v-model="search"	
+		  show-action
+		  placeholder="请输入搜索关键词"
+		  @search="onSearch"
+		  @cancel="onCancel"
+			autofocus="autofocus"
+			ref="search"
+		/>
+	</van-sticky>
 	<back-top :showHeight="300"></back-top>
-	<div class="userdetail">
-	  <div>
-	    <div class="user_img">
-	      <img :src="baseURL + person.person_head" alt="" v-if="person.person_head"  > 
-	      <img src="@/assets/nowprinting.gif" alt v-else  />
-	    </div>
-	    <div class="user_edit">
-	      <div >
-			<p>
-			  <span>国籍：&nbsp;&nbsp;{{person.person_nationality | dataChkeck}}</span>
-			</p>
-			<p>
-			  <span>出生日期：&nbsp;&nbsp;{{person.person_birthday | dataChkeck}}</span>
-			</p>
-			<p>
-			  <span>罩杯：&nbsp;&nbsp;{{person.person_cup | dataChkeck}}</span>
-			</p>
-			<p>
-			  <span>身高：&nbsp;&nbsp;{{person.person_height | dataChkeck}}</span>
-			</p>
-			<p>
-			  <span>爱好：&nbsp;&nbsp;{{person.person_hobbies | dataChkeck}}</span>
-			</p>
-	      </div>
-	      <div >
-	        <!-- <div class="user_editBtn">个人资料</div> -->
-			
-	      </div>
-	    </div>
-	  </div>
-	  <div>
-	    <!-- <h2>{{userInfo.name}}</h2> -->
-	    <!-- <p v-if="userInfo.user_desc">{{userInfo.user_desc}}</p> -->
-	    <!-- <p v-else>这个人很神秘，什么都没有写</p> -->
-<!-- 		<van-collapse v-model="activeNames">
-		  <van-collapse-item title="更多信息" name="1">
-			    <span>国籍：&nbsp;&nbsp;{{person.person_nationality}}</span>
-		  </van-collapse-item>
-		</van-collapse> -->
-	  </div>
-	</div>
+
   <div class="home" v-if="category">
     <div class="categorytab">
 
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <!-- <van-tabs v-model="active" swipeable sticky animated offset-top="40"> -->
-	  <van-tabs v-model="active" swipeable  animated>
+	  <!-- <van-tabs v-model="active" swipeable  animated> -->
+	  <van-tabs v-model="active"  animated>
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
             <van-list
@@ -68,34 +42,45 @@
               finished-text="我也是有底线的"
               @load="onLoad"
             >
-              <div class="detailparent" ref="tab">
-                <!-- <cover
-                  class="detailitem"
-                  :detailitem="categoryitem"
-                  v-for="(categoryitem,categoryindex) in item.list"
-                  :key="categoryindex"
-                /> -->
-				<div  ref="wrapper" v-for="(categoryitem,categoryindex) in item.list" :key="categoryindex"  class="detailitem" @click="pathPush(categoryitem)">
-				    <div class="detailItem" >
-				        <div class="imgparent">
-				             <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
-							   <van-image lazy-load :src="baseURL +   categoryitem.previewImg + '?width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:55.778vw;"/>
-				            <div class="bottom">
-				                <!-- <div class="icon-play2"><span class="video">&nbsp;{{detailitem.flowNum}}</span></div> -->
-								  <div v-if="categoryitem.flowNum"><span class="video"><van-icon name="eye-o" />&nbsp;{{categoryitem.flowNum}}</span></div>
-				                <!-- <div class="icon-file-text"> <span class="comment">{{!detailitem.commentlen ? 66 : detailitem.commentlen}}</span> </div> -->
-				            </div>
-				        </div>
-				        <div class="van-multi-ellipsis--l3" style="font-size: 12px;
-    color: #333;
-    line-height: 1rem;">{{categoryitem.title}}</div>
-						<div style="color:#c00;font-size:12px;padding-top:.3rem;text-align: left;">
-							<span>{{categoryitem.works_number}}</span>
-							<span>&nbsp;/&nbsp;</span>
-							<span>{{categoryitem.works_time}}</span>
-						</div>
-				    </div>
-				</div>
+             <div class="detailparent" ref="tab">
+				 <!-- 演员 -->
+				 <div style="display: flex;overflow: auto;" v-show="item.DICT_NAME == '综合' ">
+					 <div  v-for="(categoryitem,categoryindex) in person" :key="categoryindex"  @click="toPage(categoryitem)">
+						 
+						 <div class="userdetail">
+						 <!-- <div > -->
+							  <div>
+								<div class="user_img">
+									<!-- <img :src="baseURL + categoryitem.photo + '?token=' + token" alt="" v-if="categoryitem.photo1"  > -->
+								  <img :src="baseURL + categoryitem.photo + '?token=' + token" alt="" v-if="categoryitem.photo"  >
+								  <img src="@/assets/nowprinting.gif" alt v-else  />
+								</div>
+								<div style="font-size:.9rem" v-html="categoryitem.title"></div>
+							  </div>
+							 
+							</div>
+					 </div>
+				 </div>
+
+				 <div v-for="(categoryitem,categoryindex) in item.list" :key="categoryindex" style="padding:.3rem 1rem 1rem 1rem;width:100%">
+					<!-- 作品页面 -->
+					 <div style="width:100%" @click="toPage(categoryitem)">
+						 <div style="font-size:1rem;text-align: left;" class="van-multi-ellipsis--l2" v-html="categoryitem.title">
+						 						 
+						 </div>
+						 <div style="flex-wrap: wrap;display: flex;width:100%">
+							<div style="width:45%;padding: .3rem;">
+								<van-image style="width:100%;height:45.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +   categoryitem.photo + '?token=' + token" class="participates-photo"  />
+							</div>
+							<div class="right-descript van-multi-ellipsis--l2" v-html="categoryitem.summary">
+
+							</div>
+						 </div>
+						 <div style="font-size:14PX;color:#646566;float: right;">
+								{{categoryitem.createdate | filterTime}}
+						 </div>
+					 </div>
+				 </div>
               </div>
             </van-list>
           </van-pull-refresh>
@@ -113,13 +98,14 @@ import backTop from '@/components/backTop'
 export default {
   data() {
     return {
+		person:[],// 人员数组
+		search:'',// 搜索条件
+		mklx:'person,works,manga,video',// 模块类型
 		width : '',
 		height:'',
+		dateType:'5',
 		token: 'Bearer ' + localStorage.token,
-	  activeNames: [],
-	  person:{},
       category: [],
-      // menu:[{id:1,DICT_NAME:'作品'},{id:2,DICT_NAME:'评论'}],
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
     };
@@ -159,9 +145,55 @@ export default {
   filters:{
 	dataChkeck(val){
 		return val ? val : '暂无数据'
-	}  
+	}  ,
+	filterTime(val) {
+	  if(val){
+	    return val.split('T')[0]
+	  }
+	  return "";
+	},
   },
   methods: {
+	  // 搜索
+	  onSearch(content) {
+		  console.log('search..')
+		  if(this.search == ''){
+			  this.$msg.fail('请输入搜索内容')
+			  return;
+		  }
+		  const categoryitem = this.categoryItem();
+		  // 初始化参数
+		  categoryitem.list = [];
+		  categoryitem.page = 1;
+		  categoryitem.finished = false;
+		  categoryitem.loading = true;
+		  categoryitem.pagesize = 20;
+		  this.loadData()
+	  },
+	  onCancel(){
+		 console.log('chage...') 
+	  },
+	toPage(detailitem){
+		console.log(detailitem)
+		let id = ''
+		if(detailitem.mklx == 'works'){
+			id = detailitem.id.replace('works_','')
+			this.$router.push(`/personWork/${id}`)
+		}
+		if(detailitem.mklx == 'person'){
+			id = detailitem.id.replace('person_','')
+			this.$router.push(`/person/${id}`)
+		}
+		if(detailitem.mklx == 'manga'){
+			id = detailitem.id.replace('manga_','')
+			 this.$router.push(`/manga/${id}`)
+		}
+		if(detailitem.mklx == 'video'){
+			id = detailitem.id.replace('video_','')
+			this.$router.push(`/article/${id}/4`)
+		}
+		
+	},
 	returnPage(){
 		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 		this.$router.go(-1)
@@ -177,7 +209,7 @@ export default {
 	  });
       // const res = await this.$http.get("/webInfoDetailData/queryMenu");
       // console.log(res)
-      const menu = [{DICT_NAME:'作品'}/*,{DICT_NAME:'评论'}*/]
+      const menu = [{DICT_NAME:'综合'},/*{DICT_NAME:'女优'},{DICT_NAME:'作品'},{DICT_NAME:'漫画'}*//*,{DICT_NAME:'视频'}*/]
       this.category = this.changeCategory(menu);
 	  // console.log(this.category)
 	  // this.initPersonData();
@@ -189,16 +221,12 @@ export default {
         item.page = 1;
         item.finished = false;
         item.loading = true;
-        item.pagesize = 10;
+        item.pagesize = 20;
         return item;
       });
       return category1;
     },
     selectArticle() {	
-	  if(!this.person.person_name){
-		  this.initPersonData();
-		  return;
-	  }
 
 	  this.loadData()
     },
@@ -206,28 +234,34 @@ export default {
 	async loadData(){
 		// console.log('-------')
 		const categoryitem = this.categoryItem();
-		if(categoryitem.DICT_NAME == '作品'){
-		  const res = await this.$http.post("/person/queryPersonWork", {
+		if(!this.search){
+			this.$msg.clear()
+			categoryitem.finished = true
+			return;
+		}
+		if(categoryitem.DICT_NAME == '综合'){
+		  const res = await this.$http.post("/search/query", {
 		    // typeId: categoryitem.CODE_VALUE,
-				  personId: this.$route.params.id,
-		    pageNum: categoryitem.page,
-		    pageSize: categoryitem.pagesize,
+				  search: this.search,
+				  pageNum: categoryitem.page,
+		          pageSize: categoryitem.pagesize,
+				  dateType:this.dateType,
+				  mklx:this.mklx,
+				  
 		    // search: ''
 		  })
-		  if(res.data.data.list == 0){
+		  this.person = res.data.data.person.data
+		  console.log(res)
+		  if(res.data.data.list.data.length == 0){
 		    categoryitem.finished = true;
 		    return
 		  }
-		for(let i =0;i<res.data.data.list.length;i++){
-			res.data.data.list[i].flowNum = res.data.data.list[i].works_flow_num
-			res.data.data.list[i].previewImg = '/video/person/' + encodeURI(this.person.person_nationality) + '/' + encodeURI(this.person.person_name) + '/' + res.data.data.list[i].works_number + '/' + 'cover.jpg'
-			res.data.data.list[i].title = res.data.data.list[i].works_name
-		}
-		  categoryitem.list.push(...res.data.data.list);
+		  categoryitem.list.push(...res.data.data.list.data);
 		  categoryitem.loading = false;
-		  if (res.data.data.list.length < categoryitem.pagesize) {
+		  if (res.data.data.list.data.length < categoryitem.pagesize) {
 		    categoryitem.finished = true;
 		  }
+		  this.$msg.clear()
 		}
 	},
     onRefresh() {       //下拉刷新
@@ -255,32 +289,7 @@ export default {
       const categoryitem = this.category[this.active];
       console.log(categoryitem)
       return categoryitem;
-    },
-	async initPersonData(){
-		this.$msg.loading({
-		  message: '加载中...',
-		  forbidClick: true,
-		  loadingType: 'spinner'
-		});
-		const categoryitem = this.categoryItem();
-		const res = await this.$http.post("/person/queryPerson", {
-		  pageNum: categoryitem.page,
-		  pageSize: categoryitem.pagesize,
-		  personType:'SEX',
-		  personId: this.$route.params.id
-		})
-		if(res.data.data.list.length == 0){
-			categoryitem.finished = true;
-			return;
-		}
-		res.data.data.list[0].person_head = '/video/person/' + encodeURI(res.data.data.list[0].person_nationality) + '/' + encodeURI(res.data.data.list[0].person_name) + '/head.jpg' + '?token=' + this.token
-		this.person = res.data.data.list[0]
-		this.loadData()
-		this.$msg.clear()
-	},
-	pathPush(item){
-		this.$router.push(`/personWork/${item.id}`)
-	}
+    }
   },
   created() {
 	  this.selectCategory()
@@ -316,7 +325,7 @@ export default {
   background-color: white;
   padding: 2vw 3.333vw;
   > div:nth-child(1) {
-    display: flex;
+    // display: flex;
     .user_img {
       margin-right: 5.556vw;
       img {
@@ -364,7 +373,7 @@ export default {
   }
   >div:nth-child(2){
       h2{
-          margin: 2.778vw 0 0.833vw 0;
+          // margin: 2.778vw 0 0.833vw 0;
           font-weight: 400;
       }
      p{
@@ -394,5 +403,27 @@ export default {
             right: 0;
         }
     }
+}
+.participates-photo{
+	/* -webkit-box-shadow: 0 1px 3px rgba(0,0,0,.3); */
+	width:100%;
+	 height:30.778vw; 
+	/* height:100%; */
+	/* height:90px; */
+	margin:.0rem .3rem;
+	/* float:left */
+}
+
+.right-descript{
+	width:45%;
+	padding: .3rem;
+	font-size:.6rem;
+	text-align: left;
+}
+.right-descript  {
+	/deep/ div{
+		padding:.3rem;
+		color:#646566;
+	}
 }
 </style>

@@ -116,6 +116,15 @@ export default {
 			})
 			console.log(res)
 			this.model = res.data.data.list[0]
+
+			if(this.$route.params.loadMode == 4){
+				this.model.vid = this.model.nextAddress.split('_-')[1]
+				this.model.playUrl = this.baseURL + '/webInfoVideo/' + this.model.vid + '/' + this.model.vid
+				console.log(this.model.playUrl)
+				this.$nextTick(()=>{
+					this.play(this.model.playUrl);
+				})
+			}
 		},
         //获取文章信息
         async articleitemData() {
@@ -267,6 +276,7 @@ export default {
             // }
         },
          play(vdoSrc){
+			 console.log(this.$refs.videoPlayer)
                          //初始化播放器
               this.myVideo = this.$video(
                       this.$refs.videoPlayer,
@@ -290,7 +300,9 @@ export default {
 			if(this.myVideo){
 			  this.myVideo.destory();
 			}
-			   this.articleitemData()
+		   this.getVideo()
+			   // this.articleitemData()
+
 		}
        
          // this.commendData()
