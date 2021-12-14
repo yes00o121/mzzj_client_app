@@ -1,7 +1,9 @@
 <template>
   <div class="home" v-if="category">
     <div class="categorytab">
-
+		<van-dropdown-menu>
+		  <van-dropdown-item :value="loadMode" :options="option1" @change="onConfirm1" />
+		  </van-dropdown-menu>
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <van-tabs v-model="active" swipeable sticky animated>
         <!-- <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
@@ -84,7 +86,7 @@
 											<div style="position: absolute; right: 0;bottom: 1.5rem;">
 											 </div>
 											<div class="van-card__type van-ellipsis">
-												{{categoryitem.loadMode == 4 ? '视频' : loadMode = 2 ? '漫画' : '其他'}}
+												{{categoryitem.loadMode == 4 ? '视频' : categoryitem.loadMode = 2 ? '漫画' : '其他'}}
 											</div>
 											<!-- <div class="van-card__num van-ellipsis">
 												<van-icon name="play-circle-o" size="1rem" style="top: 0.2rem;"/>
@@ -113,6 +115,7 @@
 			  	</div>
 			  	<div class="van-list__placeholder">
 			  	</div>
+				<back-top :showHeight="300"></back-top>
 			  </div>
 			</van-list>
 		  </van-pull-refresh>
@@ -125,6 +128,7 @@
 <script>
 import NavBar from "@/components/common/Navbar.vue";
 import cover from "@/views/cover";
+import backTop from '@/components/backTop'
 export default {
   data() {
     return {
@@ -133,11 +137,20 @@ export default {
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
 	  token: 'Bearer ' + localStorage.token,
+	  option1: [
+	    { text: '全部类型', value: 0 },
+	    { text: '漫画', value: 2 },
+	    { text: '视频', value: 4 },
+		// { text: '作品', value: 3 }
+	  ],
+	  // value1: 0,
+	  loadMode:0
     };
   },
   components: {
     NavBar,
-    cover
+    cover,
+	backTop
   },
   activated() {
 
@@ -171,6 +184,24 @@ export default {
   	}
   },
   methods: {
+	  onConfirm1(e){
+		  // if(e == 0){
+			 //  this.loadMode = ''
+		  // }
+		  // if(e == 1){
+			 //  this.loadMode = '2'
+		  // }
+		  // if(e == 2){
+			 //  this.loadMode = '4'
+		  // }
+		  this.loadMode = e
+		  const categoryitem = this.categoryItem();
+		  categoryitem.list = [];
+		  categoryitem.page = 1;
+		  categoryitem.finished = false;
+		  categoryitem.loading = true;
+		  this.selectArticle()
+	  },
     onScroll(){
 
     },
@@ -203,6 +234,7 @@ export default {
           pageNum: categoryitem.page,
           pageSize: categoryitem.pagesize,
           // search: ''
+		  loadMode: this.loadMode == 0 ? '' : this.loadMode
         })
         // if(res.data.data.list == 0){
         //   categoryitem.finished = true;
@@ -314,6 +346,7 @@ export default {
 
 <style lang="less">
 .home {
+	width:100%;
   background-color: white;
 }
 .detailparent {

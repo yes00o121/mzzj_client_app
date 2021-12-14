@@ -331,6 +331,34 @@ export default {
 		  categoryitem.finished = true;
 		}
 	},
+	// 查询所有作家数据
+	async selectLiterati(){
+		const categoryitem = this.categoryItem();
+		const res = await this.$http.post("/person/queryPerson", Object.assign({
+			pageNum: categoryitem.page,
+			pageSize: categoryitem.pagesize,
+			personType:'LITERATI'
+		}))
+		for(let i =0;i<res.data.data.list.length;i++){
+			res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
+			// res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
+			res.data.data.list[i].title = res.data.data.list[i].person_name
+			res.data.data.list[i].descript = ''
+			// if(res.data.data.list[i].person_birthday){
+			// 	res.data.data.list[i].descript += '生日：' + res.data.data.list[i].person_birthday
+			// }
+			// if(res.data.data.list[i].person_cup){
+			// 	res.data.data.list[i].descript += '罩杯：' + res.data.data.list[i].person_cup
+			// }
+		}
+		categoryitem.list.push(...res.data.data.list);
+		categoryitem.loading = false;
+		if (res.data.data.list.length < categoryitem.pagesize) {
+			categoryitem.loading = true;
+		  categoryitem.finished = true;
+		}
+		console.log(res)
+	},
 	
     async selectArticle() {
       const categoryitem = this.categoryItem();
@@ -362,6 +390,11 @@ export default {
 			//   categoryitem.finished = true;
 			// }
 			this.selectPerson(this.personParams)
+			return;
+		}
+		// 小说
+		if(categoryitem.CODE_VALUE == 4){
+			this.selectLiterati();
 			return;
 		}
 		if(categoryitem.CODE_VALUE != 5){

@@ -2,7 +2,7 @@
   <div  v-if="category">
     <div class="categorytab">
       <van-tabs v-model="active" swipeable sticky animated >
-        <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy >
+        <van-tab v-for="(item,index) in category" :key="index" :title="(item.DICT_NAME == '演员' ? '视频' : item.DICT_NAME)" scrollspy >
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
            <!-- <van-list
 			style="padding-bottom: 50px;"
@@ -91,7 +91,8 @@
 												{{categoryitem.loadMode == 4 ? '视频' : loadMode = 2 ? '漫画' : '其他'}}
 											</div>
 											<div class="van-card__num van-ellipsis">
-												<van-icon name="play-circle-o" size="1rem" style="top: 0.2rem;"/>
+												<van-icon v-show="categoryitem.loadMode == 4" name="play-circle-o" size="1rem" style="top: 0.2rem;"/>
+												<van-icon v-show="categoryitem.loadMode != 4" name="eye-o" size="1rem" style="top: 0.2rem;"/>
 												<span style="padding-left: 0.2rem;">{{categoryitem.flowNum | filterFlowNum}} </span>
 											</div>
 											<div class="van-card__chat van-ellipsis">

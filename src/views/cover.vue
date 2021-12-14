@@ -45,10 +45,11 @@ created(){
 },
     methods:{
         pathPush() {
+			console.log(this.detailitem)
             const loadMode = `${this.detailitem.loadMode}`;
 			// 没有loadMode，走人员页面
 			if(loadMode == 'undefined'){
-				this.$router.push(`/person/${this.detailitem.id}`)
+				this.$router.push(`/person/${this.detailitem.id}/${this.detailitem.person_type}`)
 			}
             // 视频页面
             if(loadMode == 4 || loadMode == 6){

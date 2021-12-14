@@ -18,23 +18,32 @@
 	      <img :src="baseURL + person.person_head" alt="" v-if="person.person_head"  > 
 	      <img src="@/assets/nowprinting.gif" alt v-else  />
 	    </div>
-	    <div class="user_edit">
+	    <div class="user_edit van-multi-ellipsis--l2" >
 	      <div >
-			<p>
+			<p v-if="person.person_nationality">
 			  <span>国籍：&nbsp;&nbsp;{{person.person_nationality | dataChkeck}}</span>
 			</p>
-			<p>
+			<p v-if="person.person_birthday">
 			  <span>出生日期：&nbsp;&nbsp;{{person.person_birthday | dataChkeck}}</span>
 			</p>
-			<p>
+			<p v-if="person.person_cup">
 			  <span>罩杯：&nbsp;&nbsp;{{person.person_cup | dataChkeck}}</span>
 			</p>
-			<p>
+			<p v-if="person.person_height">
 			  <span>身高：&nbsp;&nbsp;{{person.person_height | dataChkeck}}</span>
 			</p>
-			<p>
+			<p v-if="person.person_hobbies">
 			  <span>爱好：&nbsp;&nbsp;{{person.person_hobbies | dataChkeck}}</span>
 			</p>
+			<!-- <div class="van-multi-ellipsis--l2"> -->
+			<p v-show="person.person_introduce" style="display: -webkit-box;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;">
+			  <span>作者介绍：&nbsp;&nbsp;{{person.person_introduce | dataChkeck}}</span>
+			</p>
+			<!-- </div> -->
 	      </div>
 	      <div >
 	        <!-- <div class="user_editBtn">个人资料</div> -->
@@ -91,7 +100,7 @@
     line-height: 1rem;">{{categoryitem.title}}</div>
 						<div style="color:#c00;font-size:12px;padding-top:.3rem;text-align: left;">
 							<span>{{categoryitem.works_number}}</span>
-							<span>&nbsp;/&nbsp;</span>
+							<span v-if="categoryitem.works_number">&nbsp;/&nbsp;</span>
 							<span>{{categoryitem.works_time}}</span>
 						</div>
 				    </div>
@@ -266,7 +275,7 @@ export default {
 		const res = await this.$http.post("/person/queryPerson", {
 		  pageNum: categoryitem.page,
 		  pageSize: categoryitem.pagesize,
-		  personType:'SEX',
+		  personType:this.$route.params.type,
 		  personId: this.$route.params.id
 		})
 		if(res.data.data.list.length == 0){
@@ -279,7 +288,18 @@ export default {
 		this.$msg.clear()
 	},
 	pathPush(item){
-		this.$router.push(`/personWork/${item.id}`)
+		// 判断是否播放视频页面,不是打开明细,不然直接打开视频页面
+		if(item.works_video_status == 1){
+			this.$router.push(`/article/${item.id}/6`)
+		}else {
+			if(this.$route.params.type == 'SEX'){
+				this.$router.push(`/personWork/${item.id}`)
+			}
+			if(this.$route.params.type == 'LITERATI'){
+				this.$router.push(`/literati/${item.id}`)
+			}
+		}
+
 	}
   },
   created() {
@@ -289,6 +309,13 @@ export default {
 </script>
 
 <style lang="less" scoped>
+p{
+	display: -webkit-box;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+}
 .home {
   background-color: white;
 }
@@ -349,7 +376,7 @@ export default {
         // }
       }
       div:nth-child(2) {
-        padding: 0.556vw 2.778vw;
+        // padding: 0.556vw 2.778vw;
         .user_editBtn {
           border: 0.278vw solid #fb7a9f;
           padding: 0.833vw;
@@ -395,4 +422,5 @@ export default {
         }
     }
 }
+
 </style>

@@ -38,7 +38,7 @@
 				<van-cell title="演员" value="" />
 			</van-cell-group>
 			<div style="flex-wrap: wrap;display: flex;">
-				<!-- <div v-for="(item,index) in participates" :key = "index" style="width:30%;padding: .3rem;" @click="pathPush(item)">
+				<div v-for="(item,index) in participates" :key = "index" style="width:30%;padding: .3rem;" @click="pathPush(item)">
 					<div>
 						<van-image v-if="item.personNationality"  lazy-load :src="baseURL +   item.personNationality + '?token=' + token" class="participates-photo" >
 							<template v-slot:error>
@@ -48,7 +48,7 @@
 						<img v-if="!item.personNationality" src="@/assets/nowprinting.gif" class="participates-photo">
 						<div class="text">{{item.person_name}}</div>
 					</div>
-				</div> -->
+				</div>
 			</div>
 		</div>
 		<div v-if="workImages.length > 0">
@@ -58,7 +58,7 @@
 			<div style="flex-wrap: wrap;display: flex;">
 				<div v-for="(item,index) in workImages" :key = "index" style="width:45%;padding: .3rem;">
 					<div>
-						<van-image style="width:100%" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +   item.content + '?token=' + token" class="participates-photo" @click="imagePreview(item)" />
+						<van-image style="width:100%" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +  item.content + '?token=' + token" class="participates-photo" @click="imagePreview(item)" />
 					</div>
 				</div>
 			</div>

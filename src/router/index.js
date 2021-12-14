@@ -18,7 +18,7 @@ const video = ()=> import('@/views/video.vue')
 const videosearch = () => import('@/views/videosearch.vue')
 const set = () => import('@/views/set.vue')
 const magnet = ()=>import('@/views/magnet.vue')
-
+const literati = ()=>import('@/views/literati.vue')
 // const dynamic = ()=>import('@/views/dynamic.vue')
 Vue.use(VueRouter)
   const routes = [
@@ -96,7 +96,7 @@ Vue.use(VueRouter)
 	  }
 	},
 	{
-	  path:'/person/:id',
+	  path:'/person/:id/:type',
 	  component:person,
 	  meta:{
 		  keepalive:true
@@ -105,6 +105,13 @@ Vue.use(VueRouter)
 	{
 	  path:'/personWork/:id',
 	  component:personWork,
+	  meta:{
+		keepalive:true  
+	  }
+	},
+	{
+	  path:'/literati/:id',
+	  component:literati,
 	  meta:{
 		keepalive:true  
 	  }

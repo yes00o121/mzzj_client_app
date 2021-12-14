@@ -42,7 +42,7 @@ http.interceptors.response.use(function (response) {
   }, function (error) {
 	  console.log(error)
 	  // Vue.prototype.hideloading()
-	  this.$msg.clear()
+	  Vue.prototype.$msg.clear()
      if(!error.response || error.response.status == 401 || error.response.status == 402){
          router.push('/')
 		 // console.log(error.message)

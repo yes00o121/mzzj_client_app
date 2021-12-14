@@ -28,12 +28,41 @@
 
   <div class="home" v-if="category">
     <div class="categorytab">
-
+			<div>
+				<van-dropdown-menu>
+				  <van-dropdown-item :value="value1" :options="option1" @change="onConfirm1" />
+				  <van-dropdown-item :value="value2" :options="option2" @change="onConfirm2" />
+				  <!-- <van-dropdown-item id="item" title="测试">
+				    <van-cell title="hhh">
+				      <van-switch
+				        slot="right-icon"
+				        size="24px"
+				        style="height: 26px"
+				        :checked="switch1"
+				        bind:change="onSwitch1Change"
+				      />
+				    </van-cell> -->
+				   <!-- <van-cell title="{{ switchTitle2 }}">
+				      <van-switch
+				        slot="right-icon"
+				        size="24px"
+				        style="height: 26px"
+				        checked="{{ switch2 }}"
+				        bind:change="onSwitch2Change"
+				      />
+				    </van-cell> -->
+				  <!--  <van-button type="info" block bind:click="onConfirm">
+				      确定
+				    </van-button>
+				  </van-dropdown-item> -->
+				</van-dropdown-menu>
+			</div>
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <!-- <van-tabs v-model="active" swipeable sticky animated offset-top="40"> -->
 	  <!-- <van-tabs v-model="active" swipeable  animated> -->
-	  <van-tabs v-model="active"  animated>
-        <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
+	  <!-- <van-tabs v-model="active"  animated>
+        <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy> -->
+		<div v-for="(item,index) in category" :key="index">
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
             <van-list
               v-model="item.loading"
@@ -44,7 +73,7 @@
             >
              <div class="detailparent" ref="tab">
 				 <!-- 演员 -->
-				 <div style="display: flex;overflow: auto;" v-show="item.DICT_NAME == '综合' ">
+				 <div style="display: flex;overflow: auto;" >
 					 <div  v-for="(categoryitem,categoryindex) in person" :key="categoryindex"  @click="toPage(categoryitem)">
 						 
 						 <div class="userdetail">
@@ -70,7 +99,8 @@
 						 </div>
 						 <div style="flex-wrap: wrap;display: flex;width:100%">
 							<div style="width:45%;padding: .3rem;">
-								<van-image style="width:100%;height:45.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +   categoryitem.photo + '?token=' + token" class="participates-photo"  />
+								<van-image style="width:100%;height:45.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +  categoryitem.photo + (categoryitem.photo.indexOf('?') != -1 ? '&' : '?') + 'token=' + token" class="participates-photo"  />
+								<!-- <van-image style="width:100%;height:45.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +   categoryitem.photo + '?token=' + token" class="participates-photo" v-if="categoryitem.mklx != 'video'" /> -->
 							</div>
 							<div class="right-descript van-multi-ellipsis--l2" v-html="categoryitem.summary">
 
@@ -84,8 +114,9 @@
               </div>
             </van-list>
           </van-pull-refresh>
-        </van-tab>
-      </van-tabs>
+		  </div>
+<!--        </van-tab>
+      </van-tabs> -->
     </div>
   </div>
   </div>
@@ -101,6 +132,8 @@ export default {
 		person:[],// 人员数组
 		search:'',// 搜索条件
 		mklx:'person,works,manga,video',// 模块类型
+		sort:'',// 排序字段
+		sortWay:'', // 排序方式
 		width : '',
 		height:'',
 		dateType:'5',
@@ -108,6 +141,19 @@ export default {
       category: [],
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
+	      option1: [
+	        { text: '全部类型', value: 0 },
+	        { text: '漫画', value: 1 },
+	        { text: '视频', value: 2 },
+			{ text: '作品', value: 3 }
+	      ],
+	      value1: 0,
+		  option2: [
+		    { text: '综合排序', value: 0 },
+		    { text: '人气排序', value: 1 },
+		    { text: '发布排序', value: 2 },
+		  ],
+		  value2: 0,
     };
   },
   watch:{
@@ -154,6 +200,38 @@ export default {
 	},
   },
   methods: {
+	  onConfirm1(e) {
+		  this.value1 = e
+		  if(e == 0){
+			  this.mklx = 'person,works,manga,video'
+		  }
+		  if(e == 1){
+			  this.mklx = 'person,manga'
+		  }
+		  if(e == 2){
+			  this.mklx = 'person,video'
+		  }
+		  if(e == 3){
+			  this.mklx = 'person,works'
+		  }
+		  this.onSearch();
+	 },
+	 onConfirm2(e) {
+		  this.value2 = e
+		  if(e == 0){
+			  this.sort = ''
+			  this.sortWay = ''
+		  }
+		  if(e == 1){
+			  this.sort = 'flowNum'
+			  this.sortWay = 'DESC'
+		  }
+		  if(e == 2){
+			  this.sort = 'createdate'
+			  this.sortWay = 'DESC'
+		  }
+		  this.onSearch();
+	 },
 	  // 搜索
 	  onSearch(content) {
 		  console.log('search..')
@@ -247,8 +325,8 @@ export default {
 		          pageSize: categoryitem.pagesize,
 				  dateType:this.dateType,
 				  mklx:this.mklx,
-				  
-		    // search: ''
+				  sort: this.sort,
+				  sortWay: this.sortWay
 		  })
 		  this.person = res.data.data.person.data
 		  console.log(res)

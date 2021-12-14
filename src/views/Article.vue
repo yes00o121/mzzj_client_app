@@ -11,7 +11,7 @@
               <!-- <video controls="controls" :src="model.content"></video> -->
 			   <!-- style="visibility: hidden;" -->
               <video v-if="model.loadMode == 4"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" controls="controls"></video>
-			  <video v-if="model.loadMode == 6" style="height:15rem;"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" :src="baseURL + '/video/'+model.videoAddress+'?token=' + token" controls="controls"></video>
+			  <video v-if="model.loadMode == 6" style="height:15rem;"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" :src="baseURL + '/video'+model.videoAddress+'?token=' + token" controls="controls"></video>
          </div>
          <div class="detailinfoText">
               <div>
@@ -107,6 +107,7 @@ export default {
         },
 		// 获取本地视频
 		async getVideo(){
+			if(this.$route.params.loadMode == 4){
 			// const res = await this.$http.get('/webInfoDetailData/queryDetailDataByTypeId?id=' + this.$route.params.id)
 			const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
 			  id:this.$route.params.id,
@@ -117,13 +118,23 @@ export default {
 			console.log(res)
 			this.model = res.data.data.list[0]
 
-			if(this.$route.params.loadMode == 4){
+			
 				this.model.vid = this.model.nextAddress.split('_-')[1]
 				this.model.playUrl = this.baseURL + '/webInfoVideo/' + this.model.vid + '/' + this.model.vid
 				console.log(this.model.playUrl)
 				this.$nextTick(()=>{
 					this.play(this.model.playUrl);
 				})
+			}
+			
+			if(this.$route.params.loadMode == 6){
+				
+				const res = await this.$http.get("/person/getPersonVideoUrlByWorkId?workId=" + this.$route.params.id)
+				console.log(res.data)
+				this.model = {
+					videoAddress:res.data,
+					loadMode: this.$route.params.loadMode
+				}
 			}
 		},
         //获取文章信息
