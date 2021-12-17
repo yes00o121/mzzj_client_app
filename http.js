@@ -11,7 +11,7 @@ if(this.activeIndicator <= 0){
 import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
-// const baseURL = 'http://127.0.0.1:8098'
+// const baseURL = 'http://127.0.0.1:8099'
 // const baseURL = 'http://192.168.1.109:8099'
 // const baseURL = 'http://121.201.2.228:10824'
 const baseURL = 'http://121.201.2.228:10958'
@@ -48,14 +48,16 @@ http.interceptors.response.use(function (response) {
 		 // console.log(error.message)
 		 // alert(response.messag)
 		 if(error.message.startsWith('timeout')){
-			 Vue.prototype.$msg.fail('系统维护中...')
+			 // Vue.prototype.$msg.fail('系统维护中...')
+			 Vue.prototype.$msg.fail('加载超时拉...')
 		 }else {
 			 // Vue.prototype.$msg.fail('没有权限...')
-			 Vue.prototype.$msg.fail('加载超时拉...')
+			 // Vue.prototype.$msg.fail('加载超时拉...')
 		 }
      }
 	 if(error.response.status == 500){
-		 Vue.prototype.$msg.fail('操作失败...')
+		 Vue.prototype.$msg.fail('加载失败...')
+		 router.push('/')
 	 }
 
     return Promise.reject(error);

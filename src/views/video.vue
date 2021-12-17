@@ -93,10 +93,6 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				isEnd: false,
 				timer: null,
 				currentHeight : 0, // 当前高度
-				
-				
-				
-				
 				pageNum:1, // 第一页
 				// pageSize:5,// 一次五个视频
 				pageSize:10,

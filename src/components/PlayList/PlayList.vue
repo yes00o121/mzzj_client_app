@@ -270,9 +270,6 @@ export default {
     scrollToIndex (index) {
 		// console.log(this.clientHeight)
 		this.currentY = index * this.clientHeight
-		
-
-
 		// 播放视频
 		if(this.$refs.videos){
 
@@ -317,6 +314,14 @@ export default {
 		let index = this.currentY / clientHeight
 		// 返回暂停视频,停止计时
 		this.$refs.videos[index].video.pause()
+		// 暂停所有视频
+		
+		// this.close();
+		for(let i =0;i<videoLength;i++){
+			if(this.$refs.videos[i].video){
+				this.$refs.videos[i].video.stop()
+			}
+		}
     },
     ...mapActions([
       'getPopularVideo'

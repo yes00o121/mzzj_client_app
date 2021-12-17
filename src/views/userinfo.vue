@@ -1,6 +1,6 @@
 <template>
 		<!-- <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}"> -->
-  <div class="userinfo">
+  <div class="userinfo" ref="pageScroll">
 	  		<van-icon name="apps-o" size="1.5em" @click="openRightPop" style="position: absolute;
     top: 5px;
     right: 5px;
@@ -8,7 +8,7 @@
       <!-- <nav-bar/> -->
       <img src="@/assets/bannerTop_new.png" alt="" class="backImg">
       <user-detail :userInfo="model"/>
-      <user-article />
+      <user-article ref="article" />
 	  <van-popup
 	    get-container="#app"
 	    v-model="show"
@@ -43,7 +43,7 @@ export default {
     data() {
         return {
             model:{},
-			curScroll:0,
+			curScroll:{},
 			show:false
         }
     },
@@ -53,6 +53,19 @@ export default {
         userArticle
     },
     methods:{
+		recordScroll(){
+		  let pageScroll = this.$refs['pageScroll']
+		  if(pageScroll){
+			  this.curScroll['pageScroll'] = document.documentElement.scrollTop || document.body.scrollTop
+		  }
+		},
+		// 之前滚动位置跳转
+		toBeforeScroll(){
+		  let pageScroll = this.$refs['pageScroll']
+		  if(pageScroll){
+			  pageScroll.scrollTop = this.curScroll['pageScroll']
+		  }
+		},
 		// 退出系统
 		exitSystem(){
 			this.$dialog.confirm({
@@ -103,12 +116,12 @@ export default {
 		// top.a = this
 		// console.log(this.$parent)
 		// alert('回来高度' + this.curScroll)
-		if(this.curScroll > 0){
-			// alert(this.curScroll)
-			scroll(0,this.curScroll)
-		} else {
-			scroll(0,0)
-		}
+		// if(this.curScroll > 0){
+		// 	// alert(this.curScroll)
+		// 	scroll(0,this.curScroll)
+		// } else {
+		// 	scroll(0,0)
+		// }
 		// 页面显示的时候关闭右侧面板
 		this.show = false;
 		// this.curScroll = 0 // 不是相同页面,重置高度
@@ -117,18 +130,18 @@ export default {
 		// }
 	},
 	watch:{
-		'$parent.tabActive'(cur){
-			// console.log(cur)
-			// alert(11)
-			  if(cur != 3){
-				  // 记录当前高度
-				  this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
-				  // alert(this.curScroll)
-				  // alert(11)
-				  // alert('记录高度' + this.curScroll)
-			  }
-				// alert(111)  
-		},
+		// '$parent.tabActive'(cur){
+		// 	// console.log(cur)
+		// 	// alert(11)
+		// 	  if(cur != 3){
+		// 		  // 记录当前高度
+		// 		  // this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+		// 		  // alert(this.curScroll)
+		// 		  // alert(11)
+		// 		  // alert('记录高度' + this.curScroll)
+		// 	  }
+		// 		// alert(111)  
+		// },
 	}
 }
 </script>

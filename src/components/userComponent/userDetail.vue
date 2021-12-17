@@ -1,5 +1,5 @@
 <template>
-  <div class="userdetail">
+  <div class="userdetail" ref="pageScroll">
     <div>
       <div class="user_img">
         <img :src="baseURL + '/common/image?imgId=' + userInfo.icon + '&token=' + token" alt="" v-if="userInfo.icon"  >
@@ -38,10 +38,29 @@ export default {
     props:['userInfo'],
 	data(){
 		return {
+			curScroll:{},
 			token: 'Bearer ' + localStorage.token, // 用户token
 		}
 	},
     methods:{
+		recordScroll(){
+		  let pageScroll = this.$refs['pageScroll']
+		  if(pageScroll){
+			  for(let i =0;i<pageScroll.length;i++){
+				  this.curScroll['pageScroll_'+i] = pageScroll[i].scrollTop
+			  }
+			  // console.log(this.curScroll)
+		  }
+		},
+		// 之前滚动位置跳转
+		toBeforeScroll(){
+		  let pageScroll = this.$refs['pageScroll']
+		  if(pageScroll){
+			  for(let i =0;i<pageScroll.length;i++){
+				  pageScroll[i].scrollTop = this.curScroll['pageScroll_'+ i]
+			  }
+		  }
+		},
       changeUserImg(){
         this.$router.push('/upload')
       }

@@ -129,7 +129,8 @@ Vue.use(VueRouter)
 	  path:'/video',
 	  component:video,
 	  meta:{
-		  index:7
+		  index:7,
+		  keepalive:true
 	  }
 	},
 	{

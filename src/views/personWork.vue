@@ -25,11 +25,18 @@
 			  <van-cell title="番号" :value="work.works_number" v-if="work.works_number" />
 			  <van-cell title="发布时间" :value="work.works_time" v-if="work.works_time" />
 			  <van-cell title="影片时长" :value="work.works_length" v-if="work.works_length" />
-			  <van-cell title="导演" :value="work.works_director_name" v-if="work.works_director_name" />
-			  <van-cell title="发行商" :value="work.works_company" v-if="work.works_company" />
-			  <van-cell title="制作商" :value="work.works_production" v-if="work.works_production" />
-			  <van-cell title="系列" :value="work.works_series" v-if="work.works_series" />
-			  <van-cell title="类别" :value="work.works_category" v-if="work.works_category" />
+			  <van-cell title="导演" :value="work.works_director_name" v-if="work.works_director_name" @click="toSearch(work.works_director_name)"/>
+			  <van-cell title="发行商" :value="work.works_company" v-if="work.works_company" @click="toSearch(work.works_company)"/>
+			  <van-cell title="制作商" :value="work.works_production" v-if="work.works_production" @click="toSearch(work.works_production)"/>
+			  <van-cell title="系列" :value="work.works_series" v-if="work.works_series" @click="toSearch(work.works_series)"/>
+			  <!-- <van-cell title="类别" :value="work.works_category" v-if="work.works_category"/> -->
+			  <van-cell title="类别" v-if="work.works_category_arr">
+				  <span v-for="item in work.works_category_arr">
+					   <van-tag plain  type="primary" @click="toSearch(item + '_PLACEHOLDER_')">{{item}}</van-tag>
+					   <span style="padding:.5rem"></span>
+				  </span>
+				 
+				  </van-cell>
 			</van-cell-group>
 		</div>
 		<!-- 演员数据 -->
@@ -120,10 +127,15 @@ export default{
 		}
 	},
 	methods:{
+		// 跳转到查询页面
+		toSearch(search){
+			console.log(encodeURI(search))
+			this.$router.push('/search?search=' + encodeURI(search));
+		},
 		pathPush(item){
 			// this.$router.push(`/personWork/${item.id}`)
 			if(item.person_id){
-				this.$router.push(`/person/${item.person_id}`)
+				this.$router.push(`/person/${item.person_id}/SEX`)
 			}
 
 		},
@@ -166,6 +178,14 @@ export default{
 			
 			res.data.data.list[0].conver = '/video/person/' + encodeURI(res.data.data.list[0].person_nationality) + '/' + encodeURI(res.data.data.list[0].person_name) + '/' + res.data.data.list[0].works_number + '/bigCover.jpg'
 			this.work = res.data.data.list[0]
+			// 判断是否有类型,有进行分割
+			if(this.work.works_category){
+				this.work.works_category_arr = this.work.works_category.split('#PLACEHOLDER#');
+				// for(let i =0;i<this.work.works_category.length;i++){
+					
+				// }
+				// #PLACEHOLDER#
+			}
 			this.converPreviews.push(this.baseURL +  this.work.conver+ '?token=' + this.token)
 			this.$msg.clear()
 			// 磁力数据

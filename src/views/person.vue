@@ -262,7 +262,7 @@ export default {
     },
     categoryItem() {
       const categoryitem = this.category[this.active];
-      console.log(categoryitem)
+      // console.log(categoryitem)
       return categoryitem;
     },
 	async initPersonData(){

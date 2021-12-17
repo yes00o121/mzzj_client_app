@@ -166,7 +166,7 @@ export default{
 	},
 	watch: {
 		show(){
-			console.log('start....')
+			// console.log('start....')
 		}
 		// activeNames(cur,bef){
 		// 	console.log(cur)

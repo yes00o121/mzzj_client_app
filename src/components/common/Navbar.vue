@@ -36,7 +36,7 @@ export default {
 	},
     methods:{
 		toSearch(){
-			this.$router.push('/search?random=' + this.random);
+			this.$router.push('/search');
 		},
 		getRandom(){
 			return Math.random()

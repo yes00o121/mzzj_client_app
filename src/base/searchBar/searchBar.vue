@@ -19,7 +19,7 @@ export default {
   data () {
     return {
       query: '',
-	  searchSortType:null,
+	  searchParams:{},
       page:0, // 页数
       pagesize: 10 // 每页数量
     }
@@ -46,7 +46,7 @@ export default {
         pageSize: this.pagesize,
         search: this.query
       },
-	  this.searchSortType? {searchSortType:this.searchSortType} : {}
+	  this.searchParams
 	  )).then(res=>{
         // console.log(res.data.data.list)
 		this.$msg.clear()

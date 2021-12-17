@@ -91,25 +91,35 @@
 					 </div>
 				 </div>
 
-				 <div v-for="(categoryitem,categoryindex) in item.list" :key="categoryindex" style="padding:.3rem 1rem 1rem 1rem;width:100%">
+				 <div v-for="(categoryitem,categoryindex) in item.list" :key="categoryindex" style="margin:.2rem 1rem 1rem 1rem;width:100%;position: relative;">
 					<!-- 作品页面 -->
-					 <div style="width:100%" @click="toPage(categoryitem)">
-						 <div style="font-size:1rem;text-align: left;" class="van-multi-ellipsis--l2" v-html="categoryitem.title">
+					 <div style="width:100%:" @click="toPage(categoryitem)">
+						 <!-- <div style="font-size:1rem;text-align: left;" class="van-multi-ellipsis--l2" v-html="categoryitem.title">
 						 						 
-						 </div>
+						 </div> -->
+						 
 						 <div style="flex-wrap: wrap;display: flex;width:100%">
-							<div style="width:45%;padding: .3rem;">
-								<van-image style="width:100%;height:45.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +  categoryitem.photo + (categoryitem.photo.indexOf('?') != -1 ? '&' : '?') + 'token=' + token" class="participates-photo"  />
+							 <div style="font-size:14px;text-align: left;width:60%;margin-top: 0.4rem;" class="van-multi-ellipsis" v-html="categoryitem.title"></div>
+							<div style="width:35%;padding: .3rem;">
+								<van-image style="width:100%;height:25.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +  categoryitem.photo + (categoryitem.photo.indexOf('?') != -1 ? '&' : '?') + 'token=' + token" class="participates-photo"  />
 								<!-- <van-image style="width:100%;height:45.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +   categoryitem.photo + '?token=' + token" class="participates-photo" v-if="categoryitem.mklx != 'video'" /> -->
 							</div>
-							<div class="right-descript van-multi-ellipsis--l2" v-html="categoryitem.summary">
+							<!-- <div class="right-descript van-multi-ellipsis--l2" v-html="categoryitem.summary">
 
-							</div>
+							</div> -->
 						 </div>
-						 <div style="font-size:14PX;color:#646566;float: right;">
+						 <div style="float: left;position: absolute;bottom: 2rem;">
+							 <van-tag type="primary">{{categoryitem.typeName}}</van-tag>
+						 </div>
+						 <div style="float: left;position: absolute;bottom: 2.1rem;margin-left:3rem;font-size:12px;color:#8f8f94;">
+							 {{categoryitem.flowNum}}浏览
+							 <!-- <van-tag type="primary">{{categoryitem.typeName}}</van-tag> -->
+						 </div>
+						 <div style="float: left;position: absolute;bottom: 2.1rem;font-size:12px;color:#8f8f94;margin-left:6rem">
 								{{categoryitem.createdate | filterTime}}
 						 </div>
 					 </div>
+					 <div class="van-hairline--bottom" style="padding-top:2rem"></div>
 				 </div>
               </div>
             </van-list>
@@ -188,6 +198,21 @@ export default {
     cover,
 	backTop
   },
+  activated(){
+	// console.log('..................' + this.$route.params)
+	  // console.log(this.$route.query)
+	  let search = this.$route.query.search;
+	  if(search == '' || search == null){
+		  return;
+	  }
+	  if(this.search == search || search.replace('_PLACEHOLDER_','#PLACEHOLDER#') == this.search){
+		  return;
+	  }
+	  this.search = decodeURI(search).replace('_PLACEHOLDER_','#PLACEHOLDER#')
+	  
+	  // 有参数带参数进行搜索
+	  this.onSearch()
+  },
   filters:{
 	dataChkeck(val){
 		return val ? val : '暂无数据'
@@ -260,7 +285,7 @@ export default {
 		}
 		if(detailitem.mklx == 'person'){
 			id = detailitem.id.replace('person_','')
-			this.$router.push(`/person/${id}`)
+			this.$router.push(`/person/${id}/SEX`)
 		}
 		if(detailitem.mklx == 'manga'){
 			id = detailitem.id.replace('manga_','')

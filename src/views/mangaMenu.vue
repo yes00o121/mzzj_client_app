@@ -85,14 +85,14 @@ export default {
         this.category = this.changeCategory(newCat)
         this.selectArticle();
     }
-	if(this.curPage == this.$route.params.id){
-		if(this.curScroll > 0){
-			scroll(0,this.curScroll)
-		} else {
-			scroll(0,0)
-		}
-		return;
-	}
+	// if(this.curPage == this.$route.params.id){
+	// 	if(this.curScroll > 0){
+	// 		scroll(0,this.curScroll)
+	// 	} else {
+	// 		scroll(0,0)
+	// 	}
+	// 	return;
+	// }
 	this.curScroll = 0 // 不是相同页面,重置高度
 	if(this.curPage){
 		this.category = [];
@@ -166,7 +166,7 @@ export default {
 	    loadingType: 'spinner'
 	  });
 	  // this.showloading()
-	  scroll(0,0)
+	  // scroll(0,0)
       // 查询漫画基础信息
       const res = await this.$http.post('/webInfoDetailData/queryDetailDataByTypeId',{
         id:this.$route.params.id

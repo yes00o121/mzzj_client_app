@@ -2,7 +2,7 @@
 	<!-- <div> -->
 	  <van-sticky :offset-top="clientHeight" z-index="9999" @scroll="scroll" >
 	    <!-- <van-button type="info">吸顶距离</van-button> -->
-		<van-button round  type="info" style="position: absolute;right: 5%;" v-show="show" @click="backTop">
+		<van-button round  type="info" style="position: absolute;right: 5%;bottom:5%;" v-show="show" @click="backTop">
 			<!-- <van-icon name="arrow-up" style="position: absolute; top: 4px;"/> -->
 			<van-icon name="arrow-up" />
 		</van-button>
@@ -22,13 +22,47 @@ export default{
 			show:false
 		}
 	},
+	created(){
+
+		if(!localStorage['back_top']){
+			// console.log('??????')
+			this.$http.post("/config/queryConfigDetail",{
+				configKey:'back_top'
+			}).then(res=>{
+				if(res.data.data[0].userConfigValue){
+					localStorage['back_top'] = res.data.data[0].userConfigValue
+				}else{
+					localStorage['back_top'] = '1'
+				}
+			})
+		}
+
+	},
 	methods:{
 		backTop(){
 		   this.slideTo(0)
 		},
 		scroll(e){
-			if(e.scrollTop > this.showHeight){
-				this.show = true
+			// console.log(this.$parent.$refs.pageScroll)
+			// console.log(e.scrollTop)
+			if(e.scrollTop == 0){
+				return;
+			}
+			if((e.scrollTop) > this.showHeight){
+				// 
+				let backTopStatus = localStorage['back_top']
+				// 判断是否有back状态数据,没有查询,有直接使用
+				if(backTopStatus && backTopStatus != '0'){
+					this.show = true
+				}else {
+					// this.show = false
+					if(backTopStatus == 0){
+						this.show = false
+					}else{
+						this.show = false;
+					}
+				}
+				
 			} else {
 				this.show = false
 			}

@@ -4,16 +4,26 @@
     <nav-bar></nav-bar>
 	</van-sticky>
 	<!-- home -->
-    <div class="categorytab"  v-show="tabActive == 0">
-		
+    <div class="categorytab"  v-show="tabActive == 0" >
+		<back-top :showHeight="300"></back-top>
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <van-tabs v-model="active" swipeable sticky  animated offset-top="40">
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy  >
+			<div slot="title">
+			      <!-- <van-icon name="more-o" />选项 -->
+				  <div>
+					<van-icon name="photo-o" v-if="item.CODE_VALUE != '9'" size="1rem" />
+					<van-icon name="user-o" v-if="item.CODE_VALUE == '9'" size="1rem"/>
+					  {{item.DICT_NAME}}
+				  </div>
+			</div>
+			<!-- 嵌套一层div做内容滚动区域, 一定要有确定高度，可以使用高度100%或calc(100vh - ?px) -->
+			<div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'">
+				<!-- <back-top :showHeight="100"></back-top> -->
 			<van-sticky>
 				<person-search-tool :show = "categoryItem().CODE_VALUE == '9'" @search = "personSearch"></person-search-tool>
 			</van-sticky>
-          <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-			  
+          <van-pull-refresh v-model="isLoading" @refresh="onRefresh" >
 			  <!-- <van-swipe :autoplay="3000">
 			    <van-swipe-item v-for="(image, index) in item.flowData" :key="index" :loop="false" :width="300">
 				  <van-image
@@ -69,6 +79,7 @@
 			  
             </van-list>
           </van-pull-refresh>
+		  </div>
         </van-tab>
       </van-tabs>
 	  <!-- <shortvideo v-if="active == 1 && videoStatus"></shortvideo>ss -->
@@ -80,11 +91,11 @@
 			  </div>
 	</div> -->
 	<keep-alive >
-	<userinfo v-if="tabActive == 3"></userinfo>
+	<userinfo v-show="tabActive == 3" ref="user"></userinfo>
 	</keep-alive >
-	<dynamic v-if="tabActive == 2"></dynamic>
+	<dynamic v-show="tabActive == 2" ref="dynamic"></dynamic>
 	<keep-alive >
-		<hot v-if="tabActive == 1"></hot>
+		<hot v-show="tabActive == 1" ref="hot"></hot>
 	</keep-alive >
 	<van-tabbar
 	  v-model="tabActive"
@@ -108,6 +119,7 @@ import NavBar from "@/components/common/Navbar.vue";
 import cover from "./cover";
 import dynamic from "./dynamic"
 import userinfo from './userinfo'
+import backTop from '@/components/backTop'
 // import shortvideo from './video'
 import hot from './hot'
 import personSearchTool from '@/components/personSearchTool'
@@ -121,7 +133,7 @@ export default {
 		        'https://img.yzcdn.cn/vant/apple-2.jpg'
 		      ],
 		token: 'Bearer ' + localStorage.token,
-	  curScroll:0,
+	  curScroll:{},
 		curVideo:'',
 	  curTableHeight:0, // 当前table高度
 	  tabbarStatus:true, // 底部菜单是否显示
@@ -167,8 +179,11 @@ export default {
   beforeRouteLeave(to, from ,next){
 	  // console.log('跳转其他页面.......' + this.curScroll)
 	  // 跳转其他页面的时候记录当前滚动高度
-	  this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
-	  // alert('跳转页面记录高度' + this.curScroll)
+	  // this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+	  // console.log(this.$refs)
+	  // this.curScroll['pageScroll_'+this.active] = this.$refs['pageScroll'][this.active].scrollTop
+	  // console.log('跳转页面记录高度' + JSON.stringify(this.curScroll))
+	  this.recordScroll()
 	  next()
   },
   beforeRouteEnter(to, from,next){
@@ -189,21 +204,28 @@ export default {
 	userinfo,
 	dynamic,
 	hot,
-	personSearchTool
+	personSearchTool,
+	backTop
 	// shortvideo
   },
   activated() {
+	  // console.log('222222222222222')
     if(localStorage.getItem('newCat')) {
         let newCat = JSON.parse(localStorage.getItem('newCat'))
         this.category = this.changeCategory(newCat)
         this.selectArticle();
     }
-	if(this.tabActive == 0){
-		this.$nextTick(()=>{
-			// alert('首页高度....' + this.curScroll)
-			scroll(0,this.curScroll)
-		})
-	}
+	this.toBeforeScroll();
+	// this.curScroll['pageScroll_'+this.active] = this.$refs['pageScroll'][this.active].scrollTop
+	// console.log(this.curScroll['pageScroll_'+this.active])
+	// this.$refs['pageScroll'][this.active].scrollTop = this.curScroll['pageScroll_'+this.active]
+	
+	// if(this.tabActive == 0){
+	// 	this.$nextTick(()=>{
+	// 		// alert('首页高度....' + this.curScroll)
+	// 		scroll(0,this.curScroll)
+	// 	})
+	// }
 	// const scrollTop = this.$route.meta.scrollTop;
 	//     const $content = document.querySelector('.content');
 	//     if (scrollTop && $content) {
@@ -211,6 +233,70 @@ export default {
 	//     }
   },
   methods: {
+	  // 之前滚动位置跳转
+	  toBeforeScroll(cur){
+		  // if(cur== 0){
+			  let pageScroll = this.$refs['pageScroll']
+			  // console.log('跳转.....')
+			  // console.log(pageScroll)
+			  // console.log(this.curScroll)
+			  if(pageScroll){
+				  for(let i =0;i<pageScroll.length;i++){
+					  pageScroll[i].scrollTop = this.curScroll['pageScroll_'+ i]
+				  }
+			  }
+		  // }
+			
+		  // if(cur == 1){
+			   // this.$nextTick(()=>{
+			if(this.$refs.hot){
+				this.$refs.hot.toBeforeScroll()
+			}  
+							// console.log(this.$refs.user.$refs)
+			if(this.$refs.user && this.$refs.user.$refs.article){
+				// console.log(this.$refs.user.$refs.article)
+				this.$refs.user.$refs.article.toBeforeScroll()
+			}  
+			if(this.$refs.user ){
+				// console.log(this.$refs.user)
+			    this.$refs.user.toBeforeScroll()
+			}
+			// })
+		  // }
+
+	  },
+	  // 记录滚动位置
+	  recordScroll(cur){
+		  // console.log('记录.....' + this.tabActive)
+		  // if(cur == 0){
+			  let pageScroll = this.$refs['pageScroll']
+			  // console.log('记录...')
+			  // console.log(pageScroll)
+			  if(pageScroll){
+				  for(let i =0;i<pageScroll.length;i++){
+					  this.curScroll['pageScroll_'+i] = pageScroll[i].scrollTop
+				  }
+				  // console.log(this.curScroll)
+			  }
+		  // }
+		  
+		  // if(cur == 1){
+			  // this.$nextTick(()=>{
+				  if(this.$refs.hot){
+					  this.$refs.hot.recordScroll()
+				  }
+				  
+				  if(this.$refs.user && this.$refs.user.$refs.article){
+					  this.$refs.user.$refs.article.recordScroll()
+				  }
+				  if(this.$refs.user){
+					  this.$refs.user.recordScroll()
+				  }
+			  // })
+
+		  // }
+
+	  },
 	  openMenu(index){
 		   // $('.van-dropdown-item--down').css('top','50px')
 		   // 动态调整下拉菜单位置、为index*高度
@@ -234,7 +320,7 @@ export default {
 	        this.debtValue = value
 	      },
 	  searchChange(){
-		console.log('....')  
+		// console.log('....')  
 	  },
 	  hit(){
 		  this.beforetabActive = this.tabActive 
@@ -263,11 +349,6 @@ export default {
       if(localStorage.getItem('newCat')) {
         return
       }
-	  // 临时视频开始
-	  this.videoList = []
-	   const res1 = await this.$http.get("/webInfoDetailData/queryVideoRandom");
-	  		// console.log(res1)
-	  this.videoList = res1.data
 	  // 临时视频结束
 	  // console.log(this.videoList)
       const res = await this.$http.get("/webInfoDetailData/queryMenu",{timeout:this.httpTimeout});
@@ -357,14 +438,14 @@ export default {
 			categoryitem.loading = true;
 		  categoryitem.finished = true;
 		}
-		console.log(res)
+		// console.log(res)
 	},
 	
     async selectArticle() {
       const categoryitem = this.categoryItem();
 		// 如果categoryitem.CODE_VALUE等于9,但是查询女优数据
 		if(categoryitem.CODE_VALUE == 9){
-			console.log('??????')
+			// console.log('??????')
 			// const res = await this.$http.post("/person/queryPerson", {
 			  // pageNum: categoryitem.page,
 			  // pageSize: categoryitem.pagesize,
@@ -454,6 +535,8 @@ export default {
                 }, 500);
             },
     onLoad() {
+		// console.log(this.$refs['pageScroll'][0].scrollTop)
+		top.a = this.$refs['pageScroll'][0].scrollTop
       const categoryitem = this.categoryItem();
 	  // console.log(categoryitem)
 	  if(categoryitem.list.length == 0){
@@ -470,14 +553,14 @@ export default {
       return categoryitem;
     },
 	// 记录列表滚动位置
-    recordScroll(active){
-		const categoryitem = this.category[active];
+ //    recordScroll(active){
+	// 	const categoryitem = this.category[active];
 		
-		let rect = document.body.getBoundingClientRect()
-		categoryitem.scroll = Math.abs(rect.top)
-	},
+	// 	let rect = document.body.getBoundingClientRect()
+	// 	categoryitem.scroll = Math.abs(rect.top)
+	// },
 	personSearch(params){
-		console.log('人员查询.....')
+		// console.log('人员查询.....')
 		const categoryitem = this.categoryItem();
 		categoryitem.page = 1
 		categoryitem.pagesize = 20 
@@ -489,7 +572,8 @@ export default {
   },
   watch: {
     active(current,before) {
-      const categoryitem = this.categoryItem();
+      // console.log('切换........')
+	  const categoryitem = this.categoryItem();
 	  // 切换时候记录之前位置
 
       if (!categoryitem.list.length) {
@@ -505,8 +589,14 @@ export default {
 	  	
 	 //  }
     },
-	tabActive(cur){
-		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+	tabActive(bef,cur){
+		// console.log(cur)
+		// console.log(bef)
+		this.recordScroll(cur)
+		this.toBeforeScroll(cur)
+		
+		// console.log(this.curScroll)
+		// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 		// if(cur != 0){
 		// 	// console.log('记录高度。。。。。。。。。。。。。。。。。。' + (document.documentElement.scrollTop ))
 		// 	this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;

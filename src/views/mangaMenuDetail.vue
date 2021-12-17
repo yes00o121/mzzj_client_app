@@ -1,11 +1,7 @@
 <template>
 	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
-<!-- 				{{$route.params.pxh}}-----------------{{chapterList.length - 1}} -->
   <div class="home">
-    <div class="categorytab">
-		<!-- <van-sticky v-show="bottom" style="position: absolute;width: 100%;z-index:9999">
-			<van-cell style="z-index:2999;background: black;color:white;opacity: 0.7;"  icon="arrow-left" :title="(chapterList[this.$route.params.pxh - 1] ? chapterList[this.$route.params.pxh - 1].title : '')"  @click="$router.go(-1)"/>
-		</van-sticky> -->
+    <div class="categorytab" >
 		<van-popup
 			  style="background: black;opacity: 0.7;"
 			    v-model="bottom"
@@ -16,8 +12,8 @@
 			  <van-cell style="background: black;color:white;"  icon="arrow-left" :title="(chapterList[this.$route.params.pxh - 1] ? chapterList[this.$route.params.pxh - 1].title : '')"  @click="$router.go(-1)"/>
 		</van-popup>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"> </van-image>
-          </van-pull-refresh>
+		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"/> </van-image>
+		  </van-pull-refresh>
 		  <!-- 底部弹出 -->
 		  <van-popup
 		  :overlay-style="{zIndex:'2000'}"
@@ -130,6 +126,7 @@
 </template>
 
 <script>
+import Scroll from '@/base/scroll/scroll'
 export default {
   data() {
     return {
@@ -158,6 +155,20 @@ export default {
 	  chapterTopSize: document.body.clientHeight * 0.35 // 章节菜单高度距离顶部距离像素
     };
   },
+  components:{Scroll},
+  computed: {
+    clientHeight () {
+      return document.body.clientHeight
+    },
+    VideoItemHeightStyle () {
+      let clientWidth = document.body.clientWidth
+      let clientHeight = document.body.clientHeight
+      return {
+        height: clientHeight + 'px',
+        width: clientWidth + 'px'
+      }
+    }
+  },
   filters:{
   	filterTime(val) {
   	  if(val){
@@ -172,15 +183,6 @@ export default {
   },
   
   beforeRouteEnter(to, from,next){
-	  // let path = from.path
-	  // console.log(to)
-	  // console.log(from)
-	  // if(path.startsWith('/manga/')){
-		 //  from.meta.keepalive = true
-	  // } else{
-		 //  from.meta.keepalive = false
-	  // }
-	  // 
 	  next()
   },
   methods: {
@@ -208,9 +210,6 @@ export default {
 	  changeChapter(){
 		  
 	  },
-    onScroll(){
-
-    },
 	onSwipeLeft () {
 	    // console.log('页面左滑')
 	  // this.$router.go(-1)
@@ -355,6 +354,8 @@ export default {
       })
 	  this.mangaList = res.data.data
 	  this.isLoading = false
+	  // 定位之前位置
+	  this.toBeforeScroll()
 	  // this.hideloading()
 	  this.$msg.clear()
     },
@@ -437,18 +438,30 @@ export default {
 		  webInfoDataId:this.$route.params.id
 		})
 		this.chapterList = res.data.data
+	},
+	toBeforeScroll(){
+		let y = localStorage['mangaDetail_' + this.$route.params.id+'_' + this.$route.params.pxh]
+		if(y){
+		  setTimeout(()=>{
+			  scrollTo(0,parseInt(y))
+		  },500)
+		}
 	}
   },
   created() {
-	  
+	  window.addEventListener('scroll', (e)=>{
+	  	if(this.$route.name == 'mangaDetail' && (document.documentElement.scrollTop||document.body.scrollTop) > 100){
+	  		localStorage['mangaDetail_' + this.$route.params.id+'_' + this.$route.params.pxh] = (document.documentElement.scrollTop||document.body.scrollTop)
+	  	}
+	  })
 	  this.initConfig();
 	  this.initChapter();
 	  this.selectCategory();
 	  this.collectionInit();
 
-  },	
+  },
   mounted(){
-
+	  
   },
   watch:{
 	  imgShow(cur,bef){

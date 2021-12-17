@@ -55,12 +55,12 @@ export default{
 			this.configList = []
 			// 查询用户配置信息
 			const res = await this.$http.post('/config/queryConfigAll/',{})
-			console.log(res.data)
+			// console.log(res.data)
 			let keys = Object.keys(res.data)
 			for(let i =0;i<keys.length;i++){
 				this.configList.push(res.data[keys[i]])
 			}
-			console.log(this.configList)
+			// console.log(this.configList)
 		},
 		// 初始化图片清晰度
 		initImgQuality(res){
@@ -89,7 +89,7 @@ export default{
 		initConfig(res){
 			// console.log(res)
 			let data = res.data
-			console.log(data)
+			// console.log(data)
 		},
 		// 视频规则
 		// initVideoRule(res){
@@ -110,16 +110,15 @@ export default{
 					configKey:data.configKey,
 					configId:data.id
 				}).then(res=>{
-					console.log(res)
 					if(res.data.code == 200){
-						
+						if(data.id == 6){
+							localStorage['back_top'] = data.detailConfigValue
+						}
 					}else{
 						this.$msg.fail(res.data.message)
 					}
 				})
 			} else {
-				// console.log('新增.....')
-				
 				// 配置不存在走新增
 				this.$http.post('/config/insertConfigValue',{
 					configKey:data.configKey,
@@ -129,6 +128,9 @@ export default{
 					// console.log(res)
 					if(res.data.code == 200){
 						// 请求已配置数据,刷新配置信息
+						if(data.id == 6){
+							localStorage['back_top'] = data.detailConfigValue
+						}
 						this.queryConfigAll()
 					}else {
 						this.$msg.fail(res.data.message)

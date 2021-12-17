@@ -1,8 +1,11 @@
 <template>
   <div  v-if="category">
     <div class="categorytab">
-      <van-tabs v-model="active" swipeable sticky animated >
-        <van-tab v-for="(item,index) in category" :key="index" :title="(item.DICT_NAME == '演员' ? '视频' : item.DICT_NAME)" scrollspy >
+		<back-top :showHeight="300"></back-top>
+      <van-tabs v-model="active" swipeable sticky animated offset-top="40">
+        <van-tab v-for="(item,index) in category" scrollspy :key="index" :title="(item.DICT_NAME == '演员' ? '视频' : item.DICT_NAME)" scrollspy >
+			<!-- 嵌套一层div做内容滚动区域, 一定要有确定高度，可以使用高度100%或calc(100vh - ?px) -->
+		<div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'">
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
            <!-- <van-list
 			style="padding-bottom: 50px;"
@@ -96,8 +99,8 @@
 												<span style="padding-left: 0.2rem;">{{categoryitem.flowNum | filterFlowNum}} </span>
 											</div>
 											<div class="van-card__chat van-ellipsis">
-												<van-icon name="chat-o" size="1rem" style="top: 0.2rem;"/>
-												<span style="padding-left: 0.2rem;">{{categoryitem.commentNum | filterFlowNum}}</span>
+												<van-icon name="chat-o" size="1rem" style="top: 0.2rem;" v-if="categoryitem.loadMode == '4'"/>
+												<span style="padding-left: 0.2rem;" v-if="categoryitem.loadMode == '4'">{{categoryitem.commentNum | filterFlowNum}}</span>
 											</div>
 			  								<div class="van-card__desc van-ellipsis">
 			  									{{categoryitem.createtime | filterTime}}
@@ -136,6 +139,7 @@
 			  </div>
 			</van-list>
           </van-pull-refresh>
+		  </div>
         </van-tab>
       </van-tabs>
     </div>
@@ -144,6 +148,7 @@
 
 <script>
 import NavBar from "@/components/common/Navbar.vue";
+import backTop from '@/components/backTop'
 export default {
   data() {
     return {
@@ -152,18 +157,28 @@ export default {
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
 	  token: 'Bearer ' + localStorage.token,
+	  curScroll:{} // 滚动位置
     };
   },
   components: {
-    NavBar
+    NavBar,
+	backTop
   },
   activated() {
+	  // console.log('显示了.....')
     if(localStorage.getItem('newCat')) {
         let newCat = JSON.parse(localStorage.getItem('newCat'))
         this.category = this.changeCategory(newCat)
         this.selectArticle();
     }
+	// 定位到之前位置
   },
+  
+  // 不显示......
+  // deactivated(){
+	 //  console.log('不显示......')
+	 //  // 
+  // },
   filters:{
   	filterTime(val) {
   	  if(val){
@@ -193,6 +208,28 @@ export default {
 	}
   },
   methods: {
+	recordScroll(){
+	  let pageScroll = this.$refs['pageScroll']
+	  // console.log(pageScroll)
+	  if(pageScroll){
+		  for(let i =0;i<pageScroll.length;i++){
+			  this.curScroll['pageScroll_'+i] = pageScroll[i].scrollTop
+		  }
+		  // console.log(this.curScroll)
+	  }
+	},
+	// 之前滚动位置跳转
+	toBeforeScroll(){
+	  let pageScroll = this.$refs['pageScroll']
+	  // console.log('跳转.....')
+	  // console.log(pageScroll)
+	  // console.log(this.curScroll)
+	  if(pageScroll){
+		  for(let i =0;i<pageScroll.length;i++){
+			  pageScroll[i].scrollTop = this.curScroll['pageScroll_'+ i]
+		  }
+	  }
+	},
     onScroll(){
       
     },
@@ -217,14 +254,14 @@ export default {
       // console.log(res)
       // const menu = [{DICT_NAME:'消息'},{DICT_NAME:'视频'},{DICT_NAME:'漫画'}]
 	  const res = await this.$http.get("/webInfoDetailData/queryMenu",{timeout:this.httpTimeout});
-	  console.log(res)
+	  // console.log(res)
 	  let all = [{
 		  CODE_VALUE:'',
 		  DICT_NAME:'全部',
 		  ID:'23333'
 	  }]
       this.category = this.changeCategory(all.concat(res.data.data));
-	  console.log(this.category)
+	  // console.log(this.category)
       this.selectArticle();
     },
     changeCategory(data) {
@@ -240,13 +277,13 @@ export default {
     },
     async selectArticle() {
       const categoryitem = this.categoryItem();
-	  console.log(categoryitem)
+	  // console.log(categoryitem)
 	  const res = await this.$http.post('/webInfoDetailData/queryWebDataHot',{
-		  loadMode: categoryitem.CODE_MODE_TYPE,
+		  loadMode: categoryitem.DICT_NAME == '演员' ? 4 : categoryitem.pageMode,
 		  pageNum: categoryitem.page,
 		  pageSize: categoryitem.pagesize,
 	  },{timeout:10000})
-	  console.log(res)
+	  // console.log(res)
 	// const res = await this.$http.post("/message/queryMessage", {
  //          // typeId: categoryitem.CODE_VALUE,
  //          pageNum: categoryitem.page,
@@ -303,7 +340,10 @@ export default {
 
         // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
       }
-    }
+    },
+	// '$parent.tabActive'(){
+	// 	console.log('===============================')
+	// }
   },
   created() {
       this.selectCategory();

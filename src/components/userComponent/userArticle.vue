@@ -4,8 +4,9 @@
 		<van-dropdown-menu>
 		  <van-dropdown-item :value="loadMode" :options="option1" @change="onConfirm1" />
 		  </van-dropdown-menu>
+		  <back-top :showHeight="300"></back-top>
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
-      <van-tabs v-model="active" swipeable sticky animated>
+      <van-tabs v-model="active" swipeable sticky animated offset-top="40">
         <!-- <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
             <van-list
@@ -28,6 +29,15 @@
           </van-pull-refresh>
         </van-tab> -->
 		<van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy >
+			<div slot="title">
+				<div>
+					<van-icon name="star-o" v-if="item.DICT_NAME == '收藏'" size="1rem" />
+					<van-icon name="browsing-history-o" v-if="item.DICT_NAME == '历史'" size="1rem"/>
+					  {{item.DICT_NAME}}
+				</div>
+			</div>
+			<!-- 嵌套一层div做内容滚动区域, 一定要有确定高度，可以使用高度100%或calc(100vh - ?px) -->
+			<div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'">
 		  <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
 		   <!-- <van-list
 			style="padding-bottom: 50px;"
@@ -86,7 +96,7 @@
 											<div style="position: absolute; right: 0;bottom: 1.5rem;">
 											 </div>
 											<div class="van-card__type van-ellipsis">
-												{{categoryitem.loadMode == 4 ? '视频' : categoryitem.loadMode = 2 ? '漫画' : '其他'}}
+												{{categoryitem.loadMode == 4 ? '视频' : categoryitem.loadMode == 2 ? '漫画' : '其他'}}
 											</div>
 											<!-- <div class="van-card__num van-ellipsis">
 												<van-icon name="play-circle-o" size="1rem" style="top: 0.2rem;"/>
@@ -115,10 +125,11 @@
 			  	</div>
 			  	<div class="van-list__placeholder">
 			  	</div>
-				<back-top :showHeight="300"></back-top>
+				
 			  </div>
 			</van-list>
 		  </van-pull-refresh>
+		  </div>
 		</van-tab>
       </van-tabs>
     </div>
@@ -144,7 +155,8 @@ export default {
 		// { text: '作品', value: 3 }
 	  ],
 	  // value1: 0,
-	  loadMode:0
+	  loadMode:0,
+	  curScroll:{}
     };
   },
   components: {
@@ -184,6 +196,30 @@ export default {
   	}
   },
   methods: {
+	  recordScroll(){
+	    let pageScroll = this.$refs['pageScroll']
+	    // console.log('记录...')
+	    // console.log(pageScroll)
+	    if(pageScroll){
+	  	  for(let i =0;i<pageScroll.length;i++){
+			  // console.log(pageScroll[i].scrollTop)
+	  		  this.curScroll['pageScroll_'+i] = pageScroll[i].scrollTop
+	  	  }
+	  	  // console.log(this.curScroll)
+	    }
+	  },
+	  // 之前滚动位置跳转
+	  toBeforeScroll(){
+	    let pageScroll = this.$refs['pageScroll']
+	    // console.log('跳转.....')
+	    // console.log(pageScroll)
+	    // console.log(this.curScroll)
+	    if(pageScroll){
+	  	  for(let i =0;i<pageScroll.length;i++){
+	  		  pageScroll[i].scrollTop = this.curScroll['pageScroll_'+ i]
+	  	  }
+	    }
+	  },
 	  onConfirm1(e){
 		  // if(e == 0){
 			 //  this.loadMode = ''
@@ -252,6 +288,7 @@ export default {
 		    pageNum: categoryitem.page,
 		    pageSize: categoryitem.pagesize,
 		    // search: ''
+			loadMode: this.loadMode == 0 ? '' : this.loadMode
 		  })
 	    categoryitem.loading = false;
 	    // if(res.data.data.list == 0){
@@ -280,6 +317,7 @@ export default {
     },
 	// 页面跳转
 	toPage(detailitem){
+		console.log(detailitem)
 		// 视频页面
 		if(detailitem.loadMode == 4){
 		  if(this.$route.path != `/article/${detailitem.id}/${detailitem.loadMode}`) {

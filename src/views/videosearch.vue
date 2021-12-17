@@ -89,7 +89,7 @@ export default {
 	  search(data){
 		console.log('search.......................')  
 		console.log(data)
-		this.$refs.searchBar.searchSortType = data.value
+		this.$refs.searchBar.searchParams = data
 		// 初始化配置
 		this.CLEAN_PLAYLIST()
 		this.$refs.searchBar.page = 0

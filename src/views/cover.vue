@@ -6,6 +6,10 @@
 			   <van-image lazy-load :src="baseURL +   detailitem.previewImg + '&width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:47.778vw;">
 					  <template v-slot:error>加载失败</template>
 			   </van-image>
+			   <!-- <img class="com-image" v-if="detailitem.person_nationality && detailitem.person_nationality == '日本'" src="@/assets/taiwan.jpg" alt="" > -->
+			   <!-- <img class="com-image" v-if="detailitem。person_nationality && detailitem。person_nationality == '日本'" src="@/assets/taiwan.jpg" alt="" > -->
+			   <!-- <img class="com-image" v-if="detailitem.person_nationality && detailitem.person_nationality == '中国香港'" src="@/assets/taiwan.jpg" alt="" > -->
+			   <!-- <img class="com-image" v-if="detailitem.person_nationality && detailitem.person_nationality == '中国'" src="@/assets/taiwan.jpg" alt=""> -->
               <div class="bottom">
                   <!-- <div class="icon-play2"><span class="video">&nbsp;{{detailitem.flowNum}}</span></div> -->
 				  <div v-if="detailitem.flowNum"><span class="video"><van-icon name="eye-o" />&nbsp;{{detailitem.flowNum}}</span></div>
@@ -45,7 +49,7 @@ created(){
 },
     methods:{
         pathPush() {
-			console.log(this.detailitem)
+			// console.log(this.detailitem)
             const loadMode = `${this.detailitem.loadMode}`;
 			// 没有loadMode，走人员页面
 			if(loadMode == 'undefined'){
@@ -89,6 +93,16 @@ created(){
             right: 0;
         }
     }
+}
+
+.com-image{
+	position: absolute;
+	right: 1rem;
+	// bottom: 1rem;
+	bottom: 0.3rem;
+	border-radius:50%;
+	width:2rem;
+	height:2rem;
 }
 
 </style>
