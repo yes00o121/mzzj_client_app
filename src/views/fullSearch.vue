@@ -1,6 +1,6 @@
 <template>
-<div>
-	<van-sticky >
+<div style="width:100%">
+	<van-sticky style="position: fixed;width:100%;z-index:99999;">
 		<van-cell  style="z-index:99999;"  icon="arrow-left" title="全文检索"  @click="returnPage">
 			<van-icon
 			    slot="right-icon"
@@ -12,7 +12,7 @@
 		</van-cell>
 	</van-sticky>
 	<!-- 搜索栏 -->
-	<van-sticky>
+	<van-sticky offset-top="44">
 		<van-search
 
 		v-model="search"	
@@ -23,40 +23,41 @@
 			autofocus="autofocus"
 			ref="search"
 		/>
+		<div>
+			<van-dropdown-menu>
+			  <van-dropdown-item :value="value1" :options="option1" @change="onConfirm1" />
+			  <van-dropdown-item :value="value2" :options="option2" @change="onConfirm2" />
+			  <!-- <van-dropdown-item id="item" title="测试">
+			    <van-cell title="hhh">
+			      <van-switch
+			        slot="right-icon"
+			        size="24px"
+			        style="height: 26px"
+			        :checked="switch1"
+			        bind:change="onSwitch1Change"
+			      />
+			    </van-cell> -->
+			   <!-- <van-cell title="{{ switchTitle2 }}">
+			      <van-switch
+			        slot="right-icon"
+			        size="24px"
+			        style="height: 26px"
+			        checked="{{ switch2 }}"
+			        bind:change="onSwitch2Change"
+			      />
+			    </van-cell> -->
+			  <!--  <van-button type="info" block bind:click="onConfirm">
+			      确定
+			    </van-button>
+			  </van-dropdown-item> -->
+			</van-dropdown-menu>
+		</div>
 	</van-sticky>
-	<back-top :showHeight="300"></back-top>
+	<back-top :showHeight="300" ref="backtop"></back-top>
 
   <div class="home" v-if="category">
     <div class="categorytab">
-			<div>
-				<van-dropdown-menu>
-				  <van-dropdown-item :value="value1" :options="option1" @change="onConfirm1" />
-				  <van-dropdown-item :value="value2" :options="option2" @change="onConfirm2" />
-				  <!-- <van-dropdown-item id="item" title="测试">
-				    <van-cell title="hhh">
-				      <van-switch
-				        slot="right-icon"
-				        size="24px"
-				        style="height: 26px"
-				        :checked="switch1"
-				        bind:change="onSwitch1Change"
-				      />
-				    </van-cell> -->
-				   <!-- <van-cell title="{{ switchTitle2 }}">
-				      <van-switch
-				        slot="right-icon"
-				        size="24px"
-				        style="height: 26px"
-				        checked="{{ switch2 }}"
-				        bind:change="onSwitch2Change"
-				      />
-				    </van-cell> -->
-				  <!--  <van-button type="info" block bind:click="onConfirm">
-				      确定
-				    </van-button>
-				  </van-dropdown-item> -->
-				</van-dropdown-menu>
-			</div>
+
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <!-- <van-tabs v-model="active" swipeable sticky animated offset-top="40"> -->
 	  <!-- <van-tabs v-model="active" swipeable  animated> -->
@@ -71,7 +72,7 @@
               finished-text="我也是有底线的"
               @load="onLoad"
             >
-             <div class="detailparent" ref="tab">
+             <div class="detailparent" ref="tab" style="margin-top: 3rem;">
 				 <!-- 演员 -->
 				 <div style="display: flex;overflow: auto;" >
 					 <div  v-for="(categoryitem,categoryindex) in person" :key="categoryindex"  @click="toPage(categoryitem)">
@@ -101,7 +102,7 @@
 						 <div style="flex-wrap: wrap;display: flex;width:100%">
 							 <div style="font-size:14px;text-align: left;width:60%;margin-top: 0.4rem;" class="van-multi-ellipsis" v-html="categoryitem.title"></div>
 							<div style="width:35%;padding: .3rem;">
-								<van-image style="width:100%;height:25.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +  categoryitem.photo + (categoryitem.photo.indexOf('?') != -1 ? '&' : '?') + 'token=' + token" class="participates-photo"  />
+								<van-image  style="width:100%;height:25.778vw;" rel="external nofollow"  fit="contain" lazy-load :src="baseURL +  categoryitem.photo + (categoryitem.photo.indexOf('?') != -1 ? '&' : '?') + 'token=' + token" class="participates-photo"  />
 								<!-- <van-image style="width:100%;height:45.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +   categoryitem.photo + '?token=' + token" class="participates-photo" v-if="categoryitem.mklx != 'video'" /> -->
 							</div>
 							<!-- <div class="right-descript van-multi-ellipsis--l2" v-html="categoryitem.summary">
@@ -148,6 +149,7 @@ export default {
 		height:'',
 		dateType:'5',
 		token: 'Bearer ' + localStorage.token,
+		currentScroll:0,// 当前滚动高度
       category: [],
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
@@ -166,31 +168,59 @@ export default {
 		  value2: 0,
     };
   },
+  // 跳转之前
+  beforeRouteLeave(to, from, next){
+	  if(from.path == '/search'){
+	  
+	  	this.currentScroll = document.documentElement.scrollTop || document.body.scrollTop;
+	  	this.$refs.backtop.show = false
+	  	// alert('记录高度' + this.currentScroll)
+	  }
+	  next();
+  },
   watch:{
   	$route(to,from) {
-        // 跳转明细页面不刷新
-	    if(to.path.startsWith('/personWork')){
-			return;
-		}
-		// id相同不刷新
-		if(to.params.id == this.person.id){
-			scroll(0,0)
-			return;
-		}
+		// console.log(to)
 		// console.log(from)
-		// 跳转其他页面
-		if(!to.path.startsWith('/person')){
-			return;
+		// 跳转高度
+		if(to.path == '/search'){
+			document.documentElement.scrollTop = this.currentScroll
+			document.body.scrollTop = this.currentScroll
+			if(this.currentScroll >= 300){
+				this.$refs.backtop.show = true
+			}
+			// alert('跳转高度' + this.currentScroll)
 		}
-		
-  		scroll(0,0)
-		this.person = {}
-		const categoryitem = this.categoryItem();
-		categoryitem.list = []
-		categoryitem.page = 1
-		categoryitem.finished = false;
-		categoryitem.loading = true;
-		this.selectArticle();
+		// 记录高度
+		// if(from.path == '/search'){
+
+		// 	this.currentScroll = document.documentElement.scrollTop;
+			
+		// 	console.log('记录高度')
+		// }
+        // 跳转明细页面不刷新
+	 //    if(to.path.startsWith('/personWork')){
+		// 	return;
+		// }
+		// // id相同不刷新
+		// if(to.params.id == this.person.id){
+		// 	// scroll(0,0)
+		// 	return;
+		// }
+		// // console.log(from)
+		// // 跳转其他页面
+		// if(!to.path.startsWith('/person')){
+		// 	return;
+		// }
+		// alert(110)
+  // 		scroll(0,0)
+		// this.person = {}
+		// const categoryitem = this.categoryItem();
+		// categoryitem.list = []
+		// categoryitem.page = 1
+		// categoryitem.finished = false;
+		// categoryitem.loading = true;
+		// this.selectArticle();
   	}
   },
   components: {
@@ -298,7 +328,7 @@ export default {
 		
 	},
 	returnPage(){
-		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;
 		this.$router.go(-1)
 	},
     async selectCategory() {

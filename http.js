@@ -11,10 +11,10 @@ if(this.activeIndicator <= 0){
 import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
-// const baseURL = 'http://127.0.0.1:8099'
-// const baseURL = 'http://192.168.1.109:8099'
+const baseURL = 'http://127.0.0.1:8098'
+// const baseURL = 'http://192.168.1.4:8098'
 // const baseURL = 'http://121.201.2.228:10824'
-const baseURL = 'http://121.201.2.228:10958'
+// const baseURL = 'http://121.201.2.228:10958'
 Vue.prototype.baseURL = baseURL
 const http = axios.create({
 	baseURL
@@ -30,7 +30,7 @@ http.interceptors.request.use(function (config) {
     if(localStorage.getItem('token')){
         config.headers.Authorization = 'Bearer ' + localStorage.getItem('token')
     } 
-
+	config.headers['yctest'] = 'yctest__' // 测试时使用的密钥
     config.headers['uuid'] = localStorage.uuid//获取设备的uuid进行传输
     return config;
   }, function (error) {
@@ -40,26 +40,19 @@ http.interceptors.request.use(function (config) {
 http.interceptors.response.use(function (response) {
     return response;
   }, function (error) {
-	  console.log(error)
-	  // Vue.prototype.hideloading()
 	  Vue.prototype.$msg.clear()
      if(!error.response || error.response.status == 401 || error.response.status == 402){
-         router.push('/')
-		 // console.log(error.message)
-		 // alert(response.messag)
 		 if(error.message.startsWith('timeout')){
 			 // Vue.prototype.$msg.fail('系统维护中...')
 			 Vue.prototype.$msg.fail('加载超时拉...')
 		 }else {
-			 // Vue.prototype.$msg.fail('没有权限...')
+			 Vue.prototype.$msg.fail('没有权限或系统维护中...')
 			 // Vue.prototype.$msg.fail('加载超时拉...')
 		 }
      }
-	 if(error.response.status == 500){
+	 if(error.response && error.response.status == 500){
 		 Vue.prototype.$msg.fail('加载失败...')
-		 router.push('/')
 	 }
-
     return Promise.reject(error);
   });
 

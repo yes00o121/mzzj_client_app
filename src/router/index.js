@@ -19,7 +19,9 @@ const videosearch = () => import('@/views/videosearch.vue')
 const set = () => import('@/views/set.vue')
 const magnet = ()=>import('@/views/magnet.vue')
 const literati = ()=>import('@/views/literati.vue')
-// const dynamic = ()=>import('@/views/dynamic.vue')
+const collection = ()=>import('@/views/collection.vue')
+const history = ()=>import('@/views/history.vue')
+const userlog = ()=>import('@/views/userlog.vue')
 Vue.use(VueRouter)
   const routes = [
      {
@@ -47,6 +49,33 @@ Vue.use(VueRouter)
          istoken:true
        }
      },
+	 {
+		path:'/collection',
+		name:'collection',
+		 component:collection,
+		 meta:{
+			 index:3,
+			 keepalive:true
+		 }
+	 },
+	 {
+	 		path:'/userlog',
+	 		name:'userlog',
+	 		 component:userlog,
+	 		 meta:{
+	 			 index:3,
+	 			 // keepalive:true
+	 		 }
+	 },
+	 {
+	 		path:'/history',
+			name:'history',
+	 		 component:history,
+	 		 meta:{
+	 			 index:3,
+	 			 keepalive:true
+	 		 }
+	 },
      {
        path:'/edit',
        component:edit,
@@ -97,16 +126,20 @@ Vue.use(VueRouter)
 	},
 	{
 	  path:'/person/:id/:type',
+	  name:'person',
 	  component:person,
 	  meta:{
-		  keepalive:true
+		  keepalive:true,
+		  index:4
 	  }
 	},
 	{
 	  path:'/personWork/:id',
+	  name:'personWork',
 	  component:personWork,
 	  meta:{
-		keepalive:true  
+		keepalive:true,
+		index:5
 	  }
 	},
 	{
@@ -121,7 +154,7 @@ Vue.use(VueRouter)
 	  component:search,
 	  name:'search',
 	  meta:{
-		index:6,
+		index:2,
 	    keepalive:true
 	  }
 	},
@@ -138,7 +171,7 @@ Vue.use(VueRouter)
 	  component:set,
 	  name:'set',
 	  meta:{
-		index:10,
+		index:2,
 	    keepalive:true
 	  }
 	},

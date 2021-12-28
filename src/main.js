@@ -18,6 +18,10 @@ import 'video.js/dist/video-js.css'
 import videojs from 'video.js';
 import NoSleep from "nosleep.js/dist/NoSleep.min.js";
 import VueClipboard from 'vue-clipboard2' // 复制包
+import VCharts from 'v-charts-v2' // 图表
+import { Panel } from 'vant';
+Vue.use(Panel);
+Vue.use(VCharts)
 Vue.use(VueClipboard)
  Vue.prototype.$NoSleep = NoSleep;
 
@@ -91,6 +95,8 @@ Vue.prototype.httpTimeout = 5000; // http接口超时时长
 Vue.prototype.windowHeight = screen.height // 获取用户屏幕高度
 
 Vue.prototype.windowWidth = screen.width // 获取用户屏幕宽度
+
+Vue.prototype.pageScroll = {A:'10'} // 页面所有滚动位置
 
 // 跳转到指定y轴位置
 Vue.prototype.slideTo = function(targetPageY,el) {

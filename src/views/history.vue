@@ -1,10 +1,25 @@
 <template>
+	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;width:100%" :swipe-options="{direction: 'horizontal'}">
+		<!-- <van-sticky >
+			<van-cell  style="z-index:99999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
+		</van-sticky> -->
+		<van-sticky >
+			<van-cell  style="z-index:99999;"  icon="arrow-left" title="历史记录"  @click="returnPage">
+				<van-icon
+					slot="right-icon"
+					name="wap-home-o"
+					size="1.2rem"
+					style="line-height: inherit;"
+					@click.stop="$router.push('/')"
+				  />
+			</van-cell>
+		</van-sticky>
   <div class="home" v-if="category">
     <div class="categorytab">
-		<van-dropdown-menu>
+<!-- 		<van-dropdown-menu>
 		  <van-dropdown-item :value="loadMode" :options="option1" @change="onConfirm1" />
-		  </van-dropdown-menu>
-		  <back-top :showHeight="300"></back-top>
+		  </van-dropdown-menu> -->
+		  <!-- <back-top :showHeight="300"></back-top> -->
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <van-tabs v-model="active" swipeable sticky animated offset-top="40">
         <!-- <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
@@ -29,13 +44,13 @@
           </van-pull-refresh>
         </van-tab> -->
 		<van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy >
-			<div slot="title">
+<!-- 			<div slot="title">
 				<div>
-					<van-icon name="star-o" v-if="item.DICT_NAME == '收藏'" size="1rem" />
+					<van-icon name="star-o" size="1rem" />
 					<van-icon name="browsing-history-o" v-if="item.DICT_NAME == '历史'" size="1rem"/>
-					  {{item.DICT_NAME}}
+					  收藏
 				</div>
-			</div>
+			</div> -->
 			<!-- 嵌套一层div做内容滚动区域, 一定要有确定高度，可以使用高度100%或calc(100vh - ?px) -->
 			<div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'">
 		  <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
@@ -138,12 +153,13 @@
       </van-tabs>
     </div>
   </div>
+</v-touch>
 </template>
 
 <script>
 import NavBar from "@/components/common/Navbar.vue";
 import cover from "@/views/cover";
-import backTop from '@/components/backTop'
+// import backTop from '@/components/backTop'
 export default {
   data() {
     return {
@@ -152,6 +168,7 @@ export default {
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
 	  token: 'Bearer ' + localStorage.token,
+	  // currentScroll:0,
 	  option1: [
 	    { text: '全部类型', value: 0 },
 	    { text: '漫画', value: 2 },
@@ -167,8 +184,17 @@ export default {
   },
   components: {
     NavBar,
-    cover,
-	backTop
+    cover
+  },
+  // 跳转其他页面之前
+  beforeRouteLeave(to, from ,next){
+  	if(from.name == 'history'){
+		this.recordScroll();
+  		// this.currentScroll = document.documentElement.scrollTop || document.body.scrollTop;
+  		// this.$refs.backtop.show = false
+  		// alert(this.currentScroll + '...')
+  	}
+   next();
   },
   activated() {
 
@@ -201,7 +227,20 @@ export default {
   		return val
   	}
   },
+  
   methods: {
+	  
+	  returnPage(){
+	  	// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+	  	// alert('漫画高度' + this.curScroll)
+	  	this.$router.go(-1)
+	  },
+	  onSwipeLeft(){
+		  
+	  },
+	  onSwipeRight(){
+		  
+	  },
 	  // 图片加载结束
 	  imgLoad(e){
 	  	if(this.$refs['workImage'][e]){
@@ -210,24 +249,19 @@ export default {
 	  },
 	  recordScroll(){
 	    let pageScroll = this.$refs['pageScroll']
-	    // console.log('记录...')
-	    // console.log(pageScroll)
 	    if(pageScroll){
 	  	  for(let i =0;i<pageScroll.length;i++){
-			  // console.log(pageScroll[i].scrollTop)
+			  console.log(pageScroll[i].scrollTop)
 	  		  this.curScroll['pageScroll_'+i] = pageScroll[i].scrollTop
 	  	  }
-	  	  // console.log(this.curScroll)
 	    }
 	  },
 	  // 之前滚动位置跳转
 	  toBeforeScroll(){
 	    let pageScroll = this.$refs['pageScroll']
-	    // console.log('跳转.....')
-	    // console.log(pageScroll)
-	    // console.log(this.curScroll)
 	    if(pageScroll){
 	  	  for(let i =0;i<pageScroll.length;i++){
+			  console.log(this.curScroll['pageScroll_'+ i])
 	  		  pageScroll[i].scrollTop = this.curScroll['pageScroll_'+ i]
 	  	  }
 	    }
@@ -257,12 +291,14 @@ export default {
       if(localStorage.getItem('newCat')) {
         return
       }
-      const menu = [{DICT_NAME:'收藏'},{DICT_NAME:'历史'}/*,{DICT_NAME:'评论'}*/]
+      // const menu = [{DICT_NAME:'收藏'}/*,{DICT_NAME:'历史'}*//*,{DICT_NAME:'评论'}*/]
+	  const menu = [{DICT_NAME:'漫画',value:'2'},{DICT_NAME:'视频',value:'4'},/*{DICT_NAME:'演员',value:'6'},*/{DICT_NAME:'作品',value:'7'}]
       this.category = this.changeCategory(menu);
       this.selectArticle();
     },
     changeCategory(data) {
       const category1 = data.map((item, index) => {
+		item.loadMode = item.value
         item.list = [];
         item.page = 1;
         item.finished = false;
@@ -275,15 +311,15 @@ export default {
     async selectArticle() {
       const categoryitem = this.categoryItem();
 	  let res = [];
-      if(categoryitem.DICT_NAME == '收藏'){
+      // if(categoryitem.DICT_NAME == '收藏'){
         // console.log(categoryitem)
-        res = await this.$http.post("/collection/queryCollectionByUserid", {
-          // typeId: categoryitem.CODE_VALUE,
-          pageNum: categoryitem.page,
-          pageSize: categoryitem.pagesize,
-          // search: ''
-		  loadMode: this.loadMode == 0 ? '' : this.loadMode
-        })
+    //     res = await this.$http.post("/collection/queryCollectionByUserid", {
+    //       // typeId: categoryitem.CODE_VALUE,
+    //       pageNum: categoryitem.page,
+    //       pageSize: categoryitem.pagesize,
+    //       // search: ''
+		  // loadMode: categoryitem.loadMode
+    //     })
         // if(res.data.data.list == 0){
         //   categoryitem.finished = true;
         //   return
@@ -293,20 +329,20 @@ export default {
         // if (res.data.data.list.length < categoryitem.pagesize) {
         //   categoryitem.finished = true;
         // }
-      }
-	  if(categoryitem.DICT_NAME == '历史'){
+      // }
+	  // if(categoryitem.DICT_NAME == '历史'){
 		  res = await this.$http.post("/history/queryHistory", {
 		    // typeId: categoryitem.CODE_VALUE,
 		    pageNum: categoryitem.page,
 		    pageSize: categoryitem.pagesize,
 		    // search: ''
-			loadMode: this.loadMode == 0 ? '' : this.loadMode
+			loadMode: categoryitem.loadMode
 		  })
-	    categoryitem.loading = false;
-	    // if(res.data.data.list == 0){
-	    //   categoryitem.finished = true;
-	    // }
-	  }
+	  //   categoryitem.loading = false;
+	  //   // if(res.data.data.list == 0){
+	  //   //   categoryitem.finished = true;
+	  //   // }
+	  // }
 	  
 	  if(res.data.data.list == 0){
 	    categoryitem.finished = true;
@@ -386,12 +422,19 @@ export default {
 
   },
   watch: {
+	  $route(to,from) {
+	  	// 跳转高度
+	  	if(to.name == 'history'){
+	  		this.$nextTick(()=>{
+	  				this.toBeforeScroll()
+	  		})
+	  			
+	  	}
+	  },
     active() {
       const categoryitem = this.categoryItem();
       if (!categoryitem.list.length) {
         this.selectArticle();
-
-        // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
       }
     }
   },

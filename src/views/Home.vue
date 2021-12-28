@@ -1,11 +1,11 @@
 <template>
-  <div class="home" v-if="category">
+  <div class="home" >
 	  <van-sticky>
     <nav-bar></nav-bar>
 	</van-sticky>
 	<!-- home -->
     <div class="categorytab"  v-show="tabActive == 0" >
-		<back-top :showHeight="300"></back-top>
+		<back-top :showHeight="300" ref="backtop"></back-top>
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <van-tabs v-model="active" swipeable sticky  animated offset-top="40">
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy  >
@@ -18,8 +18,8 @@
 				  </div>
 			</div>
 			<!-- 嵌套一层div做内容滚动区域, 一定要有确定高度，可以使用高度100%或calc(100vh - ?px) -->
-			<div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'">
-				<!-- <back-top :showHeight="100"></back-top> -->
+			<div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'" @scroll="scrolls">
+				<back-top :showHeight="100"></back-top>
 			<van-sticky>
 				<person-search-tool :show = "categoryItem().CODE_VALUE == '9'" @search = "personSearch"></person-search-tool>
 			</van-sticky>
@@ -144,46 +144,26 @@ export default {
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
 	  websocket:null,
-	  videoStatus:true, // 视频状态,用于子组件刷新
-	  normalHead:{
-		  height:'auto'
-	  },
-	  videoHead:{
-		  height:'400px',
-	  },
-	  accountName: '筛选',
-      licensePlate: '车牌号',
-      debt: '是否欠款',
-      accountNameValue: '',
-      licensePlateValue: '',
-      debtValue: '',
-      accountNameOptions: [
-        { text: '全部', value: 0 },
-        { text: '测试账户1', value: 1 },
-        { text: '测试账户2', value: 2 },
-      ],
-      licensePlateOptions: [
-        { text: '全部', value: 0 },
-        { text: '皖A78956', value: 1 },
-        { text: '皖A75236', value: 2 },
-      ],
-      debtOptions: [
-        { text: '不限', value: 0 },
-        { text: '是', value: 1 },
-        { text: '否', value: 2 },
-      ],
-
+	  // videoStatus:true, // 视频状态,用于子组件刷新
     };
   },
   // 跳转其他页面之前
   beforeRouteLeave(to, from ,next){
+	  		console.log(this.curScroll)
+	 console.log(this.tabActive)
 	  // console.log('跳转其他页面.......' + this.curScroll)
 	  // 跳转其他页面的时候记录当前滚动高度
 	  // this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 	  // console.log(this.$refs)
 	  // this.curScroll['pageScroll_'+this.active] = this.$refs['pageScroll'][this.active].scrollTop
 	  // console.log('跳转页面记录高度' + JSON.stringify(this.curScroll))
-	  this.recordScroll()
+	  // if(this.tabActive == 0){
+		 //  this.recordScroll(0)
+	  // }
+
+	  this.recordScroll(this.tabActive)
+	  // this.recordScroll(2)
+	  // this.recordScroll(3)
 	  next()
   },
   beforeRouteEnter(to, from,next){
@@ -209,13 +189,20 @@ export default {
 	// shortvideo
   },
   activated() {
-	  // console.log('222222222222222')
     if(localStorage.getItem('newCat')) {
         let newCat = JSON.parse(localStorage.getItem('newCat'))
         this.category = this.changeCategory(newCat)
         this.selectArticle();
     }
-	this.toBeforeScroll();
+	// console.log('??????')
+	console.log(this.tabActive)
+	// if(this.tabActive == 0){
+		this.toBeforeScroll(this.tabActive)
+	// }
+	// this.toBeforeScroll(this.tabActive);
+	// this.toBeforeScroll(1);
+	// this.toBeforeScroll(2);
+	// this.toBeforeScroll(3);
 	// this.curScroll['pageScroll_'+this.active] = this.$refs['pageScroll'][this.active].scrollTop
 	// console.log(this.curScroll['pageScroll_'+this.active])
 	// this.$refs['pageScroll'][this.active].scrollTop = this.curScroll['pageScroll_'+this.active]
@@ -233,6 +220,26 @@ export default {
 	//     }
   },
   methods: {
+	  slideTo (targetPageY,ref,fun) {
+	    var timer = setInterval(function () {
+	        var currentY = ref.scrollTop;//当前及滑动中任意时刻位置
+	        var distance = targetPageY > currentY ? targetPageY - currentY : currentY - targetPageY;//剩余距离
+	        var speed = Math.ceil(distance/10);//每时刻速度
+	        if (currentY == targetPageY) {
+	         clearInterval(timer);
+			 fun()
+	        } else {
+				ref.scrollTo(0,targetPageY > currentY ? currentY + speed : currentY - speed);
+	        }
+	       },10);
+	   },
+	  scrolls(e){
+		  console.log(e.target.scrollTop)
+		  // if(scrollTop > 100){
+			  
+		  // }
+		// console.log('.....')  
+	  },
 	  // 之前滚动位置跳转
 	  toBeforeScroll(cur){
 		  // if(cur== 0){
@@ -240,87 +247,56 @@ export default {
 			  // console.log('跳转.....')
 			  // console.log(pageScroll)
 			  // console.log(this.curScroll)
-			  if(pageScroll){
+			  if(pageScroll && cur == 0){
 				  for(let i =0;i<pageScroll.length;i++){
-					  pageScroll[i].scrollTop = this.curScroll['pageScroll_'+ i]
+					  pageScroll[i].scrollTop = this.pageScroll[this.$route.name + 'pageScroll_'+ i]
 				  }
 			  }
 		  // }
 			
-		  // if(cur == 1){
-			   // this.$nextTick(()=>{
-			if(this.$refs.hot){
-				this.$refs.hot.toBeforeScroll()
-			}  
+		  if(cur == 1){
+			   this.$nextTick(()=>{
+					if(this.$refs.hot){
+						this.$refs.hot.toBeforeScroll()
+					}  
 							// console.log(this.$refs.user.$refs)
-			if(this.$refs.user && this.$refs.user.$refs.article){
-				// console.log(this.$refs.user.$refs.article)
-				this.$refs.user.$refs.article.toBeforeScroll()
-			}  
-			if(this.$refs.user ){
-				// console.log(this.$refs.user)
-			    this.$refs.user.toBeforeScroll()
-			}
-			// })
-		  // }
+			// if(this.$refs.user && this.$refs.user.$refs.article){
+			// 	// console.log(this.$refs.user.$refs.article)
+			// 	this.$refs.user.$refs.article.toBeforeScroll()
+			// }  
+			// if(this.$refs.user ){
+			// 	// console.log(this.$refs.user)
+			//     this.$refs.user.toBeforeScroll()
+			// }
+			})
+		  }
 
 	  },
 	  // 记录滚动位置
 	  recordScroll(cur){
-		  // console.log('记录.....' + this.tabActive)
-		  // if(cur == 0){
-			  let pageScroll = this.$refs['pageScroll']
-			  // console.log('记录...')
-			  // console.log(pageScroll)
-			  if(pageScroll){
-				  for(let i =0;i<pageScroll.length;i++){
-					  this.curScroll['pageScroll_'+i] = pageScroll[i].scrollTop
-				  }
-				  // console.log(this.curScroll)
+		  let pageScroll = this.$refs['pageScroll']
+		  if(pageScroll && cur == 0){
+			  for(let i =0;i<pageScroll.length;i++){
+				  this.pageScroll[this.$route.name + 'pageScroll_'+i] = pageScroll[i].scrollTop
+				  
 			  }
-		  // }
-		  
-		  // if(cur == 1){
+		  }
+		  if(cur == 1){
 			  // this.$nextTick(()=>{
 				  if(this.$refs.hot){
 					  this.$refs.hot.recordScroll()
 				  }
 				  
-				  if(this.$refs.user && this.$refs.user.$refs.article){
-					  this.$refs.user.$refs.article.recordScroll()
-				  }
-				  if(this.$refs.user){
-					  this.$refs.user.recordScroll()
-				  }
+				  // if(this.$refs.user && this.$refs.user.$refs.article){
+					 //  this.$refs.user.$refs.article.recordScroll()
+				  // }
+				  // if(this.$refs.user){
+					 //  this.$refs.user.recordScroll()
+				  // }
 			  // })
 
-		  // }
+		  }
 
-	  },
-	  openMenu(index){
-		   // $('.van-dropdown-item--down').css('top','50px')
-		   // 动态调整下拉菜单位置、为index*高度
-		   // if(index == 0){
-			  //  return;
-		   // }
-		   // $('#down_1 .van-dropdown-item--down').css('marginLet', this.windowWidth + 'px')
-		   
-		   
-	  },
-	  toggleAccountName(value) {
-	        this.accountName = this.accountNameOptions[value].text
-	        this.accountNameValue = value
-	      },
-	      toggleLicensePlate(value) {
-	        this.licensePlate = this.licensePlateOptions[value].text
-	        this.licensePlateValue = value
-	      },
-	      toggleDebt(value) {
-	        this.debt = this.debtOptions[value].text
-	        this.debtValue = value
-	      },
-	  searchChange(){
-		// console.log('....')  
 	  },
 	  hit(){
 		  this.beforetabActive = this.tabActive 
@@ -339,9 +315,17 @@ export default {
     },
 	home(){
 		if(this.tabActive == 0 && this.beforetabActive == 0){
-			scrollTo(0,0)
-			this.isLoading = true
-			this.onRefresh()
+			// scrollTo(0,0)
+			// this.$refs['pageScroll'][0].scrollTop = 0;
+			console.log(this.$refs.backtop)
+			top.a = this.$refs
+			// this.$refs['backtop'].slideTo(0)
+			this.slideTo(0,this.$refs['pageScroll'][this.active],()=>{
+				// this.isLoading = true
+				// this.onRefresh()
+			})
+			// this.isLoading = true
+			// this.onRefresh()
 		}
 		this.beforetabActive = this.tabActive
 	},
@@ -536,7 +520,7 @@ export default {
             },
     onLoad() {
 		// console.log(this.$refs['pageScroll'][0].scrollTop)
-		top.a = this.$refs['pageScroll'][0].scrollTop
+		// top.a = this.$refs['pageScroll'][0].scrollTop
       const categoryitem = this.categoryItem();
 	  // console.log(categoryitem)
 	  if(categoryitem.list.length == 0){
@@ -570,6 +554,7 @@ export default {
 		this.selectPerson()
 	}
   },
+  
   watch: {
     active(current,before) {
       // console.log('切换........')
@@ -589,12 +574,16 @@ export default {
 	  	
 	 //  }
     },
-	tabActive(bef,cur){
-		// console.log(cur)
-		// console.log(bef)
-		this.recordScroll(cur)
-		this.toBeforeScroll(cur)
-		
+	tabActive(cur,bef){
+		console.log(this.pageScroll)
+		console.log(cur)
+		 console.log(bef)
+		this.recordScroll(bef)
+		this.$nextTick(()=>{
+			this.toBeforeScroll(cur)
+		})
+		// 
+
 		// console.log(this.curScroll)
 		// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 		// if(cur != 0){

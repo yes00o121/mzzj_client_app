@@ -1,7 +1,22 @@
 <template>
-	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
-		<van-sticky >
+	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
+		<!-- <van-sticky >
 			<van-cell  style="z-index:99999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
+		</van-sticky> -->
+		<van-sticky >
+			<van-cell  style="z-index:99999;"  icon="arrow-left" :title="manga.title"  @click="returnPage">
+				<van-button style="margin-right:1rem" plain type="default" size="mini" @click.stop="collectionClick" :class="{activeColor:collectionActive}">
+					<van-icon  name="star-o" size=".5rem" />
+					<span>&nbsp;收藏</span>
+				</van-button>
+				<van-icon
+					slot="right-icon"
+					name="wap-home-o"
+					size="1.2rem"
+					style="line-height: inherit;"
+					@click.stop="$router.push('/')"
+				  />
+			</van-cell>
 		</van-sticky>
   <div class="home" v-if="category" :style="'height:'+windowWidth+'px'">
 	<div style="position: relative;height:300px" >
@@ -10,15 +25,15 @@
 		   :src="baseURL + manga.previewImg + '&width='+width+'&height='+windowWidth + '&random=1&token=' + token" rel="external nofollow" 
 		   style="width:100%;"
 		 />
-		 <div style="position: absolute;right:0;bottom:0;">
+		 <!-- <div style="position: absolute;right:0;bottom:0;">
 			<van-button plain type="default" @click="collectionClick" :class="{activeColor:collectionActive}">
 				<van-icon style="top:5px" name="star-o" size="1.5rem" />
 				<span>&nbsp;收藏</span>
 			</van-button>
-		</div>
+		</div> -->
 	</div>
     <div class="categorytab" >
-	  <back-top :showHeight="300"></back-top>
+	  <back-top :showHeight="300" ref="backtop"></back-top>
       <van-tabs v-model="active" swipeable animated>
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
@@ -61,11 +76,12 @@ export default {
   data() {
     return {
 		windowWidth:'300',
-		curScroll:0, // 当前滚动位置
+		// curScroll:0, // 当前滚动位置
 	  curPage:null, // 当前页面路径
 		width:'',
 		height:'',
       img:'',
+	  currentScroll:0,// 高度
 	  collectionActive:false,
       manga:{}, // 漫画基础信息
       category: [],
@@ -85,24 +101,12 @@ export default {
         this.category = this.changeCategory(newCat)
         this.selectArticle();
     }
-	// if(this.curPage == this.$route.params.id){
-	// 	if(this.curScroll > 0){
-	// 		scroll(0,this.curScroll)
-	// 	} else {
-	// 		scroll(0,0)
-	// 	}
-	// 	return;
-	// }
-	this.curScroll = 0 // 不是相同页面,重置高度
-	if(this.curPage){
+	// 判断路径是否和之前一样,不一样重新加载数据
+	if(this.$route.params.id != this.curPage){
 		this.category = [];
 		// this.curPage = this.$route.params.id
 		this.selectCategory();
 		this.collectionInit()
-		this.$nextTick(()=>{
-				  // let war = this.$refs.
-			this.width = document.body.clientWidth
-		})
 	}
 	this.curPage = this.$route.params.id // 当前页面设置为该id
   },
@@ -123,7 +127,7 @@ export default {
 	     if(localStorage.getItem('token')){
 	       // 判断显示状态,是收藏还是取消收藏
 	       if(!this.collectionActive){
-	         const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id})
+	         const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'1'})
 	         // console.log(res)
 	         if(res.data.data == '收藏成功'){
 	             this.collectionActive = true
@@ -132,7 +136,7 @@ export default {
 	             this.$msg.fail(res.data.message)
 	         }
 	       } else {
-	         const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id})
+	         const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'1'})
 	         if(res.data.data == '取消成功'){
 	           this.collectionActive = false
 	         } else {
@@ -148,6 +152,7 @@ export default {
 	      if(localStorage.getItem('token')){
 	          const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
 	              webInfoDetailDataId:this.$route.params.id
+				  ,collectionType:'1'
 	          })
 	          // console.log(res.data)
 	      this.collectionActive = res.data.data == '1' ? true : false;
@@ -221,6 +226,9 @@ export default {
 	  // this.$router.go(-1)
 	},
 	onSwipeRight(){
+		if(localStorage.slideReturn == 1){
+			this.$router.go(-1)
+		}
 	    // alert('页面右滑')
 		// 跳转其他页面的时候记录高度
 		// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
@@ -234,7 +242,7 @@ export default {
 		 this.$router.push(`/mangaDetail/${item.webInfoDetailDataId}/${item.pxh}`)
 	},
 	returnPage(){
-		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+		// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 		// alert('漫画高度' + this.curScroll)
 		this.$router.go(-1)
 	},
@@ -269,7 +277,9 @@ export default {
   },
   // 跳转其他页面之前
   beforeRouteLeave(to, from ,next){
-	
+	if(from.name == 'manga'){
+		this.currentScroll = document.documentElement.scrollTop || document.body.scrollTop;
+	}
    next();
   },
   // 其他页面跳转过来
@@ -277,9 +287,18 @@ export default {
 	  next();
   },
   destroyed(){
-	// console.log('返回了..........................')  
+
   },
   watch: {
+	  $route(to,from) {
+		  // 跳转高度
+		  if(to.name == 'manga'){
+		  	document.documentElement.scrollTop = this.currentScroll
+		  	document.body.scrollTop = this.currentScroll
+			// 可能在看漫画的时候取消收藏了,跳转的时候在检查一下
+			this.collectionInit();
+		  }
+	  },
     active() {
       const categoryitem = this.categoryItem();
       if (!categoryitem.list.length) {
@@ -385,5 +404,20 @@ input[type='button']:enabled:active, input[type='button'].mui-active:enabled, in
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
+}
+.activeColor{
+            color: #fb7299;
+        }
+input[type='button']:enabled:active, input[type='button'].mui-active:enabled, input[type='submit']:enabled:active, input[type='submit'].mui-active:enabled, input[type='reset']:enabled:active, input[type='reset'].mui-active:enabled, button:enabled:active, button.mui-active:enabled, .mui-btn:enabled:active, .mui-btn.mui-active:enabled{
+	color:black;
+	background-color:white
+}
+.van-button--hairline::after{
+	border-color:white
+}
+.van-button::before{
+	// border-color:black;
+	border-color:black;
+	background-color:white;
 }
 </style>

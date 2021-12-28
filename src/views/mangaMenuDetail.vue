@@ -1,5 +1,5 @@
 <template>
-	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
+	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
   <div class="home">
     <div class="categorytab" >
 		<van-popup
@@ -202,6 +202,7 @@ export default {
 		 this.changeConfig(this.imgQuality)
 		 this.setCurrentImage()
 		this.value = 1
+		
 	  },
 	  closePop(){
 
@@ -215,6 +216,10 @@ export default {
 	  // this.$router.go(-1)
 	},
 	onSwipeRight(){
+		// console.log('右边....')
+		if(localStorage.slideReturn == 1){
+			this.$router.go(-1)
+		}
 	    // console.log('页面右滑')
 		// 切换回漫画页面
 		// console.log(this.$route.params.id)
@@ -251,10 +256,12 @@ export default {
 				}
 				// pxh = pxh + 1
 				this.$route.params.pxh = pxh + 1
+				this.bottom = false
 			}
 			if(type == 'up'){
 				// pxh = pxh - 1
 				this.$route.params.pxh = pxh - 1
+				this.bottom = false
 			}
 			this.value = 1;
 			scrollTo(0,0)
@@ -290,7 +297,8 @@ export default {
 	async collectionInit() {
 	    if(localStorage.getItem('token')){
 	        const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
-	            webInfoDetailDataId:this.$route.params.id
+	            webInfoDetailDataId:this.$route.params.id,
+				collectionType:'1'
 	        })
 	    this.collectionActive = res.data.data == '1' ? true : false;
 	    }
@@ -299,7 +307,7 @@ export default {
 	   if(localStorage.getItem('token')){
 	     // 判断显示状态,是收藏还是取消收藏
 	     if(!this.collectionActive){
-	       const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id})
+	       const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'1'})
 	       // console.log(res)
 	       if(res.data.data == '收藏成功'){
 	           this.collectionActive = true
@@ -307,7 +315,7 @@ export default {
 	           this.$msg.fail(res.data.message)
 	       }
 	     } else {
-	       const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id})
+	       const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'1'})
 	       if(res.data.data == '取消成功'){
 	         this.collectionActive = false
 	       } else {

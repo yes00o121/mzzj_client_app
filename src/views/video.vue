@@ -481,14 +481,14 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 			   if(localStorage.getItem('token')){
 			     // 判断显示状态,是收藏还是取消收藏
 			     if(this.videoList[this.current].fabulous){
-					  const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.videoList[this.current].id})
+					  const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.videoList[this.current].id,collectionType:'1'})
 					  if(res.data.data == '取消成功'){
 						this.videoList[this.current].fabulous = false
 					  } else {
 						 this.$msg.fail(res.data.message)
 					  }
 			     } else {
-					 const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.videoList[this.current].id})
+					 const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.videoList[this.current].id,collectionType:'1'})
 					 if(res.data.data == '收藏成功'){
 					     this.videoList[this.current].fabulous = true
 					 }else{
@@ -552,7 +552,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 			 // 获取收藏数据
 			async loadCollection(){
 				// 判断是否已经有收藏数据,有收藏数据不请求,直接获取之前的展示
-				const res = await this.$http.get("/collection/queryCollTotalAndUserStatus?webInfoDetailDataId=" + this.videoList[this.current].id)
+				const res = await this.$http.get("/collection/queryCollTotalAndUserStatus?webInfoDetailDataId=" + this.videoList[this.current].id + "&collectionType=1")
 				// this.videoList[this.current].fabulous = res.data.userStatus && res.data.userStatus > 0 ? true : false
 				// console.log(res.data.collectionNum)
 

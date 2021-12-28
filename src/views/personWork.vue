@@ -1,8 +1,13 @@
 <!-- 作品信息 -->
 <template>
+	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
 	<div style="background:white;">
 		<van-sticky >
 			<van-cell class="van-ellipsis"  style="width:100%"  icon="arrow-left" :title="work.works_number"  @click="returnPage">
+				<van-button style="margin-right:1rem" plain type="default" size="mini" @click.stop="collectionClick" :class="{activeColor:collectionActive}">
+					<van-icon  name="star-o" size=".5rem" />
+					<span>&nbsp;关注</span>
+				</van-button>
 				<van-icon
 				    slot="right-icon"
 				    name="wap-home-o"
@@ -62,10 +67,10 @@
 			<van-cell-group style="text-align: initial;">
 				<van-cell title="预览图" value="" />
 			</van-cell-group>
-			<div style="flex-wrap: wrap;display: flex;">
+			<div style="flex-wrap: wrap;display: flex;" >
 				<div v-for="(item,index) in workImages" :key = "index" style="width:45%;padding: .3rem;">
 					<div>
-						<van-image style="width:100%" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +  item.content + '?token=' + token" class="participates-photo" @click="imagePreview(item)" />
+						<van-image ref="workImage" style="width:100%;" @load="imgLoad(index)" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +  item.content + '?token=' + token" class="participates-photo" @click="imagePreview(item)" />
 					</div>
 				</div>
 			</div>
@@ -83,6 +88,7 @@
 			</van-cell>
 		</div>
 	</div>
+	</v-touch>
 </template>
 
 <script>
@@ -98,38 +104,91 @@ export default{
 			imagePreviews:[], // 预览图片查看数组
 			magnetList:[],// 磁力数组
 			token: 'Bearer ' + localStorage.token,
+			collectionActive: false
 		}
 	},
 	watch:{
 		$route(to,from) {
-			if(from.path.startsWith('/personWork')){
-				return;
-			}
-			if(to.params.id == this.work.id){
-				scroll(0,0)
-				return;
-			}
-			if(!to.path.startsWith('/person')){
-				return;
-			}
-			// console.log(to)
-			// console.log(from)
+			// 不管如何都置顶
 			scroll(0,0)
-			this.converPreviews = []
-			this.imagePreviews = []// 清空之前预览图
-			// 作品数据
-			this.initPersonWorkData()
-			// 演员数据
-			this.initPersonWorkParticipate()
-			// 预览图数据
-			this.initPersonWorkImage();
-		    // this.collectionInit()
+			// 页面id不同刷新数据
+			if(to.name == 'personWork' && this.work.id != this.$route.params.id){
+				this.imagePreviews = []
+				this.converPreviews = []// 大图预览
+				this.workImages = []
+				// 作品数据
+				this.initPersonWorkData()
+				// 演员数据
+				this.initPersonWorkParticipate()
+				// 预览图数据
+				this.initPersonWorkImage();
+				// 收藏状态
+				this.collectionInit();
+			}
+			
 		}
 	},
 	methods:{
+		onSwipeLeft () {
+			// alert('页面右滑')
+		    // console.log('页面左滑')
+		  // this.$router.go(-1)
+		},
+		onSwipeRight(){
+			if(localStorage.slideReturn == 1){
+				this.$router.go(-1)
+			}
+		    // alert('页面右滑')
+			// 跳转其他页面的时候记录高度
+			// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+			// alert('漫画高度' + this.curScroll)
+		    // this.$router.go(-1)
+		},
+		async collectionClick() {
+		   if(localStorage.getItem('token')){
+		     // 判断显示状态,是收藏还是取消收藏
+		     if(!this.collectionActive){
+		       const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'3'})
+		       // console.log(res)
+		       if(res.data.data == '收藏成功'){
+		           this.collectionActive = true
+		       }else{
+		           // this.collectionActive = false
+		           this.$msg.fail(res.data.message)
+		       }
+		     } else {
+		       const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'3'})
+		       if(res.data.data == '取消成功'){
+		         this.collectionActive = false
+		       } else {
+		          this.$msg.fail(res.data.message)
+		       }
+		     }
+		
+		        // this.$msg.fail(res.data.msg)
+		   }
+		},
+		//进入页面获取是否收藏
+		async collectionInit() {
+		    if(localStorage.getItem('token')){
+		        const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
+		            webInfoDetailDataId:this.$route.params.id,
+						  collectionType:'3'
+		        })
+		        // console.log(res.data)
+		    this.collectionActive = res.data.data == '1' ? true : false;
+				  // console.log(this.collectionActive)
+		    }
+		},
+		// 图片加载结束
+		imgLoad(e){
+			if(this.$refs['workImage'][e]){
+				this.$refs['workImage'][e].$refs.image.style.objectPosition = 'top';
+			}
+		},
 		// 跳转到查询页面
 		toSearch(search){
-			console.log(encodeURI(search))
+			// console.log(encodeURI(search))
 			this.$router.push('/search?search=' + encodeURI(search));
 		},
 		pathPush(item){
@@ -170,6 +229,8 @@ export default{
 			  forbidClick: true,
 			  loadingType: 'spinner'
 			});
+			// console.log('???????????????被执行')
+			// alert(1110)
 			const res = await this.$http.post("/person/queryPersonWork", {
 			  pageNum: 1,
 			  pageSize: 10,
@@ -234,12 +295,18 @@ export default{
 		// 预览图数据
 		this.initPersonWorkImage();
 		
-		
+		// 收藏状态
+		this.collectionInit();
 	}
 }
 </script>
 
 <style scoped>
+	.van-image__error, .van-image__img, .van-image__loading{
+	display: block;
+	width: 100%;
+	height: 100%;
+	}
 .participates-photo{
 	/* -webkit-box-shadow: 0 1px 3px rgba(0,0,0,.3); */
 	width:100%;
@@ -255,4 +322,28 @@ export default{
 	font-size: 14px;
 	text-align: center;
 }
+.activeColor{
+            color: #fb7299;
+        }
+input[type='button']:enabled:active, input[type='button'].mui-active:enabled, input[type='submit']:enabled:active, input[type='submit'].mui-active:enabled, input[type='reset']:enabled:active, input[type='reset'].mui-active:enabled, button:enabled:active, button.mui-active:enabled, .mui-btn:enabled:active, .mui-btn.mui-active:enabled{
+	color:black;
+	background-color:white
+}
+.van-button--hairline::after{
+	border-color:white
+}
+.van-button::before{
+	border-color:black;
+	background-color:white;
+}
+/* .van-image,.van-image__error, .van-image__img, .van-image__loading{
+	display: block;
+	width: 100%;
+	object-fit: cover;
+	object-position: top;
+	height: 100%;
+	width:100%;
+	 height:30.778vw; 
+} */
+
 </style>

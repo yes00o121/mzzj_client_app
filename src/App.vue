@@ -1,13 +1,15 @@
 <template>
 
 	  <div id="app" >
-			<keep-alive >
+		  <!-- <transition :name="transitionName"> -->
+			<keep-alive v-if="isLoggedIn">
 				<!-- <transition :name="transitionName"> -->
 				<router-view v-if="$route.meta.keepalive && !equipmentCheck" />
 				<!-- </transition> -->
 			</keep-alive>
+			<!-- </transition> -->
 			<!-- <transition :name="transitionName"> -->
-				<router-view v-if="!$route.meta.keepalive && !equipmentCheck"></router-view>
+				<router-view v-if="(!$route.meta.keepalive && !equipmentCheck) || !isLoggedIn"></router-view>
 			<!-- </transition> -->
 			  <div v-if="equipmentCheck" style="position: absolute;
 			  right: 50%;
@@ -24,15 +26,11 @@ export default{
 	name:'catch_components',
 	data(){
 		return {
+			isLoggedIn:false, // 控制退出清除会话
 			transitionName:'',
 			websocket:null // websocket
 		}
 	},
-	// computed: {
-	//     catch_components () {
-	//       return this.$store.getters.catch_components
-	//     }
-	//   },
 	created(){
 		// 判断当前设置,如果是电脑禁止访问
 		if(navigator.appVersion.indexOf('Mobile') == -1){
@@ -80,19 +78,37 @@ export default{
 	mounted(){
 
 	},
-	// watch: {
-	//     // 使用watch 监听$router的变化
-	//     $route (to, from) {
-	// 	  // console.log(from)
-	//       // 如果to索引大于from索引,判断为前进状态,反之则为后退状态
-	//       if (to.meta.index > from.meta.index){
-	//         // 设置动画名称
-	//         this.transitionName = 'slide-left';
-	//       } else{
-	//         this.transitionName = 'slide-right';
-	//       }
-	//     }
-	//   }
+	watch: {
+		$route(to, from) {
+			let token = localStorage.getItem("token") || "";
+			      if (token) {
+			        // firebase returns null if user logged out
+			        this.isLoggedIn = true;
+			      } else {
+			        this.isLoggedIn = false;
+			      }
+			
+		    }
+	    // 使用watch 监听$router的变化
+	  //   $route (to, from) {
+			// if(to.path != '/' && to.path != '/home'){
+			// 	// 如果to索引大于from索引,判断为前进状态,反之则为后退状态
+			// 	console.log(to.meta.index)
+			// 	console.log(from.meta.index)
+			// 	if (to.meta.index > from.meta.index){
+			// 	  // 设置动画名称
+			// 	  this.transitionName = 'slide-left';
+			// 	} else{
+			// 		console.log('右边...')
+			// 	  this.transitionName = 'slide-right';
+			// 	}
+			// }else{
+			// 	this.transitionName = ''
+			// }
+		  
+	      
+	  //   }
+	  }
 }
 </script>
 <style lang="less">
@@ -135,24 +151,24 @@ p{
   width: 100%;
 }
 
-// .slide-right-enter-active,
-// .slide-right-leave-active,
-// .slide-left-enter-active,
-// .slide-left-leave-active {
-//   will-change: transform;
-//   transition: all 500ms;
-//   position: absolute;
-// }.slide-right-enter {
-//   opacity: 0;
-//   transform: translate3d(-100%, 0, 0);
-// }.slide-right-leave-active {
-//   opacity: 0;
-//   transform: translate3d(100%, 0, 0);
-// }.slide-left-enter {
-//   opacity: 0;
-//   transform: translate3d(100%, 0, 0);
-// }.slide-left-leave-active {
-//   opacity: 0;
-//   transform: translate3d(-100%, 0, 0);
-// }
+.slide-right-enter-active,
+.slide-right-leave-active,
+.slide-left-enter-active,
+.slide-left-leave-active {
+  will-change: transform;
+  transition: all 500ms;
+  position: absolute;
+}.slide-right-enter {
+  opacity: 0;
+  transform: translate3d(-100%, 0, 0);
+}.slide-right-leave-active {
+  opacity: 0;
+  transform: translate3d(100%, 0, 0);
+}.slide-left-enter {
+  opacity: 0;
+  transform: translate3d(100%, 0, 0);
+}.slide-left-leave-active {
+  opacity: 0;
+  transform: translate3d(-100%, 0, 0);
+}
 </style>

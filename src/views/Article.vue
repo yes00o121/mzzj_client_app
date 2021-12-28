@@ -1,6 +1,7 @@
 
 <template>
-   <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div">
+   <!-- <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div"> -->
+	   <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
   <div v-if="model">
       <!-- <nav-bar></nav-bar> -->
 	  <van-sticky >
@@ -103,10 +104,18 @@ export default {
         },
         onSwipeRight(){
             // console.log('页面右滑')
-            this.$router.go(-1)
+            // this.$router.go(-1)
+			if(localStorage.slideReturn == 1){
+				this.$router.go(-1)
+			}
         },
 		// 获取本地视频
 		async getVideo(){
+			this.$msg.loading({
+			  message: '加载中...',
+			  forbidClick: true,
+			  loadingType: 'spinner'
+			});
 			if(this.$route.params.loadMode == 4){
 			// const res = await this.$http.get('/webInfoDetailData/queryDetailDataByTypeId?id=' + this.$route.params.id)
 			const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
@@ -123,6 +132,7 @@ export default {
 				this.model.playUrl = this.baseURL + '/webInfoVideo/' + this.model.vid + '/' + this.model.vid
 				console.log(this.model.playUrl)
 				this.$nextTick(()=>{
+					this.$msg.clear()
 					this.play(this.model.playUrl);
 				})
 			}
@@ -131,6 +141,7 @@ export default {
 				
 				const res = await this.$http.get("/person/getPersonVideoUrlByWorkId?workId=" + this.$route.params.id)
 				console.log(res.data)
+				this.$msg.clear()
 				this.model = {
 					videoAddress:res.data,
 					loadMode: this.$route.params.loadMode
@@ -404,4 +415,7 @@ export default {
   }
 }
 
+video{
+	visibility: hidden;
+}
 </style>

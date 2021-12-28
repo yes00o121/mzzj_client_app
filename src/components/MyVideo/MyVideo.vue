@@ -449,7 +449,7 @@ export default {
 	// 获取评论收藏数量
 	async loadCommentAndCollectionNum(){
 		// const res = await this.$http.get('/comment/queryCommentNumByWorkId?workId=4853011')
-		const res = await this.$http.get('/comment/queryCommentNumByWorkId?workId=' + this.VideoItem.id)
+		const res = await this.$http.get('/comment/queryCommentNumByWorkId?workId=' + this.VideoItem.id + "&collectionType=1")
 		// console.log(res)
 		// console.log(res)
 		if(res.data){
@@ -509,7 +509,7 @@ export default {
 			 this.collStatus = true
 	       // 判断显示状态,是收藏还是取消收藏
 	       if(this.like){
-	  		  const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.VideoItem.id})
+	  		  const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.VideoItem.id,collectionType:'1'})
 	  		  if(res.data.data == '取消成功'){
 	  			// this.videoList[this.current].fabulous = false
 				this.like = !this.like
@@ -517,7 +517,7 @@ export default {
 	  			 this.$msg.fail(res.data.message)
 	  		  }
 	       } else {
-	  		 const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.VideoItem.id})
+	  		 const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.VideoItem.id,collectionType:'1'})
 	  		 if(res.data.data == '收藏成功'){
 	  		     // this.videoList[this.current].fabulous = true
 				 this.like = !this.like

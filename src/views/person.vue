@@ -1,7 +1,12 @@
 <template>
+	<v-touch  v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
 <div>
-	<van-sticky >
-		<van-cell  style="z-index:99999;"  icon="arrow-left" :title="person.person_name"  @click="returnPage">
+	<van-sticky>
+		<van-cell  style="z-index:99999;width:100%;"  icon="arrow-left" class="van-ellipsis" :title="person.person_name"  @click="returnPage">
+			<van-button style="margin-right:1rem" plain type="default" size="mini" @click.stop="collectionClick" :class="{activeColor:collectionActive}">
+				<van-icon  name="star-o" size=".5rem" />
+				<span>&nbsp;关注</span>
+			</van-button>
 			<van-icon
 			    slot="right-icon"
 			    name="wap-home-o"
@@ -11,7 +16,7 @@
 			  />
 		</van-cell>
 	</van-sticky>
-	<back-top :showHeight="300"></back-top>
+	<back-top :showHeight="300" ></back-top>
 	<div class="userdetail">
 	  <div>
 	    <div class="user_img">
@@ -49,6 +54,12 @@
 	        <!-- <div class="user_editBtn">个人资料</div> -->
 			
 	      </div>
+		 <!-- <div style="right:0;bottom:0;padding-top:1rem">
+		  	<van-button plain type="default" size="mini" @click="collectionClick" :class="{activeColor:collectionActive}">
+		  		<van-icon  name="star-o" size=".5rem" />
+		  		<span>&nbsp;关注</span>
+		  	</van-button>
+		  </div> -->
 	    </div>
 	  </div>
 	  <div>
@@ -64,13 +75,16 @@
 	</div>
   <div class="home" v-if="category">
     <div class="categorytab">
-
+		<van-dropdown-menu style="font-size: 3.333vw">
+		  <van-dropdown-item :value="loadMode"  :options="option1" @change="onConfirm1" />
+		  </van-dropdown-menu>
       <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <!-- <van-tabs v-model="active" swipeable sticky animated offset-top="40"> -->
-	  <van-tabs v-model="active" swipeable  animated>
-        <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy>
+	 <!-- <van-tabs v-model="active" swipeable  animated >
+        <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy> -->
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
             <van-list
+			v-for="(item,index) in category" :key="index"
               v-model="item.loading"
               :immediate-check="false"
               :finished="item.finished"
@@ -88,7 +102,7 @@
 				    <div class="detailItem" >
 				        <div class="imgparent">
 				             <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
-							   <van-image lazy-load :src="baseURL +   categoryitem.previewImg + '?width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:55.778vw;"/>
+							   <van-image lazy-load :src="baseURL +   categoryitem.previewImg + '?width='+width+'&height=' + height + '&token=' + token" style="width:147px;height:200px"/>
 				            <div class="bottom">
 				                <!-- <div class="icon-play2"><span class="video">&nbsp;{{detailitem.flowNum}}</span></div> -->
 								  <div v-if="categoryitem.flowNum"><span class="video"><van-icon name="eye-o" />&nbsp;{{categoryitem.flowNum}}</span></div>
@@ -108,11 +122,12 @@
               </div>
             </van-list>
           </van-pull-refresh>
-        </van-tab>
-      </van-tabs>
+    <!--    </van-tab>
+      </van-tabs> -->
     </div>
   </div>
   </div>
+  </v-touch>
 </template>
 
 <script>
@@ -127,37 +142,46 @@ export default {
 		token: 'Bearer ' + localStorage.token,
 	  activeNames: [],
 	  person:{},
+	  collectionActive:false,
       category: [],
       // menu:[{id:1,DICT_NAME:'作品'},{id:2,DICT_NAME:'评论'}],
       active: 0,
+	  currentScroll:0,// 滚动高度
       isLoading: false,   //是否处于下拉刷新状态
+	  option1: [
+	    { text: '全部', value: 0 },
+	    { text: '单体作品', value: 1 },
+	    { text: '共演作品', value: 2 }
+	  		// { text: '作品', value: 3 }
+	  ],
+	  loadMode:0,
     };
   },
   watch:{
   	$route(to,from) {
-        // 跳转明细页面不刷新
-	    if(to.path.startsWith('/personWork')){
-			return;
-		}
-		// id相同不刷新
-		if(to.params.id == this.person.id){
-			scroll(0,0)
-			return;
-		}
-		// console.log(from)
-		// 跳转其他页面
-		if(!to.path.startsWith('/person')){
-			return;
+		// console.log(to)
+		// 跳转高度
+		if(to.name == 'person'){
+			// alert(this.currentScroll)
+			this.$nextTick(()=>{
+				document.documentElement.scrollTop = this.currentScroll
+				document.body.scrollTop = this.currentScroll
+			})
 		}
 		
-  		scroll(0,0)
-		this.person = {}
-		const categoryitem = this.categoryItem();
-		categoryitem.list = []
-		categoryitem.page = 1
-		categoryitem.finished = false;
-		categoryitem.loading = true;
-		this.selectArticle();
+		// id不同刷新
+		if(to.name =='person' && to.params.id != this.person.id){
+			scroll(0,0)
+			this.loadMode = 0
+			this.person = {}
+			const categoryitem = this.categoryItem();
+			categoryitem.list = []
+			categoryitem.page = 1
+			categoryitem.finished = false;
+			categoryitem.loading = true;
+			this.selectArticle();
+			this.collectionInit()
+		}
   	}
   },
   components: {
@@ -170,7 +194,74 @@ export default {
 		return val ? val : '暂无数据'
 	}  
   },
+  // 跳转其他页面之前
+  beforeRouteLeave(to, from ,next){
+  	if(from.name == 'person'){
+  		this.currentScroll = document.documentElement.scrollTop || document.body.scrollTop;
+  	}
+   next();
+  },
   methods: {
+	  onSwipeLeft () {
+	  	// alert('页面右滑')
+	      // console.log('页面左滑')
+	    // this.$router.go(-1)
+	  },
+	  onSwipeRight(){
+	  	if(localStorage.slideReturn == 1){
+	  		this.$router.go(-1)
+	  	}
+	      // alert('页面右滑')
+	  	// 跳转其他页面的时候记录高度
+	  	// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+	  	// alert('漫画高度' + this.curScroll)
+	      // this.$router.go(-1)
+	  },
+	  onConfirm1(e){
+	  		  this.loadMode = e
+	  		  const categoryitem = this.categoryItem();
+	  		  categoryitem.list = [];
+	  		  categoryitem.page = 1;
+	  		  categoryitem.finished = false;
+	  		  categoryitem.loading = true;
+	  		  this.selectArticle()
+	  },
+	  async collectionClick() {
+	     if(localStorage.getItem('token')){
+	       // 判断显示状态,是收藏还是取消收藏
+	       if(!this.collectionActive){
+	         const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'2'})
+	         // console.log(res)
+	         if(res.data.data == '收藏成功'){
+	             this.collectionActive = true
+	         }else{
+	             // this.collectionActive = false
+	             this.$msg.fail(res.data.message)
+	         }
+	       } else {
+	         const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'2'})
+	         if(res.data.data == '取消成功'){
+	           this.collectionActive = false
+	         } else {
+	            this.$msg.fail(res.data.message)
+	         }
+	       }
+	  
+	          // this.$msg.fail(res.data.msg)
+	     }
+	  },
+	  //进入页面获取是否收藏
+	  async collectionInit() {
+	      if(localStorage.getItem('token')){
+	          const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
+	              webInfoDetailDataId:this.$route.params.id,
+				  collectionType:'2'
+	          })
+	          // console.log(res.data)
+	      this.collectionActive = res.data.data == '1' ? true : false;
+		  // console.log(this.collectionActive)
+	      }
+	  },
 	returnPage(){
 		this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 		this.$router.go(-1)
@@ -217,11 +308,10 @@ export default {
 		const categoryitem = this.categoryItem();
 		if(categoryitem.DICT_NAME == '作品'){
 		  const res = await this.$http.post("/person/queryPersonWork", {
-		    // typeId: categoryitem.CODE_VALUE,
 				  personId: this.$route.params.id,
 		    pageNum: categoryitem.page,
 		    pageSize: categoryitem.pagesize,
-		    // search: ''
+			loadMode:this.loadMode
 		  })
 		  if(res.data.data.list == 0){
 		    categoryitem.finished = true;
@@ -304,6 +394,7 @@ export default {
   },
   created() {
 	  this.selectCategory()
+	  this.collectionInit()
   }
 };
 </script>
@@ -422,5 +513,19 @@ p{
         }
     }
 }
-
+.activeColor{
+            color: #fb7299;
+        }
+input[type='button']:enabled:active, input[type='button'].mui-active:enabled, input[type='submit']:enabled:active, input[type='submit'].mui-active:enabled, input[type='reset']:enabled:active, input[type='reset'].mui-active:enabled, button:enabled:active, button.mui-active:enabled, .mui-btn:enabled:active, .mui-btn.mui-active:enabled{
+	color:black;
+	background-color:white
+}
+.van-button--hairline::after{
+	border-color:white
+}
+.van-button::before{
+	// border-color:black;
+	border-color:black;
+	background-color:white;
+}
 </style>

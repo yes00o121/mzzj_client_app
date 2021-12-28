@@ -114,6 +114,9 @@ export default{
 						if(data.id == 6){
 							localStorage['back_top'] = data.detailConfigValue
 						}
+						if(data.id == 7){
+							localStorage['slideReturn'] = data.detailConfigValue
+						}
 					}else{
 						this.$msg.fail(res.data.message)
 					}
@@ -130,6 +133,9 @@ export default{
 						// 请求已配置数据,刷新配置信息
 						if(data.id == 6){
 							localStorage['back_top'] = data.detailConfigValue
+						}
+						if(data.id == 7){
+							localStorage['slideReturn'] = data.detailConfigValue
 						}
 						this.queryConfigAll()
 					}else {

@@ -8,7 +8,7 @@
       <!-- <nav-bar/> -->
       <img src="@/assets/bannerTop_new.png" alt="" class="backImg">
       <user-detail :userInfo="model"/>
-      <user-article ref="article" />
+      <!-- <user-article ref="article" /> -->
 	  <van-popup
 	    get-container="#app"
 	    v-model="show"
@@ -30,6 +30,14 @@
 				  />
 			</van-cell>
 	</van-popup>
+	<div>
+		<van-tabbar v-model="active" :fixed = "false" :border="false" inactive-color="rgb(25, 137, 250)" >
+			<van-tabbar-item icon="star-o" @click="pathPush(1)">收藏</van-tabbar-item>
+		  <van-tabbar-item icon="clock-o" @click="pathPush(2)">历史记录</van-tabbar-item>
+		  <van-tabbar-item icon="friends-o" v-if="root == 1" @click="pathPush(3)">用户日志</van-tabbar-item>
+		  <van-tabbar-item icon="setting-o" v-if="root == 1" @click="pathPush(4)">标签</van-tabbar-item>
+		</van-tabbar>
+	</div>
   </div>
   
   <!-- </v-touch> -->
@@ -39,12 +47,15 @@
 import NavBar from '@/components/common/Navbar.vue'
 import userDetail from '@/components/userComponent/userDetail'
 import userArticle from '@/components/userComponent/userArticle'
+import app from '@/App.vue'
 export default {
     data() {
         return {
             model:{},
 			curScroll:{},
-			show:false
+			show:false,
+			active:-1,
+			root:0
         }
     },
     components:{
@@ -53,6 +64,36 @@ export default {
         userArticle
     },
     methods:{
+		pathPush(index) {
+			// alert(index)
+			if(index == 1){
+				this.$router.push(`/collection`)
+			}
+			if(index == 2){
+				this.$router.push(`/history`)
+			}
+			if(index == 3){
+				this.$router.push(`/userlog`)
+			}
+			
+		 //    const loadMode = `${this.detailitem.loadMode}`;
+			// // 没有loadMode，走人员页面
+			// if(loadMode == 'undefined'){
+			// 	this.$router.push(`/person/${this.detailitem.id}/${this.detailitem.person_type}`)
+			// }
+		 //    // 视频页面
+		 //    if(loadMode == 4 || loadMode == 6){
+		 //      if(this.$route.path != `/article/${this.detailitem.id}/${this.detailitem.loadMode}`) {
+		 //          this.$router.push(`/article/${this.detailitem.id}/${this.detailitem.loadMode}`)
+		 //      }
+		 //    }
+		 //    // 漫画页面
+		 //    if(loadMode == 2){
+		 //      // alert('漫画')
+		 //        this.$router.push(`/manga/${this.detailitem.id}`)
+		 //    }
+		
+		},
 		recordScroll(){
 		  let pageScroll = this.$refs['pageScroll']
 		  if(pageScroll){
@@ -72,8 +113,9 @@ export default {
 			  title: '提示',
 			  message: '确定退出吗？'
 			}).then(() => {
-				console.log('退出')
+				// console.log('退出')
 				localStorage.clear()
+				// 清空页面缓存
 				this.$router.push('/')
 			}).catch(() => {
 				// console.log('不退出')
@@ -96,14 +138,33 @@ export default {
 		},
         async userData() {
             // const res =  await this.$http.get('/user/' + localStorage.getItem('id'))
-            this.getUser().then(response=>{
-              this.model = response.data.data
-            })
+    //         this.getUser().then(response=>{
+				// console.log(response)
+    //           this.model = response.data.data
+    //         })
             // this.model = res.data[0]
-        }
+        },
+		async getUser(){
+			const res = await this.$http.get('/admin/info')
+			console.log(res.data.data)
+			this.model = res.data.data
+			if(this.model.username == 'yangchen'){
+				this.root = 1
+			}
+		},
+		async getUserConfig(){
+			// 是否开启滑动返回
+			const res = await this.$http.get('/admin/queryConfig?key=slide_return')
+			localStorage.slideReturn = res.data.data
+			// 是否开启置顶按钮
+			const res1 = await this.$http.get('/admin/queryConfig?key=back_top')
+			localStorage.back_top = res.data.data
+		}
     },
     created() {
-        this.userData()
+        // this.userData()
+		this.getUser()
+		this.getUserConfig()
 		// top.a = this
     },
 	activated() {
@@ -149,6 +210,7 @@ export default {
 <style lang="less" scoped>
 .userinfo{
 	position: absolute;
+	width: 100%;
 .backImg{
     height: 91px;
     width: 100%;
@@ -160,5 +222,9 @@ export default {
 	line-height: 24px;
 	text-align: center;
 	color: black;
+}
+/deep/ .van-tabbar-item__text{
+	color:black;
+	margin-top: 0.3rem;
 }
 </style>

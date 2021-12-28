@@ -61,7 +61,7 @@
 			  								<!-- <img class="van-image__img" data-src="http://192.168.1.4:8090/common/image?imgId=6102545b1734cb921086f39f&amp;region=true&amp;token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5YW5nY2hlbiIsImNyZWF0ZWQiOjE2MzE4NDM0MTIwNTYsImV4cCI6MjIzNjY0MzQxMn0.3dTJCHt_n7ZH--Nt23vYHQXPeWaWkbGE97zSqvF-lCrlZvOGys6FQO4x4h4TnorBXutuB_IpZFwU2NCI1IfUXA"
 			  								src="http://192.168.1.4:8090/common/image?imgId=6102545b1734cb921086f39f&amp;region=true&amp;token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5YW5nY2hlbiIsImNyZWF0ZWQiOjE2MzE4NDM0MTIwNTYsImV4cCI6MjIzNjY0MzQxMn0.3dTJCHt_n7ZH--Nt23vYHQXPeWaWkbGE97zSqvF-lCrlZvOGys6FQO4x4h4TnorBXutuB_IpZFwU2NCI1IfUXA"
 			  								lazy="loaded" style="object-fit: cover;"> -->
-											<van-image lazy-load :src="baseURL + categoryitem.previewImg +'&region=true&token=' + token" style="width:130px"/>
+											<van-image ref="workImage" fit="cover" @onload="imgLoad(categoryindex)" lazy-load :src="baseURL + categoryitem.previewImg +'&token=' + token" style="width:100%"/>
 			  							</div>
 			  							<div class="van-card__tag">
 			  								<span class="van-tag van-tag--mark van-tag--danger" v-show="categoryindex < 3" style="background:#F25D8E;color:#FEFFFF">
@@ -150,14 +150,15 @@
 import NavBar from "@/components/common/Navbar.vue";
 import backTop from '@/components/backTop'
 export default {
-  data() {
+	data() {
     return {
       category: [],
+	  name:'hot',
       // menu:[{id:1,DICT_NAME:'收藏'},{id:2,DICT_NAME:'评论'}],
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
 	  token: 'Bearer ' + localStorage.token,
-	  curScroll:{} // 滚动位置
+	  // curScroll:{} // 滚动位置
     };
   },
   components: {
@@ -165,13 +166,14 @@ export default {
 	backTop
   },
   activated() {
-	  // console.log('显示了.....')
+	  console.log('显示了.....')
     if(localStorage.getItem('newCat')) {
         let newCat = JSON.parse(localStorage.getItem('newCat'))
         this.category = this.changeCategory(newCat)
         this.selectArticle();
     }
 	// 定位到之前位置
+	this.toBeforeScroll();
   },
   
   // 不显示......
@@ -208,12 +210,18 @@ export default {
 	}
   },
   methods: {
+	  // 图片加载结束
+	  imgLoad(e){
+		if(this.$refs['workImage'][e]){
+			this.$refs['workImage'][e].$refs.image.style.objectPosition = 'top';
+		}
+	  },
 	recordScroll(){
 	  let pageScroll = this.$refs['pageScroll']
 	  // console.log(pageScroll)
 	  if(pageScroll){
 		  for(let i =0;i<pageScroll.length;i++){
-			  this.curScroll['pageScroll_'+i] = pageScroll[i].scrollTop
+			  this.pageScroll[this.name + 'pageScroll_'+i] = pageScroll[i].scrollTop
 		  }
 		  // console.log(this.curScroll)
 	  }
@@ -226,7 +234,7 @@ export default {
 	  // console.log(this.curScroll)
 	  if(pageScroll){
 		  for(let i =0;i<pageScroll.length;i++){
-			  pageScroll[i].scrollTop = this.curScroll['pageScroll_'+ i]
+			  pageScroll[i].scrollTop = this.pageScroll[this.name + 'pageScroll_'+ i]
 		  }
 	  }
 	},
@@ -234,6 +242,8 @@ export default {
       
     },
 	toPage(detailitem){
+		// 记录当前位置
+		this.recordScroll();
 		// 视频页面
 		if(detailitem.loadMode == 4){
 		  if(this.$route.path != `/article/${detailitem.id}/${detailitem.loadMode}`) {
@@ -302,6 +312,7 @@ export default {
 		}
 
     },
+	
     onRefresh() {       //下拉刷新
                 setTimeout(() => {
                     this.finished = false;

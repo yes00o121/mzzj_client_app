@@ -24,18 +24,17 @@ export default{
 	},
 	created(){
 
-		if(!localStorage['back_top']){
-			// console.log('??????')
-			this.$http.post("/config/queryConfigDetail",{
-				configKey:'back_top'
-			}).then(res=>{
-				if(res.data.data[0].userConfigValue){
-					localStorage['back_top'] = res.data.data[0].userConfigValue
-				}else{
-					localStorage['back_top'] = '1'
-				}
-			})
-		}
+		// if(!localStorage['back_top']){
+		// 	this.$http.post("/config/queryConfigDetail",{
+		// 		configKey:'back_top'
+		// 	}).then(res=>{
+		// 		if(res.data.data[0].userConfigValue){
+		// 			localStorage['back_top'] = res.data.data[0].userConfigValue
+		// 		}else{
+		// 			localStorage['back_top'] = '1'
+		// 		}
+		// 	})
+		// }
 
 	},
 	methods:{
@@ -43,8 +42,6 @@ export default{
 		   this.slideTo(0)
 		},
 		scroll(e){
-			// console.log(this.$parent.$refs.pageScroll)
-			// console.log(e.scrollTop)
 			if(e.scrollTop == 0){
 				return;
 			}
@@ -52,15 +49,8 @@ export default{
 				// 
 				let backTopStatus = localStorage['back_top']
 				// 判断是否有back状态数据,没有查询,有直接使用
-				if(backTopStatus && backTopStatus != '0'){
+				if(backTopStatus && localStorage.back_top == 1){
 					this.show = true
-				}else {
-					// this.show = false
-					if(backTopStatus == 0){
-						this.show = false
-					}else{
-						this.show = false;
-					}
 				}
 				
 			} else {
@@ -75,7 +65,7 @@ export default{
 		      if (currentY == targetPageY) {
 		       clearInterval(timer);
 		      } else {
-		       window.scrollTo(0,targetPageY > currentY ? currentY + speed : currentY - speed);
+				window.scrollTo(0,targetPageY > currentY ? currentY + speed : currentY - speed);
 		      }
 		     },10);
 		 }
@@ -84,6 +74,9 @@ export default{
 		clientHeight () {
 		  return document.body.clientHeight * 0.9
 		},
+	},
+	activated(){
+		this.show = false;
 	}
 }
 </script>
