@@ -11,36 +11,35 @@
         @getAvatarImage="getAvatarImage"></avatar-cropper>
       </div>
       <div class="content-item">
-        <p>昵称</p><input class="input" type="text" name="nickname" id="nickname" :value="loginInfo.userNickname" @blur="inputBlur">
+        <p>昵称</p><input class="input" type="text" name="nickname" id="nickname" :value="userInfo.userNickname" @blur="inputBlur">
       </div>
       <div class="content-item">
-        <p>签名</p><input class="input" type="text" name="desc" id="desc" :value="loginInfo.userDesc" @blur="inputBlur">
+        <p>签名</p><input class="input" type="text" name="desc" id="desc" :value="userInfo.userDesc" @blur="inputBlur">
       </div>
       <div class="content-item">
-        <p>性别</p><select class="input" name="gender" id="gender" :value="loginInfo.userGender === '男' ? 1 : 0">
+        <p>性别</p><select class="input" name="gender" id="gender" :value="userInfo.userGender === '男' ? 1 : 0">
                     <option value="1">男</option>
                     <option value="0">女</option></select>
       </div>
       <div class="content-item">
-        <p>年龄</p><input class="input number-input" type="number" name="age" id="age" min="1" max="150" :value="loginInfo.userAge" @blur="inputBlur"/>
+        <p>年龄</p><input class="input number-input" type="number" name="age" id="age" min="1" max="150" :value="userInfo.userAge" @blur="inputBlur"/>
       </div>
       <div class="content-item">
-        <p>地区</p><input class="input" type="text" name="address" id="address" :value="loginInfo.userAddress" @blur="inputBlur">
+        <p>地区</p><input class="input" type="text" name="address" id="address" :value="userInfo.userAddress" @blur="inputBlur">
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import MyHeader from 'components/MyHeader/MyHeader'
-import AvatarCropper from 'components/AvatarCropper/AvatarCropper'
-import Confirm from 'base/confirm/confirm'
-import { baseURL } from 'common/js/config'
+// import MyHeader from '@/components/MyHeader/MyHeader'
+// import AvatarCropper from '@/components/AvatarCropper/AvatarCropper'
+// import Confirm from '@/base/confirm/confirm'
+// import { baseURL } from 'common/js/config'
 import { mapGetters } from 'vuex'
 export default {
   data () {
     return {
-      baseURL,
       avatarUrl: '',
       isChanged: false,
       avatarIsChanged: false,
@@ -107,14 +106,15 @@ export default {
       this.$emit('closeModifyInfomation')
     }
   },
-  components: {
-    MyHeader,
-    AvatarCropper,
-    Confirm
-  }
+  // components: {
+  //   MyHeader,
+  //   AvatarCropper,
+  //   Confirm
+  // }
 }
 </script>
 
+<!-- <style scoped lang='stylus'> -->
 <style scoped lang='stylus'>
 @import '~@/common/stylus/variable'
 .modify-information-wrap

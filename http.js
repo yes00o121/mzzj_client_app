@@ -11,8 +11,8 @@ if(this.activeIndicator <= 0){
 import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
-const baseURL = 'http://127.0.0.1:8098'
-// const baseURL = 'http://192.168.1.4:8098'
+// const baseURL = 'http://127.0.0.1:8101'
+const baseURL = 'http://192.168.1.3:8109'
 // const baseURL = 'http://121.201.2.228:10824'
 // const baseURL = 'http://121.201.2.228:10958'
 Vue.prototype.baseURL = baseURL
@@ -31,7 +31,7 @@ http.interceptors.request.use(function (config) {
         config.headers.Authorization = 'Bearer ' + localStorage.getItem('token')
     } 
 	config.headers['yctest'] = 'yctest__' // 测试时使用的密钥
-    config.headers['uuid'] = localStorage.uuid//获取设备的uuid进行传输
+    // config.headers['uuid'] = localStorage.uuid//获取设备的uuid进行传输
     return config;
   }, function (error) {
     return Promise.reject(error);

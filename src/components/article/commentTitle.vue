@@ -1,6 +1,7 @@
 <template>
   <div class="comment" style="position: fixed;bottom:0;z-index:999;width: 100%;background:white;">
-      <div v-show="!sxIcon">
+	  
+<!--      <div v-show="!sxIcon">
 		  <p class="comment-title">
 		      <span>评论</span>
 		      <span>({{dataLength}})</span>
@@ -10,35 +11,37 @@
 		  		  </span>
 		  </p>
 		  <div class="commentMyinfo" >
-		      <!-- <img :src="myuser.user_img" alt="" v-if="myuser"> -->
-		  		  <img :src="baseURL + '/common/image?imgId=' + myuser.icon" alt="" v-if="myuser"  >
+		  		  <img :src="baseURL + '/common/image?imgId=' + myuser.icon +'&token=' + token" alt="" v-if="myuser"  >
 		  		  <img src="@/assets/default_img.jpg" alt v-else  />
 		      <img src="@/assets/default_img.jpg" alt="" v-else>
-		      <input  v-model="comcontent" ref="Postipt" type="text" @input="commentInput" @blur="commentOver" @mousemove="commentMove()" placeholder="说点什么吧">
+		      <input  v-model="comcontent" ref="Postipt" type="text" @input="commentInput" @blur="commentOver" @mousemove="commentMove()" :placeholder="placeholderText">
 		      <button @click="cmmentPublish">发表</button>
 		  </div>
-	  </div>
+	  </div> -->
 	  <van-popup
-	    v-model="sxIcon"
+	    v-model="utilShow"
+		:overlay="false"
 	    position="bottom"
-	    :style="{ height: '40%' }"
+	    :style="{ height: util ? '40%' : '12%','overflow': 'hidden','transition':'all 0.5s ease 0s'}"
 	  >
 		<div class="comment">
 				  <p class="comment-title">
 				      <span>评论</span>
 				      <span>({{dataLength}})</span>
 				  		  <span>
-				  			  <van-icon name="arrow-up" style="right: 1rem;position: fixed;" v-show="!sxIcon" @click="sxClick"/>
-				  			  <van-icon name="arrow-down" style="right: 1rem;position: fixed;" v-show="sxIcon"  @click="sxClick"/>
+				  			  <van-icon name="arrow-up" style="right: 1rem;position: fixed;" v-show="!util" @click="utilClick"/>
+				  			  <van-icon name="arrow-down" style="right: 1rem;position: fixed;" v-show="util"  @click="utilClick"/>
 				  		  </span>
 				  </p>
 				  <div class="commentMyinfo" >
 				      <!-- <img :src="myuser.user_img" alt="" v-if="myuser"> -->
-				  		  <img :src="baseURL + '/common/image?imgId=' + myuser.icon" alt="" v-if="myuser"  >
+					  
+				  		  <img :src="baseURL + '/common/image?imgId=' + myuser.icon +'&token=' + token" alt="" v-if="myuser"  >
 				  		  <img src="@/assets/default_img.jpg" alt v-else  />
 				      <img src="@/assets/default_img.jpg" alt="" v-else>
-				      <input  v-model="comcontent" ref="Postipt" type="text" @input="commentInput" @blur="commentOver" @mousemove="commentMove()" placeholder="说点什么吧">
-				      <button @click="cmmentPublish">发表</button>
+					   <input  v-model="comcontent" ref="Postipt2" type="text"  @mousemove="commentMove()" :placeholder="placeholderText">
+				     <!-- <input  v-model="comcontent" ref="Postipt2" type="text" @input="commentInput" @blur="commentOver" @mousemove="commentMove()" :placeholder="placeholderText"> -->
+				      <button @click="cmmentPublish" style="margin-left:.5rem">发表</button>
 				  </div>
 		</div>
 		<!-- 工具栏内容 -->
@@ -79,11 +82,14 @@ export default {
   },
   data() {
       return {
+		  token: 'Bearer ' + localStorage.token,
 		  tempContent:'',// 临时的内容,用于做数据变动对比
+		  utilShow:true,// 是否显示评论组件
 		    util:false, // 评论工具栏
 			smile:false, // 表情工具
             myuser:null,
-			sxIcon:false,
+			sxIcon:true,
+			placeholderText:'留下你的精彩评论吧',
             comcontent:'',
 			 Highlightlist: [
 					{img: './static/emoticom/aojiao.png'},	
@@ -135,28 +141,32 @@ export default {
 	    this.myuser = response.data.data
 	  })
     },
-	sxClick(){
+	utilClick(){
+		console.log('触发...')
 		// if(this.sxIcon){
 		// 	// this.closeUtil()
 		// } else {
 		// 	// this.openUtil()
 		// }
-		this.sxIcon = !this.sxIcon
+		this.util = !this.util
 	},
 	openUtil(){
 		this.util = true
 		this.smile = true
 	},
 	closeUtil(){
+		console.log('guanbi 。。。。。')
 		this.util = false
 		this.smile = false
 		this.sxIcon = false
+		
 	},
     cmmentPublish() {
         if(!this.myuser && !localStorage.getItem('token')){
           this.$msg.fail('请先登录')
           return
         }
+		// console.log(this.comcontent)
         this.$emit('Postcomment',this.comcontent,null)
         this.comcontent = ''
     },
@@ -174,7 +184,7 @@ export default {
 	},
 	// 获取当前光标位置
 	getTxt1CursorPosition(){
-		let postipt = this.$refs.Postipt
+		let postipt = this.$refs.Postipt2
 		return  postipt.selectionStart;
 	        },
 	// 追加内容
@@ -193,9 +203,13 @@ export default {
     focusIpt(){
      this.$refs.Postipt.focus()
     },
+	// 点击输入框,弹起来
 	commentMove(e){
 		// this.util = true;
 		console.log('点击')
+		this.util = true
+		// this.sxIcon = true
+		// this.sxClick();
 		// alert(1)
 		// 显示图标选择框
 	},
@@ -222,7 +236,18 @@ export default {
             this.myUserinfo();
         }
   },
-
+  watch:{
+	  util(cur,bef){
+		  console.log('变更。。。。')
+		  // console.log(bef)
+		  // console.log(cur)
+		  // 窗口关闭,取消回复状态
+		  if(!cur){
+			  console.log(this)
+			  this.$parent.$parent.clearPostStatus()
+		  }
+	  }
+  }
 };
 </script>
 

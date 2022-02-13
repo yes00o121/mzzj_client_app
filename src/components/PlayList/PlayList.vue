@@ -22,9 +22,10 @@
 			:VideoItem="item"
 			@showCommentList="fetchCommentsAndShowList"></my-video>
 		</div>
-		<!--留言弹窗-->
-		<comment ref="comment" @commentNum="getCommentNum"></comment>
+		
 	  </scroll>
+	  <!--留言弹窗-->
+	  <comment ref="comment" @commentNum="getCommentNum"></comment>
  <transition name="up">
     <comment-list
       v-if="showCommentList"
@@ -270,10 +271,13 @@ export default {
     scrollToIndex (index) {
 		// console.log(this.clientHeight)
 		this.currentY = index * this.clientHeight
+		// console.log(this.$refs)
+		// console.log(this.$refs.videos)
 		// 播放视频
+		this.$nextTick(()=>{
 		if(this.$refs.videos){
-
-			this.$nextTick(()=>{
+			// console.log('开始.....')
+			
 				// alert('屏幕高度' +clientHeight + 'y轴高度'+this.currentY)
 				this.currentHeight = this.currentY 
 				// 判断视频是否存在,不存再创建
@@ -290,10 +294,10 @@ export default {
 					this.$refs.videos[index].stopProcess()
 					this.$refs.videos[index].startProcess()
 				}
-			})
+			
 
 		}
-
+})
 	  
     },
     close () {
@@ -309,17 +313,23 @@ export default {
       this.$emit('close')
     },
     closeCommentList (e) {
+		let videoLength = this.playList.length// 视频数据
 		// 获取高度,以及y轴高度,还有视频数量总高度
 		let clientHeight = this.clientHeight
 		let index = this.currentY / clientHeight
 		// 返回暂停视频,停止计时
-		this.$refs.videos[index].video.pause()
+		// this.$refs.videos[index].video.pause()
 		// 暂停所有视频
 		
 		// this.close();
 		for(let i =0;i<videoLength;i++){
+			if(index == i){
+				continue;
+			}
 			if(this.$refs.videos[i].video){
-				this.$refs.videos[i].video.stop()
+				console.log(this.$refs.videos[i].video)
+				this.$refs.videos[i].video.pause()
+				// this.$refs.videos[i].video.playStatus = !this.$refs.videos[i].video.playStatus
 			}
 		}
     },

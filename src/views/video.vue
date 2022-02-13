@@ -3,12 +3,14 @@
 		<header></header>
 		<!-- 查询按钮 -->
 		<van-icon name="search" size="24" color="white" style="position: absolute;
-		    top: 1rem;z-index:1550;
-		    right: 1rem;" @click.stop="toQuery"/>
+		    top: 0rem;z-index:1550;padding:1rem;
+			
+		    right: 0rem;" @click.stop="toQuery"/>
+		，
 			<!-- 返回按钮 -->
 		<van-icon name="arrow-left" size="24" color="white" style="position: absolute;
-			top: 1rem;z-index:1550;
-			left: 1rem;" @click.stop="returnPage"/>
+			top: 0rem;z-index:1550;padding:1rem;
+			left: 0rem;" @click.stop="returnPage"/>
 		<div class="play-list">
 			<scroll class="wrap"
 			  :style="VideoItemHeightStyle"
@@ -30,8 +32,9 @@
 				  :VideoItem="item"
 				  @showCommentList="fetchCommentsAndShowList"></my-video>
 			  </div>
+			  <!--留言弹窗-->
+			  <comment ref="comment" @commentNum="getCommentNum" ></comment>
 			</scroll>
-			</div>
 			<footer>
 			<!--底部操作栏-->
 				<div class="container_bottom" v-show="bottomShow">
@@ -46,8 +49,8 @@
 					</div>
 				</div>
 			</footer>
-			<!--留言弹窗-->
-			<comment ref="comment" @commentNum="getCommentNum"></comment>
+			</div>
+
 	</div>
 </template>
 <script>
@@ -207,10 +210,18 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				this.$router.push('/home')
 			},
 			scroll (pos) {
+
 			  if(this.currentHeight > 0){
 				  return;
 			  }
+			  // 如果打开了评论,不触发滑动
+			  let index = this.currentY / this.clientHeight
 			  let clientHeight = this.clientHeight
+			  // let commentPop = this.$refs.videos[index].commentPop
+			  
+			  // if(commentPop){
+				 //  return;
+			  // }
 			  let absY = Math.abs(pos.y)
 			  if (absY > this.currentY + clientHeight / 2) {
 			    this.currentY = Math.ceil(absY / clientHeight) * clientHeight
@@ -847,7 +858,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
         }
     }
 </script>
-<style scoped lang='stylus'>
+<style  lang='stylus' scoped>
 @import '~@/common/stylus/variable'
 body
    padding 0

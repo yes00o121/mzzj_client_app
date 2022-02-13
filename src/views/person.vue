@@ -102,7 +102,12 @@
 				    <div class="detailItem" >
 				        <div class="imgparent">
 				             <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
-							   <van-image lazy-load :src="baseURL +   categoryitem.previewImg + '?width='+width+'&height=' + height + '&token=' + token" style="width:147px;height:200px"/>
+							   <van-image fit="cover" lazy-load :src="baseURL +   categoryitem.previewImg + '?width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:200px">
+								   <template v-slot:error>加载失败</template>
+								   		<template v-slot:loading>
+								   		    <van-loading type="spinner" size="20" />
+								   		  </template>
+								   </van-image>
 				            <div class="bottom">
 				                <!-- <div class="icon-play2"><span class="video">&nbsp;{{detailitem.flowNum}}</span></div> -->
 								  <div v-if="categoryitem.flowNum"><span class="video"><van-icon name="eye-o" />&nbsp;{{categoryitem.flowNum}}</span></div>

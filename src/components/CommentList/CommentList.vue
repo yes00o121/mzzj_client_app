@@ -62,6 +62,8 @@ export default {
     }
   },
   created () {
+	  console.log('@@@@@@@@@@@@@@@@@@')
+	  console.log(this.acommentList)
     for (let i = 0, len = this.commentList.length; i < len; i++) {
       this.$axios.get(`/api/user/${this.loginInfo.userId}/isLikedComment/${this.commentList[i].Comment.commentId}`).then((res) => {
         this.likes[i] = res.data.data

@@ -3,7 +3,7 @@
 	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
 	<div style="background:white;">
 		<van-sticky >
-			<van-cell class="van-ellipsis"  style="width:100%"  icon="arrow-left" :title="work.works_number"  @click="returnPage">
+			<van-cell class="van-ellipsis"  style="width:100%"  icon="arrow-left" :title="''"  @click="returnPage">
 				<van-button style="margin-right:1rem" plain type="default" size="mini" @click.stop="collectionClick" :class="{activeColor:collectionActive}">
 					<van-icon  name="star-o" size=".5rem" />
 					<span>&nbsp;关注</span>
@@ -17,70 +17,21 @@
 				  />
 			</van-cell>
 		</van-sticky>
-		<!-- 作品数据 -->
-		<div style="justify-content: space-around;flex-wrap: wrap;display: flex;padding: 0px 1rem;">
-			<div>{{work.works_name}}</div>
-			<!-- <div> -->
-				<van-image fit="cover" :src="baseURL + work.conver + '?token=' + token" style="width:100%;height:70.778vw;margin-top:1rem" @click="bigImagePreview">
-					<template v-slot:error>加载失败</template>
-							<template v-slot:loading>
-							    <van-loading type="spinner" size="20" />
-							  </template>
-					</van-image>
-			<!-- </div> -->
-			
+		
+		<div style="padding:1rem">
+			{{resource.title}}
 		</div>
-		<div>
-			<van-cell-group style="text-align: initial;">
-			  <van-cell title="番号" :value="work.works_number" v-if="work.works_number" />
-			  <van-cell title="发布时间" :value="work.works_time" v-if="work.works_time" />
-			  <van-cell title="影片时长" :value="work.works_length" v-if="work.works_length" />
-			  <van-cell title="导演" :value="work.works_director_name" v-if="work.works_director_name" @click="toSearch(work.works_director_name)"/>
-			  <van-cell title="发行商" :value="work.works_company" v-if="work.works_company" @click="toSearch(work.works_company)"/>
-			  <van-cell title="制作商" :value="work.works_production" v-if="work.works_production" @click="toSearch(work.works_production)"/>
-			  <van-cell title="系列" :value="work.works_series" v-if="work.works_series" @click="toSearch(work.works_series)"/>
-			  <!-- <van-cell title="类别" :value="work.works_category" v-if="work.works_category"/> -->
-			  <van-cell title="类别" v-if="work.works_category_arr">
-				  <span v-for="item in work.works_category_arr">
-					   <van-tag plain  type="primary" @click="toSearch(item + '_PLACEHOLDER_')">{{item}}</van-tag>
-					   <span style="padding:.5rem"></span>
-				  </span>
-				 
-				  </van-cell>
-			</van-cell-group>
-		</div>
-		<!-- 演员数据 -->
-		<div v-if="participates.length > 0" >
-			<van-cell-group style="text-align: initial;">
-				<van-cell title="演员" value="" />
-			</van-cell-group>
-			<div style="flex-wrap: wrap;display: flex;">
-				<div v-for="(item,index) in participates" :key = "index" style="width:30%;padding: .3rem;" @click="pathPush(item)">
-					<div>
-						<van-image v-if="item.personNationality"  lazy-load :src="baseURL +   item.personNationality + '?token=' + token" class="participates-photo" >
-							<template v-slot:error>
-								<img  src="@/assets/nowprinting.gif" class="participates-photo">
-							</template>
-						</van-image>
-						<img v-if="!item.personNationality" src="@/assets/nowprinting.gif" class="participates-photo">
-						<div class="text">{{item.person_name}}</div>
-					</div>
-				</div>
-			</div>
-		</div>
+		
 		<div v-if="workImages.length > 0">
 			<van-cell-group style="text-align: initial;">
 				<van-cell title="预览图" value="" />
 			</van-cell-group>
-			<div style="flex-wrap: wrap;display: flex;" >
-				<div v-for="(item,index) in workImages" :key = "index" style="width:45%;padding: .3rem;">
+			<!-- <div style="flex-wrap: wrap;display: flex;" > -->
+				<!-- <div v-for="(item,index) in workImages" :key = "index" style="width:45%;padding: .3rem;"> -->
+			<div>	
+			<div v-for="(item,index) in workImages" style="padding:0.5rem 1rem 0 1rem">
 					<div>
-						<van-image ref="workImage" style="width:100%;" @load="imgLoad(index)" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +  item.content + '?token=' + token" class="participates-photo" @click="imagePreview(item)" >
-							<template v-slot:error>加载失败</template>
-									<template v-slot:loading>
-									    <van-loading type="spinner" size="20" />
-									  </template>
-							</van-image>
+						<van-image ref="workImage" style="width:100%;" @load="imgLoad(index)" rel="external nofollow"   lazy-load :src="baseURL +  item + '&token=' + token"  @click="imagePreview(item,index)" />
 					</div>
 				</div>
 			</div>
@@ -107,6 +58,7 @@ import { ImagePreview } from 'vant';
 export default{
 	data(){
 		return {
+			resource:{},
 			work:{},
 			participates:[], // 出演人员
 			workImages:[],// 预览图片
@@ -122,23 +74,33 @@ export default{
 			// 不管如何都置顶
 			scroll(0,0)
 			// 页面id不同刷新数据
-			if(to.name == 'personWork' && this.work.id != this.$route.params.id){
+			if(to.name == 'netresources' && this.work.id != this.$route.params.id){
+				console.log(this.$route.params)
 				this.imagePreviews = []
 				this.converPreviews = []// 大图预览
 				this.workImages = []
-				// 作品数据
-				this.initPersonWorkData()
-				// 演员数据
-				this.initPersonWorkParticipate()
-				// 预览图数据
-				this.initPersonWorkImage();
-				// 收藏状态
-				this.collectionInit();
+				this.initData();
+
 			}
 			
 		}
 	},
 	methods:{
+		async initData(){
+			const res = await this.$http.get('/webInfoDetailData/queryWebInfoDetailDataById?id=' + this.$route.params.id)
+			console.log(res)
+			this.resource = res.data
+			let imgIds = this.resource.preview_img_id.split(',')
+			for(let i =0;i<imgIds.length;i++){
+				if(imgIds[i] && imgIds[i] != ','){
+					this.workImages.push('/common/image?imgId=' + imgIds[i] + '&scale=1');
+					this.imagePreviews.push(this.baseURL + '/common/image?imgId=' + imgIds[i] + '&scale=1&token=' + this.token);
+					// console.log(this.baseURL + '/common/image?imgId=' + imgIds[i] + '&token=' + this.token)
+				}
+			}
+			this.initMagnet();
+
+		},
 		onSwipeLeft () {
 			// alert('页面右滑')
 		    // console.log('页面左滑')
@@ -217,18 +179,18 @@ export default{
 			this.$msg.fail('复制失败')
 		},
 		// 图片预览
-		imagePreview(item){
+		imagePreview(item,index){
 			// console.log(item)
 			ImagePreview({
 				images: this.imagePreviews,
-				startPosition:item.works_content_number -1 
+				startPosition:index 
 			})
 		},
-		bigImagePreview(){
-			ImagePreview({
-				images:this.converPreviews
-			})
-		},
+		// bigImagePreview(){
+		// 	ImagePreview({
+		// 		images:this.converPreviews
+		// 	})
+		// },
 		returnPage(){
 			this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 			this.$router.go(-1)
@@ -291,22 +253,23 @@ export default{
 			
 		},
 		initMagnet(){
-			this.$http.get("/magnet/queryMagnet?name=" + this.work.works_number).then(res=>{
+			this.$http.get("/magnet/queryMagnet?name=" + this.resource.title).then(res=>{
 				this.magnetList = res.data
 			})
 
 		}
 	},
 	created(){
+		this.initData();
 		// 作品数据
-		this.initPersonWorkData()
-		// 演员数据
-		this.initPersonWorkParticipate()
-		// 预览图数据
-		this.initPersonWorkImage();
+		// this.initPersonWorkData()
+		// // 演员数据
+		// this.initPersonWorkParticipate()
+		// // 预览图数据
+		// this.initPersonWorkImage();
 		
-		// 收藏状态
-		this.collectionInit();
+		// // 收藏状态
+		// this.collectionInit();
 	}
 }
 </script>

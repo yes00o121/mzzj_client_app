@@ -296,6 +296,7 @@ body
     top 84px
     bottom 0
     width 100%
+	
 
 .defaultBackground{
 	background:white;

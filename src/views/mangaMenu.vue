@@ -24,7 +24,12 @@
 		   fit="contain"
 		   :src="baseURL + manga.previewImg + '&width='+width+'&height='+windowWidth + '&random=1&token=' + token" rel="external nofollow" 
 		   style="width:100%;"
-		 />
+		 >
+		 <template v-slot:error>加载失败</template>
+		 		<template v-slot:loading>
+		 		    <van-loading type="spinner" size="20" />
+		 		  </template>
+		 </van-image>
 		 <!-- <div style="position: absolute;right:0;bottom:0;">
 			<van-button plain type="default" @click="collectionClick" :class="{activeColor:collectionActive}">
 				<van-icon style="top:5px" name="star-o" size="1.5rem" />

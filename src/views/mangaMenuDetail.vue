@@ -12,7 +12,11 @@
 			  <van-cell style="background: black;color:white;"  icon="arrow-left" :title="(chapterList[this.$route.params.pxh - 1] ? chapterList[this.$route.params.pxh - 1].title : '')"  @click="$router.go(-1)"/>
 		</van-popup>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"/> </van-image>
+		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"/>
+				<template v-slot:loading>
+				    <van-loading type="spinner" size="20" />
+				  </template>
+			 </van-image>
 		  </van-pull-refresh>
 		  <!-- 底部弹出 -->
 		  <van-popup

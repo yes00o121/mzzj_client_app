@@ -2,36 +2,40 @@
 	      <!-- <van-pull-refresh v-model="isLoading" @refresh="onRefresh"> -->
 		  <div style="position: relative;height:21rem;">
 			  <div class="mui-scroll-wrapper commentParent" >
-			    <div class="mui-scroll">
+			    <div class="mui-scroll" ref="muiScroll">
 					 <van-pull-refresh v-model="isLoading" @refresh="onRefresh"> 
 					<div class="commentParent" >
 						  <div class="main">
-						<div v-for="(item,index) in commentList" :key="index" style="height:7rem">
+						<div v-for="(item,index) in commentList" :key="index" >
 						  <div class="commentItem">
 							<div class="userImg">
-							<img :src="baseURL + '/common/image?imgId=' + item.avatar + '&token=' + token" alt="" v-if="item.avatar"  >
-							<img src="@/assets/default_img.jpg" alt v-else  />
+							<img :src="baseURL + '/common/image?imgId=' + item.avatar + '&token=' + token" alt="" v-if="item.avatar" style="border-radius: 1rem;" >
+							<img src="@/assets/default_img.jpg" alt v-else style="border-radius: 1rem;"  />
 							</div>
 							<div class="commentContent">
 							  <p>
 								<span v-if="item.nickname">{{item.nickname}}</span>
 								<span v-else>此用户无姓名</span>
-								<span>{{item.comment_date}}</span>
+							  </p>
+							  <p>
+								  <span style="font-size:12px;color:#aaa">{{item.create_time}}</span>
 							  </p>
 							  <!-- <div>
 								<div class="comment-text" v-html="item.comment_content"></div>
 								<span class="publishs" @click="publishClick(item.comment_id)">回复</span>
 								 <span class="publishs" style="position: absolute;color:#908888;font-size: 3.1vw;">{{item.create_time | filterTime}}</span>
 							  </div> -->
+							  <div style="text-align: left;font-size:14px;widht:80%">
+									<div class="comment-text" v-html="item.comment_content" style="padding-bottom:.5rem;width:90%"></div>
+									<!-- <span class="publishs" @click="publishClick(item.comment_id)">回复</span> -->
+									<van-icon name="chat-o" size="1.2rem" @click="publishClick(item)"/>
+							  							<!-- <span class="publishs" style="position: absolute;color:#908888;font-size: 3.1vw;">{{item.create_time | filterTime}}</span> -->
+							  </div>
 							</div>
+							
 						  </div>
-						  <div class="van-multi-ellipsis--l2" style="text-align: left;font-size:14px;
-    padding-left: 5rem;">
-							<div class="comment-text" v-html="item.comment_content"></div>
-							<span class="publishs" @click="publishClick(item.comment_id)">回复</span>
-							<!-- <span class="publishs" style="position: absolute;color:#908888;font-size: 3.1vw;">{{item.create_time | filterTime}}</span> -->
-						  </div>
-						 <div style="padding-left:8.333vw;"><comment-item @PostPublish="publishClick" :commentChild="item.child"></comment-item></div>
+						  
+						 <div style="padding-left:8.333vw;"><comment-item @PostPublish="publishClick" :commentChild="item.child_comment"></comment-item></div>
 						</div>
 						</div>
 					</div>
@@ -202,7 +206,12 @@ export default {
         this.$emit('lengthselect',res.data.data.length)
       }
       this.commentList = this.changeCommentData(res.data.data)
-	  console.log(this.commentList)
+	  // 数据获取后评论滚到最上面
+	  if(this.$refs.muiScroll){
+		  // console.log(this.$refs.muiScroll)
+		  this.$refs.muiScroll.style.transform = 'translate3d(0px, 0px, 0px) translateZ(0px)'
+	  }
+	  // console.log(this.commentList)
     },
     changeCommentData(data) {
 	  const imgList = this.Highlightlist
@@ -214,9 +223,9 @@ export default {
 	  for(let i =0;i<imgList.length;i++){
 			filterImg.push(imgList[i].img.replace('./static/emoticom/','[').replace('.png',']'))
 	  }
-	  console.log(filterImg)
+	  // console.log(filterImg)
 	  // top.a = filterImg
-	  console.log(imgList)
+	  // console.log(imgList)
 	  // fn = ()=>{
 		  
 	  // }
@@ -230,10 +239,10 @@ export default {
 		  	let tempData = data[i].comment_content
 		  	for(let i =0;i<filterImg.length;i++){
 		  		if(tempData.indexOf(filterImg[i]) != -1){
-		  			tempData = tempData.replace(filterImg[i],"<span>FDSFDSFSDFDSFD</span><span><img style='-webkit-mask-box-image' width='25px'  height='25px' src='"+ this.Highlightlist[i].img +"'></span>")
+		  			tempData = tempData.replace(filterImg[i],"<span><img style='-webkit-mask-box-image' width='25px'  height='25px' src='"+ this.Highlightlist[i].img +"'></span>")
 		  		}
 		  	}
-		  	console.log(tempData)
+		  	// console.log(tempData)
 		  	// 内容处理,表情替换
 		  	// for(var j=0;j<imgList.length;j++) {
 		  	// 	// const img = imgList[j].img.replace('[','').replace(']','')
@@ -291,8 +300,14 @@ export default {
        return fn(null);
     },
 	
-    publishClick(id) {
-     this.$emit('publishClick',id)
+    publishClick(item) {
+		console.log('被调用....')
+		console.log(item)
+		this.$emit('publishClick',item)
+     // this.$emit('publishClick',item.comment_id)
+	 // console.log(this.$parent.$children[1].placeholderText)
+	 // this.$parent.$children[1].placeholderText = '回复 @' + item.nickname + ':'
+	 
     }
   },
   created() {
@@ -301,13 +316,13 @@ export default {
 };
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 
 .commentParent {
   padding: 2.778vw 2.778vw;
-  > div {
-    border-bottom: 0.278vw solid #e7e7e7;
-  }
+  // > div {
+  //   border-bottom: 0.278vw solid #e7e7e7;
+  // }
   .commentItem {
     display: flex;
     margin: 2.778vw 0;
@@ -322,6 +337,7 @@ export default {
       flex: 1;
       position: relative;
       p {
+		  padding-bottom: 0.2rem;
         font-size: 3.611vw;
         color: #555;
         display: flex;

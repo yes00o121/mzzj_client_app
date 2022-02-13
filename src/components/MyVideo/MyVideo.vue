@@ -23,13 +23,23 @@
 	  object-fit="fill"
 	  ></video> -->
     <div class="side-bar">	
-      <div class="avatar" @click.stop="">
+      <div class="avatar" @click.stop="" style="border:none">
        <!-- <img :src="`${baseURL}${VideoItem.userAvatar}`" alt="" width="40" height="40"
           @click="chooseUser"> -->
-		  <img :src="`${baseURL}/common/image?imgId=6103eed9f1a2480958525955&token=${token}`" alt="" width="40" height="40"
-		    >
-		  
-        <!-- <div class="follow">+</div> -->
+		  <!-- <img :src="`${baseURL}/common/image?imgId=61b88b894316b402bcbf833f&token=${token}`" alt="" width="40" height="40"
+		    > -->
+		  <img src="@/assets/user_1.png" width="40" height="40"  @click="toUserVideo(VideoItem)">
+		  <!-- <img src="@/assets/user_2.png" width="40" height="40" v-if="user_photo == 1" @click="toUserVideo(VideoItem)">
+		  <img src="@/assets/user_3.png" width="40" height="40" v-if="user_photo == 2" @click="toUserVideo(VideoItem)">
+		  <img src="@/assets/user_4.png" width="40" height="40" v-if="user_photo == 3" @click="toUserVideo(VideoItem)">
+		  <img src="@/assets/user_5.png" width="40" height="40" v-if="user_photo == 4" @click="toUserVideo(VideoItem)">
+		  <img src="@/assets/user_6.png" width="40" height="40" v-if="user_photo == 5" @click="toUserVideo(VideoItem)">
+		  <img src="@/assets/user_7.png" width="40" height="40" v-if="user_photo == 6" @click="toUserVideo(VideoItem)">
+		  <img src="@/assets/user_8.png" width="40" height="40" v-if="user_photo == 7" @click="toUserVideo(VideoItem)">
+		  <img src="@/assets/user_9.png" width="40" height="40" v-if="user_photo == 8" @click="toUserVideo(VideoItem)">
+		  <img src="@/assets/user_0.png" width="40" height="40" v-if="user_photo == 9" @click="toUserVideo(VideoItem)"> -->
+        <div class="follow" v-if="VideoItem.collectionUser != '是' && VideoItem.personId" @click="collectionPersonClick(VideoItem)">+</div>
+		<div class="follow" style="background:#7e5c63" v-if="!VideoItem.personId" >+</div>
       </div>
 	  <!-- 加载状态-->
 	  <van-loading class="iconfont" v-show="collStatus"/>
@@ -39,16 +49,16 @@
       </div>
 	  <!-- 评论图标-->
       <!-- <div class="comment iconfont icon-message" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)"> -->
-	  <div class="comment iconfont icon-message" @click.stop="changeComment()">
+	  <div class="comment1 iconfont icon-message" @click.stop="changeComment()">
         <span class="commentnum">{{commentNum}}</span>
       </div>
       <div class="share iconfont icon-share" @click.stop="$msg.fail('分析功能关闭')">
         <!-- <span class="sharenum">{{commentNum}}</span> -->
-		<!-- <span class="sharenum">0</span> -->
+		<span class="sharenum">0</span>
       </div>
     </div>
 	<div class="label-wrap">
-		<div style="text-align: left;margin-right: 20px;box-sizing: border-box;
+	<!-- 	<div style="text-align: left;margin-right: 20px;box-sizing: border-box;
     margin-right: 8px;
 	margin-top: 10px;
     padding: 3px 6px;
@@ -63,10 +73,10 @@
 	<span :style="item.status == '1' ? ('color: #F8355F;') : ('color: #5094d5;')">
 			{{item.name}} 
 	</span>
-		</div>
+		</div> -->
 	</div>
     <div class="text-wrap">
-      <!-- <div class="name">@{{VideoItem.userNickname}}</div> -->
+      <div class="name" style="text-align: left;">@{{VideoItem.personName}}</div>
       <div class="desc van-multi-ellipsis--l2" style="text-align: initial;">{{VideoItem.title}}</div>
     </div>
 	 <div  style="text-align: initial;text-align: initial;
@@ -78,9 +88,11 @@
 	  <van-slider v-model="videoProcess" :min="0" :max="100" :button-size="1" @drag-start="dragStart" @drag-end="dragEnd" @input="dragInput" @change="dragChange"/></div>
     <div class="input-bar" v-show="bottomComment" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)">
 		
-     <input class="input" :placeholder="  '有爱评论，说点儿好听的~'" type="text">
+     <input class="input"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国、敬业、诚信、友善'" type="text">
+	 <!-- <input class="input"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国'" type="text"> -->
+	 <!-- <span>.....fdsfdsfdsf</span> -->
       <!-- <span class="iconfont icon-at" ></span> -->
-      <span class="iconfont icon-check"></span>
+      <!-- <span class="iconfont icon-check"></span> -->
     </div>
 	<img v-show="!playStatus" class="icon_play"
 	     src="@/assets/play.png"/>
@@ -119,7 +131,10 @@ export default {
    },
   data () {
     return {
+		showIcon:true, // 显示页面图标工具
+		touchTime:0,// 长按时间,超过两秒隐藏图标工具
   		commentPop:false,
+		user_photo:parseInt(Math.random()*10),// 默认用户图片
   		// replayUserData: '',
   		// to_comment_id: '',
   		// commentPop: false,//是否展示评论弹框
@@ -136,6 +151,7 @@ export default {
       like: this.VideoItem.collection == '是',
       likeNum: this.VideoItem.likeNum,
   	  video: null,
+	  collectionActive:false, // 人员收藏
   	  playStatus:true ,// 播放状态,默认播放
   	  videoProcess:0 ,// 进度条位置
   	  maxVideoProcess: 0, // 当前视频长度
@@ -192,6 +208,40 @@ export default {
     ])
   },
   methods: {
+	  toUserVideo(item){
+		this.$router.push('/videoUserInfo/' + item.personId + '/SEX/video')
+	  },
+	 // 收藏人员
+	 // collectionUserData(item){
+		//  console.log(item)
+	 // },
+	 //收藏人员
+	 async collectionPersonClick(item) {
+	    if(localStorage.getItem('token')){
+	      // 判断显示状态,是收藏还是取消收藏
+	      if(!this.collectionActive){
+	        const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:item.personId,collectionType:'2'})
+	        // console.log(res)
+	        if(res.data.data == '收藏成功'){
+	            // this.collectionActive = true
+				item.collectionUser = '是'
+	        }else{
+	            // this.collectionActive = false
+	            this.$msg.fail(res.data.message)
+	        }
+	      } else {
+	        const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:item.personId,collectionType:'2'})
+	        if(res.data.data == '取消成功'){
+	          item.collectionUser = '否'
+			  // this.collectionActive = false
+	        } else {
+	           this.$msg.fail(res.data.message)
+	        }
+	      }
+	 
+	         // this.$msg.fail(res.data.msg)
+	    }
+	 },
 	  // 用户保存删除标签
 	  async labelSave(label){
 		  if(label.status == 1){
@@ -362,10 +412,11 @@ export default {
 				  	  				})
 				  	  		  }
 				  	          );
+							  top.a = this.video
 				  	  let nextAddress = this.VideoItem.nextAddress
 				  	  nextAddress = nextAddress.split('_-')[1]
 				  	  this.video.src({
-				  	  		  src:this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress,
+				  	  		  src:this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress + '?token=' + this.token,
 				  	  		  type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
 				  	  		})
 					 if(curIndex == this.index){
@@ -578,7 +629,7 @@ export default {
 }
 </script>
 
-<style  lang='stylus' >
+<style  lang='stylus' scoped>
 @import '~@/common/stylus/variable'
 .my-video
   position relative
@@ -674,7 +725,7 @@ export default {
         color $color-text
     .red-heart
       color rgb(248, 53, 95)
-    .comment
+    .comment1
       position relative
       .commentnum
         font-size $font-size-small-s

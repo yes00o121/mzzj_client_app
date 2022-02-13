@@ -34,8 +34,9 @@
 		<van-tabbar v-model="active" :fixed = "false" :border="false" inactive-color="rgb(25, 137, 250)" >
 			<van-tabbar-item icon="star-o" @click="pathPush(1)">收藏</van-tabbar-item>
 		  <van-tabbar-item icon="clock-o" @click="pathPush(2)">历史记录</van-tabbar-item>
+		  <van-tabbar-item icon="chat-o" :badge="messageNum" @click="pathPush(4)">消息</van-tabbar-item>
+<!-- 		  <van-icon name="chat-o" badge="99+" /> -->
 		  <van-tabbar-item icon="friends-o" v-if="root == 1" @click="pathPush(3)">用户日志</van-tabbar-item>
-		  <van-tabbar-item icon="setting-o" v-if="root == 1" @click="pathPush(4)">标签</van-tabbar-item>
 		</van-tabbar>
 	</div>
   </div>
@@ -55,7 +56,8 @@ export default {
 			curScroll:{},
 			show:false,
 			active:-1,
-			root:0
+			root:0,
+			messageNum:null	
         }
     },
     components:{
@@ -74,6 +76,9 @@ export default {
 			}
 			if(index == 3){
 				this.$router.push(`/userlog`)
+			}
+			if(index == 4){
+				this.$router.push(`/message`)
 			}
 			
 		 //    const loadMode = `${this.detailitem.loadMode}`;
@@ -159,12 +164,32 @@ export default {
 			// 是否开启置顶按钮
 			const res1 = await this.$http.get('/admin/queryConfig?key=back_top')
 			localStorage.back_top = res.data.data
+		},
+		// 加载消息数据
+		async loadMessage(){
+			const res = await this.$http.get("/message/queryMessageNum")
+			console.log(res.data)
+			if(res.data > 99){
+				this.messageNum = '99+'
+			} else{
+				this.messageNum = res.data
+			}
+			
+			if(this.messageNum == 0){
+				this.messageNum == null;
+			} else {
+				// 底部"我的"菜单显示消息图标
+				this.$parent.myIconStatus = true
+			}
+			
+
 		}
     },
     created() {
         // this.userData()
 		this.getUser()
 		this.getUserConfig()
+		this.loadMessage();
 		// top.a = this
     },
 	activated() {

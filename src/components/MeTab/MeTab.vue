@@ -1,14 +1,14 @@
 <template>
   <div class="tab">
-    <router-link tag="div" class="tab-item" to="./video">
+    <router-link tag="div" class="tab-item" to="./video" >
       <span class="tab-link">作品 {{videoNum}}</span>
     </router-link>
-    <router-link tag="div" class="tab-item" to="./videoAndDesc">
+<!--    <router-link tag="div" class="tab-item" to="./videoAndDesc">
       <span class="tab-link">动态 {{videoNum}}</span>
     </router-link>
     <router-link tag="div" class="tab-item" to="./likes">
       <span class="tab-link">喜欢 {{likeNum}}</span>
-    </router-link>
+    </router-link> -->
   </div>
 </template>
 
@@ -23,6 +23,15 @@ export default {
       type: Number,
       default: 0
     }
+  },
+  data(){
+	  return {
+		  video: null
+	  }
+  },
+  created(){
+	  console.log(this.$router)
+		// this.video = '/videoUserInfo/'+this.$parent.$router.params.id+'/'+this.$router.params.type+'/video'
   }
 }
 </script>

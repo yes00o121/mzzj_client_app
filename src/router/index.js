@@ -22,6 +22,10 @@ const literati = ()=>import('@/views/literati.vue')
 const collection = ()=>import('@/views/collection.vue')
 const history = ()=>import('@/views/history.vue')
 const userlog = ()=>import('@/views/userlog.vue')
+const netresources = ()=>import('@/views/netresources.vue')
+const message = ()=>import('@/views/message.vue')
+const videoUserInfo = ()=>import('@/components/Profile/Profile.vue')
+
 Vue.use(VueRouter)
   const routes = [
      {
@@ -67,6 +71,27 @@ Vue.use(VueRouter)
 	 			 // keepalive:true
 	 		 }
 	 },
+	 {
+	   path:'/netresources/:id',
+	   name:'netresources',
+	   component:netresources,
+	   meta:{
+	 	index:3,
+	     keepalive:true
+	   }
+	 },
+	 {
+	   path:'/message',
+	   name:'message',
+	   component:message,
+	   meta:{
+	 	index:3,
+	     keepalive:true
+	   }
+	 },
+	 
+	 
+	 
 	 {
 	 		path:'/history',
 			name:'history',
@@ -191,7 +216,52 @@ Vue.use(VueRouter)
         //   component: () => import('@/base/searchUserList/searchUserList.vue')
         // }
       ]
-    }
+    },
+	{
+	  path:'/videoUserInfo/:id/:type/',
+	  name:'videoUserInfo',
+	  component:videoUserInfo,
+	  // redirect: '/videoUserInfo/:id/:type/video',
+	  children: [
+	          // {
+	          //   name: 'video',
+	          //   path: '/video',
+	          //   component: () => import('@/views/videoUserList.vue')
+	          // },
+			  {
+			    name: 'videoUserInfo/video',
+			    path: 'video',
+			    component: () => import('@/views/videoUserList.vue')
+			  },
+	          // {
+	          //   name: 'profile/videoDesc',
+	          //   path: 'videoAndDesc',
+	          //   component: () => import('@/views/videoAndDesc.vue')
+	          // },
+	          // {
+	          //   name: 'profile/likes',
+	          //   path: 'likes',
+	          //   component: () => import('@/views/likes.vue')
+	          // }
+	        ]
+	 //  meta:{
+		// index:3,
+	 //    // keepalive:true
+	 //  },
+	  // children: [
+	  //   {
+	  //     name: '/videoUserInfo/:id/:type',
+	  //     path: 'video',
+			   
+	  //     component: () => import('@/base/searchVideoList/searchVideoList.vue')
+	  //   },
+	  //   // {
+	  //   //   name: 'videosearch/user',
+	  //   //   path: 'user',
+	  //   //   component: () => import('@/base/searchUserList/searchUserList.vue')
+	  //   // }
+	  // ]
+	},
 	// {
 	//   path:'/dynamic',
 	//   component:dynamic

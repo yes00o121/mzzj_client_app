@@ -65,6 +65,7 @@ Vue.use(VueTouch, {name: 'v-touch'})
 //plus.screen.lockOrientation('portrait-primary'); //锁死屏幕方向为竖屏
 // plus.screen.lockOrientation( 'landscape-primary');
 
+
  //监听获取设备uuid
 document.addEventListener('plusready', function(){
   localStorage.uuid = plus.device.uuid;

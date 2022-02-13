@@ -6,13 +6,13 @@
       :style="VideoItemHeightStyle"
       class="video-item"
       v-for="(item, index) in list"
-      :key="item.Video.videoId"
+      :key="item.id"
       :item="item"></video-item>
   </div>
 </template>
 
 <script>
-import VideoItem from 'base/VideoItem/VideoItem'
+import VideoItem from '@/base/VideoItem/VideoItem'
 export default {
   props: {
     list: {

@@ -2,7 +2,7 @@
 <template>
 	<div>
 		<!--留言弹窗-->
-		<van-popup v-model="commentPop"  closeable :overlay="true" class="comment_container" position="bottom">
+		<van-popup v-model="commentPop"  closeable :overlay="true" class="comment_container" position="bottom" >
 			<div class="comment_box">
 				<div class="comment_top">
 					{{commentNum}}条评论
@@ -18,7 +18,7 @@
 								</div>
 								<div class="comment_author_right">
 									<div class="comment_author_top">
-										<div class="comment_author_name">@{{item.nickname}}</div>
+										<div class="comment_author_name">{{item.nickname}}</div>
 										<!-- <div class="icon-shoucang1_box" @click.stop="commentLove(item,index,-1)">
 											<div class="icon_right_change"
 												 :class="item.love_comment?'love_active':''">
@@ -27,8 +27,9 @@
 											<div class="shoucang1_num">{{item.love_count}}</div>
 										</div> -->
 									</div>
-									<div class="comment_author_text">
-										{{item.comment_content}}<span>{{item.create_time}}</span>
+									<div style="color:#999;margin:.4rem 0 ">{{item.create_time}}</div>
+									<div class="comment_author_text" v-html="item.comment_content">
+										<!-- {{item.comment_content}}<span>{{item.create_time}}</span> -->
 									</div>
 								</div>
 								<div class="clear"></div>
@@ -41,7 +42,7 @@
 											</div>
 											<div class="comment_replay_right">
 												<div class="comment_replay_top">
-													<div class="comment_replay_name">@{{item2.nickname}}</div>
+													<div class="comment_replay_name">{{item2.nickname}}</div>
 													<!-- <div class="icon-shoucang1_box"
 														 @click.stop="commentLove(item2,index,index2)">
 														<div class="icon_right_change"
@@ -51,11 +52,13 @@
 														<div class="shoucang1_num">{{item2.love_count}}</div>
 													</div> -->
 												</div>
-												<div class="comment_replay_text">
-													<!-- <span v-if="item.user_id!=item2.be_commented_user_id && item.user_id!=item2.user_id">回复 {{item2.be_commented_nickname}}：</span> -->
-													<span v-if="item.user_id!=item2.be_commented_user_id">回复 {{item2.be_commented_nickname}}：</span>
-													{{item2.comment_content}}
-													<span>{{item2.create_time}}</span></div>
+												<div style="color:#999;margin:.4rem 0 ">{{item2.create_time}}</div>
+												<span v-if="item.user_id!=item2.be_commented_user_id">回复 {{item2.be_commented_nickname}}：</span>
+												<div class="comment_replay_text" v-html="item2.comment_content">
+													<!-- <span v-if="item.user_id!=item2.be_commented_user_id">回复 {{item2.be_commented_nickname}}：</span> -->
+													<!-- {{item2.comment_content}} -->
+													<!-- <span>{{item2.create_time}}</span> -->
+													</div>
 											</div>
 											<div class="clear"></div>
 										</div>
@@ -103,6 +106,43 @@ export default{
 			commentNum: 0,
 			commentList: [],
 			video:'',
+			Highlightlist: [
+										{img: './static/emoticom/aojiao.png'},
+										{img: './static/emoticom/goutou.png'},
+										{img: './static/emoticom/baozang.png'},
+										{img: './static/emoticom/bixin.png'},
+										{img: './static/emoticom/chigua.png'},
+										{img: './static/emoticom/call.png'},
+										{img: './static/emoticom/daku.png'},
+										{img: './static/emoticom/daxiao.png'},
+										{img: './static/emoticom/dai.png'},
+										{img: './static/emoticom/haixiu.png'},
+										{img: './static/emoticom/huaji.png'},
+										{img: './static/emoticom/jingli.png'},
+										{img: './static/emoticom/maotou.png'},
+										{img: './static/emoticom/jingkong.png'},
+										{img: './static/emoticom/jingya.png'},
+										{img: './static/emoticom/kaixin.png'},
+										{img: './static/emoticom/koubi.png'},
+										{img: './static/emoticom/ku.png'},
+										{img: './static/emoticom/leng.png'},
+										{img: './static/emoticom/liuhan.png'},
+										{img: './static/emoticom/nanshou.png'},
+										{img: './static/emoticom/nu.png'},
+										{img: './static/emoticom/se.png'},
+										{img: './static/emoticom/shengbing.png'},
+										{img: './static/emoticom/siren.png'},
+										{img: './static/emoticom/suan.png'},
+										{img: './static/emoticom/tiaopi.png'},
+										{img: './static/emoticom/toumiao.png'},
+										{img: './static/emoticom/touxiao.png'},
+										{img: './static/emoticom/tu.png'},
+										{img: './static/emoticom/wunai.png'},
+										{img: './static/emoticom/wuyu.png'},
+										{img: './static/emoticom/xiaoku.png'},
+										{img: './static/emoticom/xu.png'},
+										{img: './static/emoticom/zan.png'}
+							  ],
 			id:''// 视频id
 		}
 	},
@@ -132,6 +172,49 @@ export default{
 		}
 	},
 	methods:{
+		changeCommentData(data) {
+			  const imgList = this.Highlightlist
+		
+			  let filterImg = []
+			  for(let i =0;i<imgList.length;i++){
+					filterImg.push(imgList[i].img.replace('./static/emoticom/','[').replace('.png',']'))
+			  }
+		
+			  let fn = ((temp)=>{
+				  let arr1 = [];
+				  for (var i = 0; i < data.length; i++) {
+				  	if(!data[i].comment_content){
+				  		continue;
+				  	}
+				  	// console.log(data[i].comment_content)
+				  	let tempData = data[i].comment_content
+					// console.log(tempData)
+				  	for(let i =0;i<filterImg.length;i++){
+				  		if(tempData.indexOf(filterImg[i]) != -1){
+				  			tempData = tempData.replace(filterImg[i],"<span><img style='-webkit-mask-box-image' widht:'25px' height='25px' src='"+ this.Highlightlist[i].img +"'></span>")
+				  		}
+				  	}
+		
+					data[i].comment_content = tempData
+				  	// console.log(data[i].tempData)
+				    if (data[i].parent_id == temp) {
+				      arr1.push(data[i]);
+				      data[i].child = fn(data[i].id);
+				    }
+				  }
+				  return arr1;
+			  })
+			  
+			  function replaceall( restr ,oldstr, newstr ){
+			while (restr.indexOf(oldstr)  >= 0){
+					restr = restr.replace(oldstr,newstr);
+		
+				}
+		
+			return restr ;
+			}
+		    return fn(null);
+		 },
 		//获取评论
 		async getComment(video) {
 			this.id = video.id.replace('_html5_api','')
@@ -148,6 +231,7 @@ export default{
 				//获取评论数据
 				  // this.videoComment = [...this.videoComment, ...data];
 				this.videoComment = [ ...data];
+				this.videoComment = this.changeCommentData(this.videoComment)
 				  let to_comment_id = this.to_comment_id;
 				  if (to_comment_id != 0) {
 					  //从评论列表进来回复

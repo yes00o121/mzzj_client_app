@@ -59,7 +59,6 @@
 				  <van-image src="https://img.yzcdn.cn/vant/apple-3.jpg" rel="external nofollow"  />
 				</van-grid-item> -->
 			  <!-- </van-grid> -->
-			 
             <van-list 
 			  style="padding-bottom: 20%;"
               v-model="item.loading"
@@ -68,7 +67,7 @@
               finished-text="我也是有底线的"
               @load="onLoad"
             >
-              <div class="detailparent" ref="tab">	
+              <div class="detailparent" ref="tab" v-show="item.CODE_VALUE != 2">	
                 <cover
                   class="detailitem"
                   :detailitem="categoryitem"
@@ -77,6 +76,44 @@
                 />
               </div>
 			  
+			  <div class="detailparent" ref="tab" v-show="item.CODE_VALUE == 2">
+			  				 <div v-for="(categoryitem,categoryindex) in item.list" :key="categoryindex" style="margin:.2rem 1rem 1rem 1rem;width:100%;position: relative;">
+			  					<!-- 作品页面 -->
+			  					 <div style="width:100%:" @click="toPage(categoryitem)">
+			  						 <!-- <div style="font-size:1rem;text-align: left;" class="van-multi-ellipsis--l2" v-html="categoryitem.title">
+			  						 						 
+			  						 </div> -->
+			  						 <div style="flex-wrap: wrap;display: flex;width:100%">
+			  							 <div style="font-size:14px;text-align: left;width:100%;margin-top: 0.4rem;letter-spacing:1px;" class="van-multi-ellipsis" v-html="categoryitem.title"></div>
+			  							<div style="width:35%;padding: .3rem;display: flex;width: 100%;margin-top:1rem">
+			  								<van-image  v-for="(imgId,index) in categoryitem.imgs" v-if="index < 3 && imgId && imgId != ','" style="width:100%;" rel="external nofollow"  fit="contain" lazy-load :src="baseURL +  '/common/image?imgId=' + imgId + '&width=150&height=200&token=' + token" class="participates-photo"  >
+													<template v-slot:error>加载失败</template>
+													<template v-slot:loading>
+													    <van-loading type="spinner" size="20" />
+													  </template>
+											</van-image>
+			  								<!-- <van-image style="width:100%;height:45.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +   categoryitem.photo + '?token=' + token" class="participates-photo" v-if="categoryitem.mklx != 'video'" /> -->
+											<!-- <van-image v-for="(item,index) in categoryitem.imgs" v-if="index < 3" style="width:100%;height:25.778vw;" rel="external nofollow"  fit="contain" lazy-load :src="item" class="participates-photo"  /> -->
+			  							</div>
+			  							<!-- <div class="right-descript van-multi-ellipsis--l2" v-html="categoryitem.summary">
+			  
+			  							</div> -->
+			  						 </div>
+			  						 <div style="float: left;position: absolute;bottom: 0.5rem;">
+			  							 <!-- <van-tag type="primary">{{categoryitem.typeName}}</van-tag> -->
+										 <van-tag type="primary">国产</van-tag>
+			  						 </div>
+			  						 <div style="float: left;position: absolute;bottom: 0.6rem;margin-left:3rem;font-size:12px;color:#8f8f94;">
+			  							 {{categoryitem.flowNum ? categoryitem.flowNum : 0}}浏览
+			  							 <!-- <van-tag type="primary">{{categoryitem.typeName}}</van-tag> -->
+			  						 </div>
+			  						 <div style="float: right;position: absolute;bottom: 0.5rem;font-size:12px;color:#8f8f94;margin-left:75%">
+			  								{{categoryitem.createTime | filterTime}}
+			  						 </div>
+			  					 </div>
+			  					 <div class="van-hairline--bottom" style="padding-top:2rem"></div>
+			  				 </div>
+			   </div>
             </van-list>
           </van-pull-refresh>
 		  </div>
@@ -107,7 +144,7 @@
 	  <van-tabbar-item icon="fire-o" @click="hit">热门</van-tabbar-item>
 	  
 	  <van-tabbar-item icon="underway-o"  :info="dynamicNum" @click="dynamic">动态</van-tabbar-item>
-	  <van-tabbar-item icon="user-o" @click="my">我的</van-tabbar-item>
+	  <van-tabbar-item icon="user-o" @click="my" :dot="myIconStatus">我的</van-tabbar-item>
 	  <!-- <van-tabbar-item icon="underway-o" v-show="dynamicNum >0" :info="dynamicNum" @click="dynamic">动态</van-tabbar-item> -->
 	</van-tabbar>
 	
@@ -126,6 +163,7 @@ import personSearchTool from '@/components/personSearchTool'
 export default {
   data() {
     return {
+		myIconStatus:false, // "我的图标状态"
 	    personParams:{},// 人员参数
 		result: ['a', 'b'],
 		images: [
@@ -146,6 +184,14 @@ export default {
 	  websocket:null,
 	  // videoStatus:true, // 视频状态,用于子组件刷新
     };
+  },
+  filters:{
+	  filterTime(val) {
+	    if(val){
+	      return val.split('T')[0]
+	    }
+	    return "";
+	  }
   },
   // 跳转其他页面之前
   beforeRouteLeave(to, from ,next){
@@ -220,6 +266,13 @@ export default {
 	//     }
   },
   methods: {
+		toPage(item){
+			// 网络资源页面
+			if(item.loadMode == 9){
+			  // alert('漫画')
+			    this.$router.push(`/netresources/${item.id}`)
+			}
+		},
 	  slideTo (targetPageY,ref,fun) {
 	    var timer = setInterval(function () {
 	        var currentY = ref.scrollTop;//当前及滑动中任意时刻位置
@@ -457,22 +510,37 @@ export default {
 			this.selectPerson(this.personParams)
 			return;
 		}
-		// 小说
-		if(categoryitem.CODE_VALUE == 4){
-			this.selectLiterati();
-			return;
-		}
+		// 国产
+		// if(categoryitem.CODE_VALUE == 2){
+		// 	// this.selectLiterati();
+		// 	// console.log('....')
+			
+		// 	return;
+		// }
 		if(categoryitem.CODE_VALUE != 5){
 			const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
 			  typeId: categoryitem.CODE_VALUE,
 			  pageNum: categoryitem.page,
 			  pageSize: categoryitem.pagesize,
-			  search: ''
+			  search: '',
+			  loadMode:categoryitem.CODE_VALUE == 2 ? 9 : '2'
 			})
-			
+			// 国产处理图片
+			if(categoryitem.CODE_VALUE == 2){
+				for(let i = 0;i<res.data.data.list.length;i++){
+					res.data.data.list[i].imgs = []
+					let imgs = res.data.data.list[i].previewImg.split(',')
+					// console.log(imgs)
+					for(let j =0;j<imgs.length;j++){
+						res.data.data.list[i].imgs.push(imgs[j])
+					}
+				}
+				
+			}
+			console.log(res.data)
 			categoryitem.list.push(...res.data.data.list);
 			categoryitem.loading = false;
-			if (res.data.length < categoryitem.pagesize) {
+			if (res.data.data.list.length < categoryitem.pagesize) {
 			  categoryitem.loading = true;
 			  categoryitem.finished = true;
 			}
@@ -498,7 +566,7 @@ export default {
 			}
 			categoryitem.list.push(...res.data.data.list);
 			categoryitem.loading = false;
-			if (res.data.length < categoryitem.pagesize) {
+			if (res.data.data.list.length < categoryitem.pagesize) {
 			  categoryitem.loading = true;
 			  categoryitem.finished = true;
 			}
@@ -522,7 +590,7 @@ export default {
 		// console.log(this.$refs['pageScroll'][0].scrollTop)
 		// top.a = this.$refs['pageScroll'][0].scrollTop
       const categoryitem = this.categoryItem();
-	  // console.log(categoryitem)
+	  console.log(categoryitem)
 	  if(categoryitem.list.length == 0){
 		  categoryitem.finished = true
 	  }
@@ -666,5 +734,15 @@ export default {
   text-align: center;
   background-color: #ee0a24;
   border-radius: 100px;
+}
+.participates-photo{
+	/* -webkit-box-shadow: 0 1px 3px rgba(0,0,0,.3); */
+	width:100%;
+	 // height:30.778vw;
+	height:100%;
+	/* height:100%; */
+	/* height:90px; */
+	margin:.0rem .3rem;
+	/* float:left */
 }
 </style>

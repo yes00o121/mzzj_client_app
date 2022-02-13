@@ -1,10 +1,12 @@
 <template>
   <div>
-    <img class="cover" :src="item.Video.videoCover" alt="">
+    <!-- <img class="cover" :src="baseURL + '/common/image?imgId=' + item.previewImgId + '&token=' + token" alt=""> -->
+	<van-image fit="cover" lazy-load :src="baseURL + item.previewImg + '&token=' + token" style="width:100%;height:100%" v-if="item.previewImg" />
+	<img src="@/assets/bk_black.png" v-if="!item.previewImg" style="width:100%;height:100%">
     <i class="icon iconfont icon-delete" v-if="$route.params.id === 'me' && $route.name === 'profile/video'" @click.stop="delVideo"></i>
     <div class="desc">
-      <div>
-        <i class="icon iconfont icon-heart"></i>{{item.WSLCNum.likeNum}}
+      <div style="color:white">
+        <i class="icon iconfont icon-heart"></i>{{item.collNum ? item.collNum : 0}}
       </div>
     </div>
   </div>
@@ -17,6 +19,11 @@ export default {
       type: Object,
       required: true
     }
+  },
+  data(){
+	return {
+		token: 'Bearer ' + localStorage.token, // 用户token
+	}  
   },
   methods: {
     delVideo () {

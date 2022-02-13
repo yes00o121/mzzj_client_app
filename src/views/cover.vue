@@ -5,6 +5,9 @@
                <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
 			   <van-image lazy-load :src="baseURL +   detailitem.previewImg + '&width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:47.778vw;">
 					  <template v-slot:error>加载失败</template>
+					  <template v-slot:loading>
+					      <van-loading type="spinner" size="20" />
+					    </template>
 			   </van-image>
 			   <!-- <img class="com-image" v-if="detailitem.person_nationality && detailitem.person_nationality == '日本'" src="@/assets/taiwan.jpg" alt="" > -->
 			   <!-- <img class="com-image" v-if="detailitem。person_nationality && detailitem。person_nationality == '日本'" src="@/assets/taiwan.jpg" alt="" > -->

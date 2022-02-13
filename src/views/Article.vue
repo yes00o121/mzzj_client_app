@@ -5,19 +5,19 @@
   <div v-if="model">
       <!-- <nav-bar></nav-bar> -->
 	  <van-sticky >
-	  	<van-cell  style="z-index:99999;width: 95%;" class="van-ellipsis" icon="arrow-left" :title="model.title"  @click="returnPage"/>
+	  	<van-cell  style="z-index:99999;width: 100%;" class="van-ellipsis" icon="arrow-left" :title="model.title"  @click="returnPage"/>
 	  </van-sticky>
       <div class="detailinfo">
-         <div class="video">
+         <div class="video" >
               <!-- <video controls="controls" :src="model.content"></video> -->
 			   <!-- style="visibility: hidden;" -->
-              <video v-if="model.loadMode == 4"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" controls="controls"></video>
-			  <video v-if="model.loadMode == 6" style="height:15rem;"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" :src="baseURL + '/video'+model.videoAddress+'?token=' + token" controls="controls"></video>
+              <video v-if="model.loadMode == 4"    ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" controls="controls"></video>
+			  <video v-if="model.loadMode == 6"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" :src="baseURL + '/video'+model.videoAddress+'?token=' + token" controls="controls"></video>
          </div>
          <div class="detailinfoText">
               <div>
                   <!-- <span>{{model.category.title}}</span> -->
-                  <span>{{model.dictName}}</span>
+                  <span v-show="model.dictName">{{model.dictName}}</span>
                   <span>{{model.title}}</span>
               </div>
               <div>
@@ -35,11 +35,11 @@
                   <!-- <p @click="subscriptClick" :class="{activeColor:subscritionActive}">
                       <span class="icon-bubble"></span>
                       <span>关注</span>
-                  </p>
+                  </p> -->
                   <p>
                       <span class="icon-redo2"></span>
-                      <span>分享</span>
-                  </p> -->
+                      <span @click="fx()">分享</span>
+                  </p>
               </div>
          </div>
           <div class="detailparent">
@@ -93,6 +93,9 @@ export default {
 		},
 	},
     methods:{
+		fx(){
+			this.$msg.fail('功能暂时关闭')
+		},
 		returnPage(){
 			this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 			// alert('漫画高度' + this.curScroll)
@@ -129,7 +132,7 @@ export default {
 
 			
 				this.model.vid = this.model.nextAddress.split('_-')[1]
-				this.model.playUrl = this.baseURL + '/webInfoVideo/' + this.model.vid + '/' + this.model.vid
+				this.model.playUrl = this.baseURL + '/webInfoVideo/' + this.model.vid + '/' + this.model.vid + '?token=' + this.token
 				console.log(this.model.playUrl)
 				this.$nextTick(()=>{
 					this.$msg.clear()
@@ -187,7 +190,7 @@ export default {
         //发送评论
         async PostSuccess(res,parentId) {
 			// console.log(res)
-            const date = new Date()
+            // const date = new Date()
             // let m = date.getMonth() + 1
             // let d = date.getDate()
             // if(m < 10) {
@@ -202,6 +205,13 @@ export default {
             // this.Postcom.article_id = this.$route.params.id
             // const result = await this.$http.post('/comment_post/' + localStorage.getItem('id'),this.Postcom)
 			if(res){
+				console.log(res)
+				console.log(parentId)
+				console.log(this.Postcom.parent_id)
+				if(!parentId){
+					parentId = this.Postcom.parent_id
+				}
+				// return;
 				// 保存评论
 				const result = await this.$http.post('/comment/addComment',{
 					workId: this.$route.params.id,
@@ -225,16 +235,24 @@ export default {
             
         },
         //聚焦输入框
-        PostChildClick(id) {
-            this.Postcom.parent_id = id
-            this.$refs.commentIpt.focusIpt()
+        PostChildClick(item) {
+			console.log(item)
+            this.Postcom.parent_id = item.comment_id
+			this.$refs.commentIpt.placeholderText = '回复 @' + item.nickname + ':'
+			this.$refs.commentIpt.util = true;
+            // this.$refs.commentIpt.focus()
         },
+		// 去除回复状态
+		clearPostStatus(){
+			this.$refs.commentIpt.placeholderText = '留下你的经常评论吧'
+			this.Postcom.parent_id = ''
+		},
         //收藏文章
         async collectionClick() {
            if(localStorage.getItem('token')){
              // 判断显示状态,是收藏还是取消收藏
              if(!this.collectionActive){
-               const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id})
+               const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'1'})
                // console.log(res)
                if(res.data.data == '收藏成功'){
                    this.collectionActive = true
@@ -243,7 +261,7 @@ export default {
                    this.$msg.fail(res.data.message)
                }
              } else {
-               const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id})
+               const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'1'})
                if(res.data.data == '取消成功'){
                  this.collectionActive = false
                } else {
@@ -258,7 +276,8 @@ export default {
         async collectionInit() {
             if(localStorage.getItem('token')){
                 const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
-                    webInfoDetailDataId:this.$route.params.id
+                    webInfoDetailDataId:this.$route.params.id,
+					collectionType:'1'
                 })
                 // console.log(res.data)
             this.collectionActive = res.data.data == '1' ? true : false;
@@ -344,7 +363,10 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
+.myVideo-dimensions.vjs-fluid{
+	padding-top:15rem
+}
 .container{
   width:100vh;
   height:100vh;
@@ -416,6 +438,6 @@ export default {
 }
 
 video{
-	visibility: hidden;
+	// visibility: hidden;
 }
 </style>

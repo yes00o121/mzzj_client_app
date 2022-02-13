@@ -1,17 +1,18 @@
 <template>
+	<div>
 <div class="profile">
-    <tip ref="tip"></tip>
-    <confirm :text="'是否保删除该视频'"
+    <!-- <tip ref="tip"></tip> -->
+<!--    <confirm :text="'是否保删除该视频'"
       @confirm="confirm"
       @cancel="cancel"
-      ref="confirm"></confirm>
+      ref="confirm"></confirm> -->
     <me-tab class="fiexedtop"
       :videoNum="videoNum"
       :likeNum="likeNum"
       v-show="fiexedtopshow"></me-tab>
     <div class="backbtn-wrap" :class="{showbgcolor: fiexedtopshow}">
       <span class="backbtn iconfont icon-left" v-show="this.$route.params.id !== 'me'" @click.stop="GoBack"></span>
-      <p class="name" :class="{showname: fiexedtopshow}" v-text="userInfo.userNickname"></p>
+      <p class="name" :class="{showname: fiexedtopshow}" v-text="userInfo.person_name"></p>
       <div class="dotbtn iconfont icon-ellipsis" v-show="this.$route.params.id === 'me'" @click="showMenu = !showMenu">
         <transition name="up">
             <div class="more-menu" v-show="showMenu">
@@ -26,7 +27,9 @@
       </div>
     </div>
     <div class="background" :style="bgimgStyle" @touchstart.prevent>
-      <img class="bg" src="./1.jpg" alt="">
+      <!-- <img class="bg" src="./1.jpg" alt=""> -->
+	  <!-- <van-image fit="cover" class="bg" src="../../../assets/beijing.jpg" /> -->
+	  <img class="bg" src="@/assets/beijing.jpg" style="object-fit:none;" alt="">
     </div>
     <scroll class="bottom"
             :probeType="3"
@@ -38,42 +41,52 @@
             @scrollToEnd="scrollToEnd">
       <div class="profile">
         <div class="avatar-wrap">
-          <img class="avatar" :src="`${baseURL}${userInfo.userAvatar}`" alt="">
+          <!-- <img class="avatar" :src="`${baseURL}${userInfo.userAvatar}`" alt=""> -->
+		  <img src="@/assets/user_1.png"  class="avatar" >
         </div>
         <div class="name-wrap">
-          <p class="name" v-text="userInfo.userNickname"></p>
-          <p class="subname">抖音号：{{userInfo.userId}}</p>
+          <p class="name" v-text="userInfo.person_name" style="text-align:left"></p>
+          <!-- <p class="subname">抖音号：{{userInfo.userId}}</p> -->
           <div class="btn" v-if="userInfo.myRelation" :class="{'btn-inactive': ['follow', 'both'].includes(userInfo.myRelation) ? true : false}" @click="triggerFollow(userInfo)" v-html="getBtnHtml(userInfo.myRelation)"></div>
         </div>
-        <div class="desc-wrap">
+        <div class="desc-wrap" style="position: relative;">
           <p class="desc" v-text="userInfo.userDesc"></p>
           <div class="gender">
-            <div class="icon iconfont" :class="[userInfo.userGender === '男' ? 'icon-man': 'icon-woman']"></div>
-            {{userInfo.userAge}}岁
-          </div>
+            <!-- <div class="icon iconfont" ></div> -->
+            {{userInfo.person_nationality}}
+          </div>、
+		  <div style="position: absolute;
+    top: 0;
+    right: 0;
+    color: white;">
+			  <van-button v-if="collStatus == '否'" type="default" size="mini" style="width:6rem;color:white;background: #fc345d;border:#fc345d;border-radius:5px;" @click="collectionPersonClick">+ 关注</van-button>
+			  <van-button v-if="collStatus == '是'" type="default" size="mini" style="width:6rem;color:black;background: white;border:#fc345d;border-radius:5px;" @click="collectionPersonClick">已关注</van-button>
+		  </div>
           <div class="num-wrap">
             <p>{{byLikeNum}}获赞</p>
             <p @click="GoInterestList">{{followerNum}}关注</p>
             <p @click="GoFanList">{{fanNum}}粉丝</p>
           </div>
         </div>
-        <div class="wrap">
+       <div class="wrap">
           <me-tab
             :videoNum="videoNum"
             :likeNum="likeNum"></me-tab>
           <keep-alive>
-            <router-view
+          <router-view
               ref="routerView"
               @click.native.capture="closeCommentList"
               @showCommentList="fetchCommentsAndShowList"
               :userInfo="userInfo"
               @chooseVideo="chooseVideo"
               @delVideo="delVideo"></router-view>
+			  
           </keep-alive>
         </div>
       </div>
     </scroll>
-    <transition name="up">
+	
+   <!-- <transition name="up">
       <comment-list
         v-if="showCommentList"
         :commentList="commentList"
@@ -81,61 +94,68 @@
         :currentCommentVideoId="currentCommentVideoId"
         @close="closeCommentList"
         @scrollToEnd="fetchCommentsAndShowList"></comment-list>
-    </transition>
-    <transition name="left">
+    </transition> -->
+    
+   <!-- <transition name="left">
+      <modify-infomation
+        v-if="showModifyInfomation"
+        @InfomationChanged="InfomationChanged"
+        @closeModifyInfomation="showModifyInfomation = false"></modify-infomation>
+    </transition> -->
+</div style="z-index:9999">
+<transition name="left">
       <play-list
         class="play-list"
         ref="playList"
         v-show="showPlayList"
         @close="showPlayList=false"></play-list>
     </transition>
-    <transition name="left">
-      <modify-infomation
-        v-if="showModifyInfomation"
-        @InfomationChanged="InfomationChanged"
-        @closeModifyInfomation="showModifyInfomation = false"></modify-infomation>
-    </transition>
 </div>
 </template>
 
 <script>
-import Scroll from 'base/scroll/scroll'
-import MeTab from 'components/MeTab/MeTab'
-import CommentList from 'components/CommentList/CommentList'
-import PlayList from 'components/PlayList/PlayList'
-import ModifyInfomation from 'components/ModifyInfomation/ModifyInfomation'
-import Confirm from 'base/confirm/confirm'
-import { baseURL } from 'common/js/config'
+import Scroll from '@/base/scroll/scroll'
+import MeTab from '@/components/MeTab/MeTab'
+import CommentList from '@/components/CommentList/CommentList'
+import PlayList from '@/components/PlayList/PlayList'
+import ModifyInfomation from '@/components/ModifyInfomation/ModifyInfomation'
+// import Confirm from '@/base/confirm/confirm'
 import { mapGetters, mapMutations } from 'vuex'
-import { deduplicateCommentList } from 'common/js/util'
+import { deduplicateCommentList } from '@/common/js/util'
 
-const VIDEO_NUM_PER_REQUEST = 21
+const VIDEO_NUM_PER_REQUEST = 10
 
 export default {
   created () {
-    if (this.$route.params.id === 'me') {
-      this.userInfo = this.loginInfo
-      let userId = this.userInfo.userId
-      this.getFollowerNum(userId)
-      this.getFanNum(userId)
-      this.getByLikeNum(userId)
-      this.getLikeNum(userId)
-      this.getVideoNum(userId)
-    } else {
-      this.$axios.get(`/api/user/${this.$route.params.id}/getUserInfo/${this.loginInfo.userId}`).then((r) => {
-        this.userInfo = r.data.data
-        let userId = this.userInfo.userId
-        this.getFollowerNum(userId)
-        this.getFanNum(userId)
-        this.getByLikeNum(userId)
-        this.getLikeNum(userId)
-        this.getVideoNum(userId)
-      })
-    }
+	  $('#app').css('background','#161622')
+	// 查询人员数据
+	  this.loadPerson();
+	  // 设置用户页面
+	  this.userInfo.pageNum = 0
+	  this.userInfo.pageSize = 10
+	  this.getVideoNum();// 加载作品数量
+    // if (this.$route.params.id === 'me') {
+    //   this.userInfo = this.loginInfo
+    //   let userId = this.userInfo.userId
+    //   this.getFollowerNum(userId)
+    //   this.getFanNum(userId)
+    //   this.getByLikeNum(userId)
+    //   this.getLikeNum(userId)
+    //   this.getVideoNum(userId)
+    // } else {
+    //   this.$axios.get(`/api/user/${this.$route.params.id}/getUserInfo/${this.loginInfo.userId}`).then((r) => {
+    //     this.userInfo = r.data.data
+    //     let userId = this.userInfo.userId
+    //     this.getFollowerNum(userId)
+    //     this.getFanNum(userId)
+    //     this.getByLikeNum(userId)
+    //     this.getLikeNum(userId)
+    //     this.getVideoNum(userId)
+    //   })
+    // }
   },
   data () {
     return {
-      baseURL,
       timer: null,
       userInfo: {},
       fanNum: 0,
@@ -144,6 +164,7 @@ export default {
       byLikeNum: 0,
       followerNum: 0,
       bgimgHeight: 150,
+	  collStatus:false,// 收藏状态
       showMenu: false,
       showPlayList: false,
       fiexedtopshow: false,
@@ -167,11 +188,27 @@ export default {
     ])
   },
   methods: {
+	  selectItem (item) {
+	    this.$router.push(`/profile/${item.userId}`)
+	  },
+
+	async loadPerson(){
+		const res = await this.$http.post("/person/queryPerson", {
+		  pageNum: 1,
+		  pageSize: 10,
+		  personType:this.$route.params.type,
+		  personId: this.$route.params.id
+		})
+		console.log(res)
+		this.userInfo = res.data.data.list[0]
+	},
+	  
     InfomationChanged (userinfo) {
       this.userInfo = Object.assign({}, this.loginInfo, userinfo)
       this.userInfo.userAvatar += `?v=${Math.random()}`
     },
     scrollHandler (pos) {
+		console.log('滚动.....')
       if (this.showCommentList) {
         this.showCommentList = false
         this.currentCommentVideoId = ''
@@ -187,6 +224,7 @@ export default {
       }
     },
     scrollToEnd () {
+		console.log('------------------------')
       if (this.$route.name === 'profile/likes') {
         let page = this.$refs.routerView.page
         if (page * VIDEO_NUM_PER_REQUEST < this.likeNum) this.$refs.routerView.fetchLikeList()
@@ -203,6 +241,7 @@ export default {
       }
     },
     fetchCommentsAndShowList (videoId, commentNum) {
+		console.log('00000000000000000')
       if (this.currentCommentVideoId !== videoId) {
         this.isEnd = false
         this.page = 1
@@ -228,6 +267,7 @@ export default {
       }
     },
     GoBack () {
+	$('#app').css('background','white')  
       this.$router.back()
     },
     GoInterestList () {
@@ -237,8 +277,23 @@ export default {
       this.$router.push(`/FanList/${this.$route.params.id}`)
     },
     chooseVideo (index) {
+		// 层级问题,先隐藏解决
+		setTimeout(()=>{
+			$('.profile').css('visibility','hidden')
+		},500)
+		// alert(10)
+		console.log(index)
+		// this.CLEAN_PLAYLIST()
+		// this.SET_PLAYLIST(this.commentList)
       this.showPlayList = true
       this.$refs.playList.scrollToIndex(index)
+	  
+	  // this.showPlayList = true
+	  // console.log(this.searches)
+	  // this.CLEAN_PLAYLIST()
+	  // this.SET_PLAYLIST(this.searches)
+	  // // console.log('索引' + index)
+	  // this.$refs.playList.scrollToIndex(index)
     },
     delVideo (videoId) {
       this.$refs.confirm.show()
@@ -323,25 +378,74 @@ export default {
         this.byLikeNum = res.data.data
       }
     },
-    async getLikeNum (userId) {
-      let res = await this.$axios.get(`/api/user/${userId}/LikesNum`)
-      if (res.data.code === 200) {
-        this.likeNum = res.data.data
-      }
+    async getLikeNum () {
+  //     let res = await this.$http.get(`/person/queryPersonVariousNum?personId=` + this.$route.params.id)
+	 //  // console.log(res.data.videoTotal)
+  //     if (res.status == 200) {
+  //       this.likeNum = res.data.videoTotal
+		// console.log(this.likeNum)
+  //     }
+	  
     },
-    async getVideoNum (userId) {
-      let res = await this.$axios.get(`/api/user/${userId}/VideosNum`)
-      if (res.data.code === 200) {
-        this.videoNum = res.data.data
-      }
+    async getVideoNum () {
+      // let res = await this.$axios.get(`/api/user/${userId}/VideosNum`)
+      // if (res.data.code === 200) {
+      //   this.videoNum = res.data.data
+      // }
+	  
+	  let res = await this.$http.get(`/person/queryPersonVariousNum?personId=` + this.$route.params.id)
+	  // console.log(res.data.videoTotal)
+	  if (res.status == 200) {
+	    this.videoNum = res.data.videoTotal
+		this.collStatus = res.data.personCollStatus
+	  }
     },
+	//收藏人员
+	async collectionPersonClick() {
+	   if(localStorage.getItem('token')){
+	     // 判断显示状态,是收藏还是取消收藏
+	     if(this.collStatus == '否'){
+	       const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'2'})
+	       // console.log(res)
+	       if(res.data.data == '收藏成功'){
+	           // this.collectionActive = true
+					this.collStatus = '是'
+	       }else{
+	           // this.collectionActive = false
+	           this.$msg.fail(res.data.message)
+	       }
+	     } else {
+	       const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'2'})
+	       if(res.data.data == '取消成功'){
+			 this.collStatus = '否'
+				  // this.collectionActive = false
+	       } else {
+	          this.$msg.fail(res.data.message)
+	       }
+	     }
+	
+	        // this.$msg.fail(res.data.msg)
+	   }
+	},
     ...mapMutations([
       'SET_ISLOGGED',
       'SET_LOGININFO',
-      'SET_FANUNREADNUM'
+      'SET_FANUNREADNUM',
+	  'SET_PLAYLIST',
+	  'CLEAN_PLAYLIST',
     ])
+	// ...mapMutations([
+	//   'SET_PLAYLIST',
+	//   'CLEAN_PLAYLIST',
+	//   'APPEND_PLAYLIST'
+	// ])
   },
   watch: {
+	  showPlayList(bef){
+		  if(!bef){
+			  $('.profile').css('visibility','visible')
+		  }
+	  },
     '$route': function () {
       if (this.showCommentList) {
         this.showCommentList = false
@@ -358,7 +462,7 @@ export default {
     CommentList,
     PlayList,
     ModifyInfomation,
-    Confirm
+    // Confirm
   }
 }
 </script>

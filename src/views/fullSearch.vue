@@ -102,7 +102,12 @@
 						 <div style="flex-wrap: wrap;display: flex;width:100%">
 							 <div style="font-size:14px;text-align: left;width:60%;margin-top: 0.4rem;" class="van-multi-ellipsis" v-html="categoryitem.title"></div>
 							<div style="width:35%;padding: .3rem;">
-								<van-image  style="width:100%;height:25.778vw;" rel="external nofollow"  fit="contain" lazy-load :src="baseURL +  categoryitem.photo + (categoryitem.photo.indexOf('?') != -1 ? '&' : '?') + 'token=' + token" class="participates-photo"  />
+								<van-image  style="width:100%;height:25.778vw;" rel="external nofollow"  fit="contain" lazy-load :src="baseURL +  categoryitem.photo + (categoryitem.photo.indexOf('?') != -1 ? '&' : '?') + 'token=' + token" class="participates-photo"  >
+									<template v-slot:error>加载失败</template>
+											<template v-slot:loading>
+											    <van-loading type="spinner" size="20" />
+											  </template>
+									</van-image>
 								<!-- <van-image style="width:100%;height:45.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +   categoryitem.photo + '?token=' + token" class="participates-photo" v-if="categoryitem.mklx != 'video'" /> -->
 							</div>
 							<!-- <div class="right-descript van-multi-ellipsis--l2" v-html="categoryitem.summary">

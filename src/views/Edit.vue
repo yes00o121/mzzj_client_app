@@ -5,7 +5,7 @@
       <div class="uploadfile">
           <div class="uploadimg"><van-uploader preview-size="100vw" :after-read="afterRead" /></div>
           <edit-banner left="头像">
-              <img :src="this.baseURL + '/common/image?imgId=' + model.icon"  slot="right" alt="" v-if="model.icon">
+              <img :src="this.baseURL + '/common/image?imgId=' + model.icon +'&token=' + token"  slot="right" alt="" v-if="model.icon">
               <img src="@/assets/default_img.jpg"  slot="right" alt="" v-else>
           </edit-banner>
       </div>
@@ -62,6 +62,7 @@ import editBanner from '@/components/common/editBanner.vue'
 export default {
     data() {
         return {
+			 token: 'Bearer ' + localStorage.token,
             model:{},
             inconUrl: null,
             show:false,
