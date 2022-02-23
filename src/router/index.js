@@ -24,6 +24,7 @@ const history = ()=>import('@/views/history.vue')
 const userlog = ()=>import('@/views/userlog.vue')
 const netresources = ()=>import('@/views/netresources.vue')
 const message = ()=>import('@/views/message.vue')
+const messageDetail = ()=>import('@/views/messageDetail.vue')
 const videoUserInfo = ()=>import('@/components/Profile/Profile.vue')
 
 Vue.use(VueRouter)
@@ -86,6 +87,15 @@ Vue.use(VueRouter)
 	   component:message,
 	   meta:{
 	 	index:3,
+	     keepalive:true
+	   }
+	 },
+	 {
+	   path:'/messageDetail/:messageSource/:id',
+	   name:'messageDetail',
+	   component:messageDetail,
+	   meta:{
+	 	index:4,
 	     keepalive:true
 	   }
 	 },

@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<van-sticky >
-			<van-cell  style="z-index:99999;"  icon="arrow-left" title="资源搜索"  @click="returnPage"/>
+			<van-cell  style="z-index:999;"  icon="arrow-left" title="资源搜索"  @click="returnPage"/>
 		</van-sticky>
 		<van-search
 		  v-model="value"

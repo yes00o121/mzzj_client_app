@@ -180,7 +180,8 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 		    let clientWidth = document.body.clientWidth
 		    let clientHeight = document.body.clientHeight
 		    return {
-		      height: clientHeight + 'px',
+		      // height: clientHeight + 'px',
+			  height: '200px',
 		      width: clientWidth + 'px'
 		    }
 		  }

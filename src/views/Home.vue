@@ -75,14 +75,11 @@
                   
                 />
               </div>
-			  
-			  <div class="detailparent" ref="tab" v-show="item.CODE_VALUE == 2">
+			  <!-- 国产内容，不要了，注释 -->
+<!-- 			  <div class="detailparent" ref="tab" v-show="item.CODE_VALUE == 2">
 			  				 <div v-for="(categoryitem,categoryindex) in item.list" :key="categoryindex" style="margin:.2rem 1rem 1rem 1rem;width:100%;position: relative;">
-			  					<!-- 作品页面 -->
 			  					 <div style="width:100%:" @click="toPage(categoryitem)">
-			  						 <!-- <div style="font-size:1rem;text-align: left;" class="van-multi-ellipsis--l2" v-html="categoryitem.title">
-			  						 						 
-			  						 </div> -->
+
 			  						 <div style="flex-wrap: wrap;display: flex;width:100%">
 			  							 <div style="font-size:14px;text-align: left;width:100%;margin-top: 0.4rem;letter-spacing:1px;" class="van-multi-ellipsis" v-html="categoryitem.title"></div>
 			  							<div style="width:35%;padding: .3rem;display: flex;width: 100%;margin-top:1rem">
@@ -92,20 +89,14 @@
 													    <van-loading type="spinner" size="20" />
 													  </template>
 											</van-image>
-			  								<!-- <van-image style="width:100%;height:45.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +   categoryitem.photo + '?token=' + token" class="participates-photo" v-if="categoryitem.mklx != 'video'" /> -->
-											<!-- <van-image v-for="(item,index) in categoryitem.imgs" v-if="index < 3" style="width:100%;height:25.778vw;" rel="external nofollow"  fit="contain" lazy-load :src="item" class="participates-photo"  /> -->
 			  							</div>
-			  							<!-- <div class="right-descript van-multi-ellipsis--l2" v-html="categoryitem.summary">
-			  
-			  							</div> -->
 			  						 </div>
 			  						 <div style="float: left;position: absolute;bottom: 0.5rem;">
-			  							 <!-- <van-tag type="primary">{{categoryitem.typeName}}</van-tag> -->
+
 										 <van-tag type="primary">国产</van-tag>
 			  						 </div>
 			  						 <div style="float: left;position: absolute;bottom: 0.6rem;margin-left:3rem;font-size:12px;color:#8f8f94;">
 			  							 {{categoryitem.flowNum ? categoryitem.flowNum : 0}}浏览
-			  							 <!-- <van-tag type="primary">{{categoryitem.typeName}}</van-tag> -->
 			  						 </div>
 			  						 <div style="float: right;position: absolute;bottom: 0.5rem;font-size:12px;color:#8f8f94;margin-left:75%">
 			  								{{categoryitem.createTime | filterTime}}
@@ -113,7 +104,7 @@
 			  					 </div>
 			  					 <div class="van-hairline--bottom" style="padding-top:2rem"></div>
 			  				 </div>
-			   </div>
+			   </div> -->
             </van-list>
           </van-pull-refresh>
 		  </div>
@@ -181,7 +172,7 @@ export default {
 	  beforetabActive:0,// 之前选中的底部
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
-	  websocket:null,
+	  websocket:null
 	  // videoStatus:true, // 视频状态,用于子组件刷新
     };
   },

@@ -4,7 +4,7 @@
 			<van-cell  style="z-index:99999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
 		</van-sticky> -->
 		<van-sticky >
-			<van-cell  style="z-index:99999;"  icon="arrow-left" title="我的收藏"  @click="returnPage">
+			<van-cell  style="z-index:999;"  icon="arrow-left" title="我的收藏"  @click="returnPage">
 				<van-icon
 					slot="right-icon"
 					name="wap-home-o"

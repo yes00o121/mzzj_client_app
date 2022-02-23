@@ -1,7 +1,7 @@
 <template>
   <div  v-if="category">
 	  <van-sticky>
-	  	<van-cell  style="z-index:99999;width:100%;"  icon="arrow-left" class="van-ellipsis" title="消息"  @click="returnPage">
+	  	<van-cell  style="z-index:999;width:100%;"  icon="arrow-left" class="van-ellipsis" title="消息"  @click="returnPage">
 	  		<!-- <van-button style="margin-right:1rem" plain type="default" size="mini" @click.stop="collectionClick" :class="{activeColor:collectionActive}">
 	  			<van-icon  name="star-o" size=".5rem" />
 	  			<span>&nbsp;关注</span>
@@ -106,18 +106,21 @@
 			  								<div class="van-card__title van-multi-ellipsis--l2">
 			  									{{categoryitem.source_user_name}}
 			  								</div>
-											<div style="position: absolute; right: 0;bottom: 1.5rem;">
+											<!-- <div style="position: absolute; right: 0;bottom: 1.5rem;"> -->
 							<!-- 				<span class="van-tag van-tag--plain van-tag--danger" style="margin-right: 5px;border: 1px solid red;">
 											            标签
 											 </span> -->
-											 </div>
-											<div class="van-card__type2 van-ellipsis">
+											 <!-- </div> -->
+											<div class="van-card__type2 van-ellipsis" style="width:65%;text-align:left;">
 												{{categoryitem.messageContent ? categoryitem.messageContent : '暂无消息'}}
 											</div>
-											<div class="van-card__type2 van-ellipsis" style="right:0">
+											<div class="van-card__desc van-ellipsis " style="top:2rem">
 												{{categoryitem.lastTime ? categoryitem.lastTime : '' | filterTime}}
 											</div>
-											<div class="van-card__num van-ellipsis">
+											<!-- <div class="van-card__type2 van-ellipsis" style="right:0;left:5rem">
+												{{categoryitem.lastTime ? categoryitem.lastTime : '' | filterTime}}
+											</div> -->
+											<!-- <div class="van-card__num van-ellipsis">
 												<van-icon v-show="categoryitem.loadMode == 4" name="play-circle-o" size="1rem" style="top: 0.2rem;"/>
 												<van-icon v-show="categoryitem.loadMode != 4" name="eye-o" size="1rem" style="top: 0.2rem;"/>
 												<span style="padding-left: 0.2rem;">1111 </span>
@@ -128,7 +131,7 @@
 											</div>
 			  								<div class="van-card__desc van-ellipsis">
 			  									{{categoryitem.createtime | filterTime}}
-			  								</div>
+			  								</div> -->
 											<!-- <div class="van-card__more van-ellipsis">
 												<van-icon name="more-o"  style="top: 0.2rem;"  size="1rem"/>
 												</div> -->
@@ -269,10 +272,14 @@ export default {
     onScroll(){
       
     },
-	toPage(detailitem){
+	toPage(item){
 		// 记录当前位置
 		this.recordScroll();
-		this.$msg.fail('功能开发中')
+		//this.$msg.fail('功能开发中')
+		
+		// 跳转明细页面、携带用户id和页面标识
+		this.$router.push(`/messageDetail/${item.messageSource}/${item.user_id}`)
+		
 		// 视频页面
 		// if(detailitem.loadMode == 4){
 		//   if(this.$route.path != `/article/${detailitem.id}/${detailitem.loadMode}`) {
@@ -376,15 +383,55 @@ export default {
       const categoryitem = this.categoryItem();
       if (!categoryitem.list.length) {
         this.selectArticle();
-
+		
         // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
       }
     },
+	$route(to,from) {
+		// console.log(to)
+		// 跳转高度
+		if(to.name == 'message'){
+			// alert(this.currentScroll)
+			this.$nextTick(()=>{
+				document.documentElement.scrollTop = this.currentScroll
+				document.body.scrollTop = this.currentScroll
+			})
+		}
+		
+		// id不同刷新
+		if(to.name =='message'){
+			console.log('数据刷新...')
+			this.selectCategory();
+			// this.$forceUpdate()
+			// scroll(0,0)
+			// this.loadMode = 0
+			// this.person = {}
+			// const categoryitem = this.categoryItem();
+			// categoryitem.list = []
+			// categoryitem.page = 1
+			// categoryitem.finished = false;
+			// categoryitem.loading = true;
+			// this.selectArticle();
+			// this.collectionInit()
+		}
+	},
 	// '$parent.tabActive'(){
 	// 	console.log('===============================')
 	// }
   },
   created() {
+	  // this.$msg({
+		 //  position:'top',
+		 //  message:'11111',
+		 //  type:'html'
+	  // })
+	 //  this.$dialog.alert({
+	 //    title: '提示',
+	 //    message: '确定退出吗？',
+		// // lock-scroll:true,
+	 //  })
+	  
+	  
       this.selectCategory();
   }
 };

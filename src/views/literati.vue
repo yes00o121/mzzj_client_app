@@ -1,7 +1,7 @@
 <template>
 	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
 		<van-sticky >
-			<van-cell  style="z-index:99999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
+			<van-cell  style="z-index:999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
 		</van-sticky>
   <div class="home" v-if="category" :style="'height:'+windowWidth+'px'">
 	<div style="position: relative;height:300px" >

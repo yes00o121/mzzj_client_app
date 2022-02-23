@@ -1,0 +1,885 @@
+
+<template>
+   <!-- <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div"> -->
+	   <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
+  <div class="searchWrap">
+	   <van-overlay :show="show" @click="overlayClick" />
+      <!-- <nav-bar></nav-bar> -->
+	  <van-sticky >
+	  	<van-cell  style="z-index:999;width: 100%;" class="van-ellipsis" icon="arrow-left" :title="model.nickName"  @click="returnPage"/>
+	  </van-sticky>
+	 
+      <div class="detailinfo">
+			<!-- <van-pull-refresh v-model="isLoading" @refresh="onRefresh" style="height:100%"> -->
+
+			  <div :style="'overflow:auto;height:'+(parseInt(windowHeight*0.8))+'px'" ref="scrollDiv">
+				  <van-pull-refresh v-model="isLoading" @refresh="onRefresh" >
+			<!-- <div class="detailparent"> -->
+				<div class="van-swipe-cell" style="width: 100%;" v-for="(item,categoryindex) in list"  >
+					<!-- 焦流日期 -->
+					<div style="font-size:14px">
+						{{item.create_time}}
+					</div>
+						  			<div class="van-swipe-cell__wrapper" style="transform: translate3d(0px, 0px, 0px); transition-duration: 0.6s;">
+						  				<div class="goods-card van-card" >
+						  					<!-- <div class="van-card__header" :style="'height:'+(item.message_category != 'TEXT' ? widthObject.comment : widthObject.text)+'rem'"> -->
+											<div class="van-card__header">
+						  						<a class="van-card__thumb" v-if="model.id == item.source_user_id">
+						  							<div class="van-image" style="width: 100%; height: 100%;">
+						  							
+														<img src="@/assets/mzzj120.png" style="height:40px;width:40px" alt=""  v-if="item.source_user_name == '系统通知'">
+														<van-image ref="workImage"  lazy-load :src="baseURL + '/common/image?imgId=' + item.icon +'&token=' + token" style="width:100%;width:45px" v-if="item.icon"/>
+														<img src="@/assets/default_img.jpg" style="height:40px;width:40px" alt=""  v-if="item.source_user_name != '系统通知' && !item.icon">
+						  							</div>
+						  							<div class="van-info"></div>
+						  						</a>
+												
+						  						<div class="van-card__content "  >
+													<div class="van-card__tag">
+														<span class="van-tag van-tag--mark van-tag--danger" v-show="categoryindex < 3" style="background:#ee0a24;color:#FEFFFF;border-radius:16px;" v-if="item.noReadNum">
+															{{item.noReadNum}}
+														</span>
+			
+													</div>
+													
+						  							<div>
+														<div style="width:20%;height: 1rem;;" v-if="item.message_category == 'TEXT'"></div>
+														<div :class="getContentPoint(item)"  v-if="item.message_type == 'COMMENT' || item.message_type == 'FORWARD'">
+															
+															<div v-if="item.message_category != 'TEXT'" style="width:10rem">
+																<van-image ref="workImage"  @load="imgLoad"  :src="baseURL + item.message_photo +'&token=' + token" style="width:100%;" radius ="12" />
+																<img src="@/assets/play.svg" style="position: absolute;right: 0;top:50%;left:25%;">
+															</div>
+															<!-- <div v-if="item.message_category == 'TEXT'"   :style="''+(getisLeftOrRight(item) == 1 ? 'padding-right' : 'padding-left')+':10%'"> -->
+															<div  v-if="item.message_category == 'TEXT'"  >
+																	<div class="van-tag--primary" v-html="item.messageContent" style="position:relative;word-wrap: break-word;padding: .5rem .5rem;border-radius: 12px;color:#fff"></div>
+															</div>
+						  								</div>
+														<!-- <div style="position: absolute; right: 0;bottom: 1.5rem;"> -->
+										<!-- 				<span class="van-tag van-tag--plain van-tag--danger" style="margin-right: 5px;border: 1px solid red;">
+														            标签
+														 </span> -->
+														 <!-- </div> -->
+														<div class="van-card__type2 van-ellipsis">
+															<!-- {{item.messageContent ? item.messageContent : '暂无消息'}} -->
+															<!-- <van-image ref="workImage"  lazy-load :src="baseURL + item.message_photo +'&token=' + token" style="width:100%;width:45px" v-if="item.icon"/> -->
+														</div>
+														<!-- <div class="van-card__type2 van-ellipsis" style="right:0">
+															{{item.lastTime ? item.lastTime : '' | filterTime}}
+														</div> -->
+														<!-- <div class="van-card__num van-ellipsis">
+															<van-icon v-show="item.loadMode == 4" name="play-circle-o" size="1rem" style="top: 0.2rem;"/>
+															<van-icon v-show="item.loadMode != 4" name="eye-o" size="1rem" style="top: 0.2rem;"/>
+														</div> -->
+														<!-- <div class="van-card__chat van-ellipsis"> -->
+															<!-- <van-icon name="chat-o" size="1rem" style="top: 0.2rem;" v-if="item.loadMode == '4'"/> -->
+														<!-- 	<span style="padding-left: 0.2rem;" v-if="item.loadMode == '4'">{{item.commentNum | filterFlowNum}}</span>
+														</div> -->
+						  								<!-- <div class="van-card__desc van-ellipsis">
+						  									{{item.createtime | filterTime}}
+						  								</div>
+ -->
+						  							</div>
+						  						</div>
+												<a class="van-card__thumb" v-if="model.id != item.source_user_id">
+													<div class="van-image" style="width: 100%; height: 100%;">
+													
+														<img src="@/assets/mzzj120.png" style="height:40px;width:40px" alt=""  v-if="item.source_user_name == '系统通知'">
+														<van-image ref="workImage"  lazy-load :src="baseURL + '/common/image?imgId=' + item.icon +'&token=' + token" style="width:100%;width:45px" v-if="item.icon"/>
+														<img src="@/assets/default_img.jpg" style="height:40px;width:40px" alt=""  v-if="item.source_user_name != '系统通知' && !item.icon">
+													</div>
+													<div class="van-info"></div>
+												</a>
+						  					</div>
+											
+						  				</div>
+						  			</div>
+									<!-- <div v-if="categoryindex == list.length - 1" style="height:2rem">...................</div> -->
+						  		</div>
+								   </van-pull-refresh>
+						  	</div>
+		
+      
+	  <comment-title :dataLength="lens" @Postcomment="PostSuccess" ref="commentIpt" :hideLength="true" @showUtil="showUtil" />
+      <!-- </div> -->
+
+  </div>
+
+  </div>
+  </v-touch>
+</template>
+
+<script>
+import NavBar from '@/components/common/Navbar.vue'
+import cover from './cover'
+import commentTitle from '@/components/article/commentTitle.vue'
+import comment from '@/components/article/comment.vue'
+import Scroll from '@/base/scroll/scroll'
+export default {
+	
+    data() {
+        return {
+			name:'messageDetail',
+			show:false, // 遮罩
+			// 每种类型消息高度
+			widthObject:{
+				text: 'auto',
+				comment:15
+			},
+			isLoading:false,
+			token: 'Bearer ' + localStorage.token,
+            model:{},
+			list:[],
+            commendList:null,
+            lens:null,
+            myVideo:null,
+            Postcom:{
+                comment_content:'',
+                comment_date:'',
+                parent_id:null,
+                article_id:null
+            },
+            collectionActive:false,
+            subscritionActive:null,
+			pageNum:1,
+			pageSize:20,
+			curUser:{}
+
+        }
+    },
+
+    components:{
+        NavBar,
+        cover,
+        commentTitle,
+        comment,
+		Scroll
+    },
+	filters:{
+		filterTime(val) {
+		  if(val){
+		    // return val.split('T') ? val.split('T')[0] : ''
+			return val.substring(0,16).replaceAll('T',' ')
+		  }
+		  return "";
+		},
+	},
+	computed:{
+		VideoItemHeightStyle () {
+		  let clientWidth = document.body.clientWidth
+		  let clientHeight = document.body.clientHeight
+		  return {
+		    height: clientHeight + 'px',
+		    width: clientWidth + 'px'
+		  }
+		},
+
+	},
+    methods:{
+		// 接收消息
+		getWebSocketMessage(data){
+			// 判断消息是否是当前聊天用户发的,如果是消息追加到当前内容中,不然将消息提示出来
+			if(data.message.sendUserId == this.$route.params.id){
+				// this.list = []
+				// this.pageNum = 1
+				console.log('相同用户.........')
+				// this.getMessage();// 刷新数据
+				this.list.push({
+					messageContent:data.message.content,
+					message_category:'TEXT',
+					message_source:'USER',
+					message_status:'1',
+					message_type: data.msgType,
+					nickName:data.title,
+					source_user_id:data.message.sendUserId,
+					user_id:data.message.user_id
+				})
+				// 滚动到最下面
+				this.$nextTick(()=>{
+					 if(this.pageNum == 1){
+						 this.$refs.scrollDiv.scrollTo(0,9999999999)
+					 } else {
+						 // this.$refs.scrollDiv.scrollTo(0,0)
+					 }
+				})
+			}else{
+				this.$notify({
+					message: data.title + '\n' + data.message.content,
+					  duration: 2000,
+					  type: 'success'
+				})
+			}
+		},
+		// 图片加载结束
+		imgLoad(){
+			console.log('img on load.....')
+			// 图片加载结束,如果分页是1定位到底部
+			if(this.pageNum == 1){
+				this.$nextTick(()=>{
+					this.scrollToBottom()
+				})
+				
+			}
+		},
+		// 点击遮罩
+		overlayClick(){
+			this.show = !this.show
+			if(!this.show){
+				// 收起输入框
+				this.$refs.commentIpt.util = false
+			}
+		},
+		// 内容位置
+		getContentPoint(item) {
+			if(item.source_user_id != this.model.id){
+				return "van-card__title-right";
+			}
+			return "van-card__title-left";
+		 
+		},
+		// 获取是左边还是右边
+		getisLeftOrRight(item){
+			if(item.source_user_id != this.model.id){
+				return "2";
+			}
+			return "1";
+		},
+		onRefresh() {       //下拉刷新
+		            setTimeout(() => {
+						this.pageNum += 1;
+						 this.isLoading = true;
+						this.getMessage();
+		                // this.finished = false;
+		               
+		                // // this.list = []
+		                // let categoryitem = this.categoryItem();
+		                // categoryitem.page = 1;
+		                // categoryitem.list = []
+		                // this.selectArticle();
+		            }, 500);
+		        },
+		scroll (pos) {
+			console.log('1111')
+		},
+		async getUser(){
+			// 系统消息
+			if(this.$route.params.id == 0){
+				this.model.id = this.$route.params.id
+				this.model.nickName = '系统消息'
+				
+			}else{
+				const res = await this.$http.get('/admin/' + this.$route.params.id)
+				// console.log('......')
+				console.log(res.data.data)
+				this.model = res.data.data
+				
+				const res2 = await this.$http.get('/admin/info')
+				console.log(res2)
+				this.curUser = res2.data.data
+			}
+			
+			
+		},
+		fx(){
+			this.$msg.fail('功能暂时关闭')
+		},
+		returnPage(){
+			this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+			// alert('漫画高度' + this.curScroll)
+			this.$router.go(-1)
+		},
+        onSwipeLeft () {
+            // console.log('页面左滑')
+          // this.$router.go(-1)
+        },
+        onSwipeRight(){
+            // console.log('页面右滑')
+            // this.$router.go(-1)
+			if(localStorage.slideReturn == 1){
+				this.$router.go(-1)
+			}
+        },
+		showUtil(item){
+			if(item){
+				console.log('显示了....')
+				// 评论框弹出、添加遮罩
+				this.show =true
+			}else{
+				console.log('关闭了....')
+				this.show = false
+			}
+			
+		},
+
+        //发送评论
+        async PostSuccess(res,parentId) {
+			console.log(res)
+			console.log('....')
+			if(res){
+				
+				// return;
+				// 保存评论
+				const result = await this.$http.post('/message/addMessage',{
+					user_id: this.$route.params.id,
+					message_category:'TEXT',
+					message_type:'COMMENT',
+					message_content:res,
+					message_source:'USER'
+				})
+				// console.log(result)
+				// this.Postcom.parent_id = null
+				if(result.data.data == '成功') {
+				    // this.$msg.fail('评论发表成功')
+					this.$refs.commentIpt.closeUtil()
+					// this.list = []
+					// this.pageNum = 1
+					//  将评论的数据追加到内容中
+					
+					if(this.list.length == 0){
+						this.getMessage();
+					}else{
+						console.log('追加数据......')
+						this.list.push({
+							messageContent:res,
+							message_category:'TEXT',
+							message_source:'USER',
+							message_status:'1',
+							message_type: 'COMMENT',
+							nickName:this.model.nickName,
+							icon: this.curUser.icon,
+							source_user_id:this.curUser.id,
+							user_id: this.model.id
+						})
+						this.$nextTick(()=>{
+							 this.$refs.scrollDiv.scrollTo(0,9999999999)
+						})
+					}
+					
+				}else{
+					this.$msg.fail('评论失败!')
+				}
+			}else{
+				this.$msg.fail('评论不能为空!')
+				
+			}
+            
+        },
+        //聚焦输入框
+        PostChildClick(item) {
+			console.log(item)
+            this.Postcom.parent_id = item.comment_id
+			this.$refs.commentIpt.placeholderText = '回复 @' + item.nickname + ':'
+			this.$refs.commentIpt.util = true;
+            // this.$refs.commentIpt.focus()
+        },
+		// 去除回复状态
+		clearPostStatus(){
+			// this.$refs.commentIpt.placeholderText = '和谐社会,请文明发言'
+			this.Postcom.parent_id = ''
+		},
+        //收藏文章
+        async collectionClick() {
+           if(localStorage.getItem('token')){
+             // 判断显示状态,是收藏还是取消收藏
+             if(!this.collectionActive){
+               const res = await this.$http.post('/collection/addCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'1'})
+               // console.log(res)
+               if(res.data.data == '收藏成功'){
+                   this.collectionActive = true
+               }else{
+                   // this.collectionActive = false
+                   this.$msg.fail(res.data.message)
+               }
+             } else {
+               const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'1'})
+               if(res.data.data == '取消成功'){
+                 this.collectionActive = false
+               } else {
+                  this.$msg.fail(res.data.message)
+               }
+             }
+
+                // this.$msg.fail(res.data.msg)
+           }
+        },
+        //进入页面获取是否收藏
+        async collectionInit() {
+            if(localStorage.getItem('token')){
+                const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
+                    webInfoDetailDataId:this.$route.params.id,
+					collectionType:'1'
+                })
+                // console.log(res.data)
+            this.collectionActive = res.data.data == '1' ? true : false;
+            }
+        },
+        //点击关注发帖用户
+        async subscriptClick() {
+           if(localStorage.getItem('token')){
+               const res = await this.$http.post('/sub_scription/' + localStorage.getItem('id'),{sub_id:this.model.userid})
+               if(res.data.msg == '关注成功'){
+                   this.subscritionActive = true
+               }else{
+                   this.subscritionActive = false
+               }
+               this.$msg.fail(res.data.msg)
+
+           }
+        },
+        //进入页面获取是否收藏
+        async subscritionInit() {
+            // if(localStorage.getItem('token')){
+                // const res = await this.$http.get('/sub_scription/' + localStorage.getItem('id'),{
+                //     params:{
+                //         sub_id:this.model.userid
+                //     }
+                // })
+                // const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
+                //    webInfoDetailDataId:this.$route.params.id
+                // })
+                // if(res.data.data == '0'){
+                //   this.subscritionActive = false;
+                // } else {
+                //   this.subscritionActive = true;
+                // }
+                // console.log(res)
+            // this.subscritionActive = res.data.success
+            // }
+        },
+         play(vdoSrc){
+			 console.log(this.$refs.videoPlayer)
+                         //初始化播放器
+              this.myVideo = this.$video(
+                      this.$refs.videoPlayer,
+                      // this.options,
+                      function onPlayerReady() {}
+                    );
+            this.myVideo.src({
+              src:vdoSrc,
+              type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
+            })
+            this.myVideo.play()
+
+         },
+		 async getMessage(){
+			 const res = await this.$http.post('/message/queryMessage',{
+				 pageNum:this.pageNum,
+				 pageSize:this.pageSize,
+				 sourceUserId:this.$route.params.id,
+				 sortType:'DESC'
+			 })
+			 // console.log(res)
+			 this.list.unshift(...this.changeCommentData(res.data.data.list))
+			 console.log(this.list)
+			  this.isLoading = false
+			  // top.a = this.$refs.scrollDiv;
+			  
+			this.$nextTick(()=>{
+				 if(this.pageNum == 1){
+					 this.$refs.scrollDiv.scrollTo(0,9999999999)
+				 } else {
+					 // this.$refs.scrollDiv.scrollTo(0,0)
+				 }
+			})
+			
+			// 修改用户查看状态
+			this.$http.get('/message/updateMessageReadStatus?sourceUserId=' + this.$route.params.id);
+		 },
+		 changeCommentData(data) {
+		 	  const imgList = this.Highlightlist
+
+		 	  let filterImg = []
+		 	  for(let i =0;i<imgList.length;i++){
+		 			filterImg.push(imgList[i].img.replace('./static/emoticom/','[').replace('.png',']'))
+		 	  }
+
+		 	  let fn = ((temp)=>{
+		 		  let arr1 = [];
+		 		  for (var i = 0; i < data.length; i++) {
+		 		  	if(!data[i].messageContent){
+		 		  		continue;
+		 		  	}
+		 		  	let tempData =  data[i].messageContent
+		 		  	for(let i =0;i<filterImg.length;i++){
+		 		  		if(tempData.indexOf(filterImg[i]) != -1){
+		 		  			tempData = tempData.replace(filterImg[i],"</span><img style='position:inherit;top:5px;-webkit-mask-box-image' width='25px'  height='25px' src='"+ this.Highlightlist[i].img +"'><span>")
+		 		  		}
+		 		  	}
+
+		 			data[i].messageContent = tempData
+		 		  	// console.log(data[i].tempData)
+		 		    if (data[i].parent_id == temp) {
+		 		      arr1.push(data[i]);
+		 		      data[i].child = fn(data[i].id);
+		 		    }
+		 		  }
+		 		  return arr1;
+		 	  })
+
+		 	  
+		 	  function replaceall( restr ,oldstr, newstr ){
+		 	while (restr.indexOf(oldstr)  >= 0){
+		 			restr = restr.replace(oldstr,newstr);
+		 
+		 		}
+		 
+		 	return restr ;
+		 	}
+		     return fn(null);
+		  },
+		 // slideTo (targetPageY) {
+			//  let div  = this.$refs.scrollDiv
+			//  let totalHeight = div.scrollHeight
+			//  // console.log(div.scrollHeight)
+		 //   // var timer = setInterval(function () {
+		 //   //     var currentY = div.scrollTop;//当前及滑动中任意时刻位置
+			//   //  console.log(currentY)
+
+			//   //  // console.log(currentY)
+		 //   //     var distance = targetPageY < currentY ? targetPageY - currentY : currentY - targetPageY;//剩余距离
+			//   //  			   console.log(distance + '...')
+		 //   //     var speed = Math.ceil(distance/10);//每时刻速度
+			//   //  // console.log(currentY + '...' + maxY)
+		 //   //     if (currentY == distance) {
+		 //   //      clearInterval(timer);
+		 //   //     } else {
+		 // 		// div.scrollTo(0,targetPageY < currentY ? currentY + speed : currentY - speed);
+		 //   //     }
+		 //   //    },10);
+		 //   var timer = setInterval(function () {
+		 //       var currentY = div.scrollTop;//当前及滑动中任意时刻位置
+			//    // console.log(currentY + '..' + div.scrollHeight)
+		 //   // 			   console.log(currentY)
+		   
+		 //   // 			   // console.log(currentY)
+		 //       var distance = targetPageY < currentY ? targetPageY + currentY : currentY - targetPageY;//剩余距离
+		 //   // 			   			   console.log(distance + '...')
+		 //       var speed = Math.ceil(distance/10);//每时刻速度
+			//    console.log(distance + '...' + totalHeight)
+		 //       if (currentY == totalHeight) {
+		 //        clearInterval(timer);
+		 //       } else {
+		 //   		 		div.scrollTo(0,targetPageY < currentY ? currentY + speed : currentY - speed);
+		 //       }
+		 //      },10);
+		 //  },
+		  slideTo (targetPageY) {
+			  let div  = this.$refs.scrollDiv
+		    var timer = setInterval(function () {
+		        var currentY = div.scrollTop;//当前及滑动中任意时刻位置
+				// console.log(currentY)
+		        var distance = targetPageY < currentY ? targetPageY - currentY : currentY - targetPageY;//剩余距离
+		        var speed = Math.ceil(distance/10);//每时刻速度
+		        if (currentY == targetPageY) {
+		         clearInterval(timer);
+		        } else {
+					window.scrollTo(0,targetPageY < currentY ? currentY + speed : currentY - speed);
+		        }
+		       },10);
+		   },
+		 scrollEnd (pos) {
+			 
+		 	// 结束将当前高度设置为0
+		 	// let totalHeight  = -(this.clientHeight * (this.playList.length - 1)) // 总高度
+		 	// if(pos.y == totalHeight){
+		 	// 	// console.log(this)
+		 		console.log('滑到最下面》。。。。。。。。。')
+		 	// 	this.pageNum = this.pageNum + 1
+		 	// 	this.loadData()
+		 	// 	// this.$parent.$children[0].queryData()
+		 	// }
+		 	// // 滑到最底下加载新数据
+		 	// // console.log(this.playList)
+		 	// if(this.currentHeight > 0){
+		 	// 	this.$refs.scroll.scrollTo(0, -this.currentHeight)
+		 	// 	this.currentHeight = 0
+		 		
+		 	// }
+		 
+		 },
+		 scrollToBottom(){
+			 // this.$nextTick(()=>{
+			 // 	 if(this.pageNum == 1){
+			 	top.a = this.$refs.scrollDiv
+			 	console.log(this.$refs.scrollDiv.scrollHeight)
+			 		 this.$refs.scrollDiv.scrollTo(0,this.$refs.scrollDiv.scrollHeight + 300)
+			 // 	 } else {
+			 // 		 this.$refs.scrollDiv.scrollTo(0,0)
+			 // 	 }
+			 // })
+		 }
+    },
+    created() {
+
+		// if(this.$route.params.loadMode == 6){
+		// 	this.getVideo()
+		// }else{
+		// 	this.myVideo = null;
+		// 	  // $('#myVideo').empty()
+		// 	if(this.myVideo){
+		// 	  this.myVideo.destory();
+		// 	}
+		//    this.getVideo()
+		// 	   // this.articleitemData()
+
+		// }
+       
+         // this.commendData()
+         // this.collectionInit()
+		 this.getUser();
+		 // 查询用户消息
+		 this.getMessage();
+		 // 加载完后跳到最下面的消息位置
+
+    },
+	mounted (){
+		console.log('======')
+		// this.scrollToBottom()
+	},
+	// updated(){
+	// 	console.log('....')
+	// 	this.scrollToBottom()
+	// // 	console.log(this.model)
+	// // 	if(!this.model.bottom){
+	// // 		this.$nextTick(()=>{
+	// // 			 this.$refs.scrollDiv.scrollTo(0,9999999999)
+	// // 			 setTimeout(()=>{
+	// // 				 this.model.bottom = true;
+	// // 			 },500)
+				 
+	// // 		})
+	// // 	}
+		
+	// },
+    watch:{
+        'model.content'(){
+          // alert(11)
+          // this.play(this.model.content)
+        },
+		$route(to,from) {
+			// console.log(to)
+			// 跳转高度
+			if(to.name == 'messageDetail'){
+				// alert(this.currentScroll)
+				this.$nextTick(()=>{
+					document.documentElement.scrollTop = this.currentScroll
+					document.body.scrollTop = this.currentScroll
+				})
+			}
+			
+			// id不同刷新
+			if(to.name =='messageDetail' && to.params.id != this.model.id){
+				console.log('数据刷新...')
+				this.list = []
+				this.pageNum = 1
+				this.getUser();
+				this.getMessage();
+				// this.$forceUpdate()
+				// scroll(0,0)
+				// this.loadMode = 0
+				// this.person = {}
+				// const categoryitem = this.categoryItem();
+				// categoryitem.list = []
+				// categoryitem.page = 1
+				// categoryitem.finished = false;
+				// categoryitem.loading = true;
+				// this.selectArticle();
+				// this.collectionInit()
+			}
+		},
+    }
+}
+</script>
+
+<style  lang='stylus' scoped>
+	@import '~@/common/stylus/variable'
+.detailparent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  .detailitem {
+    margin: 1.389vw 0;
+    width: 45%;
+  }
+}
+.categorytab{
+  position: relative;
+  .category-ico{
+    position: absolute;
+    z-index: 5;
+    right: 0;
+    top: 1.944vw;
+    padding: 1.389vw 2.778vw;
+    background-color: #ee0a24;
+  }
+}
+
+/deep/ .van-card{
+	position: relative;
+	    box-sizing: border-box;
+	    padding: 8px 16px;
+	    color: #323233;
+	    font-size: 12px;
+	    background-color: white;
+}
+
+.van-card__desc{
+	position: absolute;
+	right: 0;
+	bottom: 0;
+}
+.van-card__more{
+	position: absolute;
+	right: 0;
+	bottom: 0;
+}
+/deep/ .van-card__header{
+	display: flex;
+	height:auto;
+}
+/deep/ .van-card__thumb{
+	position: relative;
+	    flex: none;
+	    width: 40px;
+	    margin-right: 8px;
+}
+
+.van-card__num{
+	max-height: 20px;
+	color: #646566;
+	line-height: 20px;
+	position: absolute;
+		 // left: 1rem; 
+		bottom: 0;
+}
+/deep/ .van-card__title-left {
+
+    font-weight: 500;
+    line-height: 25px;
+	padding-right:.5rem;
+	text-align: left;
+	word-break: break-all;
+	/* position: absolute; */
+	font-size: 14px;
+	float:left;
+	    font-weight: 600;
+	    /* top: 0.4rem; */
+	    /* left: 1.2rem; */
+		letter-spacing:1px;
+}
+
+/deep/ .van-card__title-right {
+	text-align:left;
+    /* width 90%; */
+	/* margin-right:1.5rem; */
+    font-weight: 500;
+    line-height: 25px;
+	padding-right:.5rem;
+	word-break: break-all;
+	/* text-align: initial; */
+	/* float:right; */
+	/* position: absolute; */
+	font-size: 14px;
+	    font-weight: 600;
+	    /* top: 0.4rem; */
+	    /* right: 1.2rem; */
+		letter-spacing:1px;
+		float:right;
+}
+
+/deep/ .van-card__type2{
+	max-height: 20px;
+	color: #646566;
+	line-height: 20px;
+	position: absolute;
+		 // left: 1rem; 
+		bottom: 2.5rem;
+		//right: 0;
+		top: 2rem;
+		    left: 1.2rem;
+			letter-spacing:1px;
+}
+.van-card__chat{
+	max-height: 20px;
+	color: #646566;
+	line-height: 20px;
+	position: absolute;
+	left: 3.5rem; 
+	bottom: 0;
+}
+/deep/ .van-card__thumb img{
+	border-radius:30px;
+}
+
+/deep/ .van-swipe-cell{
+	 /* height:4rem; */
+	height:auto;
+}
+
+/deep/ .van-card__thumb{
+	position: relative;
+	    flex: none;
+	    width: 40px;
+	    /* height: 88px; */
+		height:50px;
+	    margin-right: 8px;
+}
+
+/deep/ .van-card__content{
+	position: relative;
+	    display: -webkit-box;
+	    display: -webkit-flex;
+	    display: flex;
+	    -webkit-box-flex: 1;
+	    -webkit-flex: 1;
+	    flex: 1;
+	    -webkit-box-orient: vertical;
+	    -webkit-box-direction: normal;
+	    -webkit-flex-direction: column;
+	    flex-direction: column;
+	    -webkit-box-pack: justify;
+	    -webkit-justify-content: space-between;
+	    justify-content: space-between;
+	    min-width: 0;
+	    /* min-height: 88px; */
+}
+
+.van-info{
+	position: absolute;
+	    top: 0;
+	    right: 0;
+	    box-sizing: border-box;
+	    min-width: 16px;
+	    padding: 0 3px;
+	    color: #fff;
+	    font-weight: 500;
+	    font-size: 12px;
+	    font-family: -apple-system-font,Helvetica Neue,Arial,sans-serif;
+	    line-height: 1.2;
+	    text-align: center;
+	    background-color: #ee0a24;
+	    border: 1px solid #fff;
+	    border-radius: 16px;
+	    -webkit-transform: translate(50%,-50%);
+	    transform: translate(50%,-50%);
+	    -webkit-transform-origin: 100%;
+	    transform-origin: 100%;
+}
+
+/deep/ .van-card__tag{
+	position: absolute;
+	    top: 2px;
+	    left: -1rem;
+}
+
+/deep/ .van-overlay{
+		position: fixed;
+	    top: 0;
+	    left: 0;
+	    z-index: 1;
+	    width: 100%;
+	    height: 100%;
+	    background-color: none;
+		/* opacity:0; */
+}
+</style>

@@ -171,16 +171,20 @@ export default {
 			console.log(res.data)
 			if(res.data > 99){
 				this.messageNum = '99+'
-			} else{
-				this.messageNum = res.data
-			}
-			
-			if(this.messageNum == 0){
-				this.messageNum == null;
-			} else {
 				// 底部"我的"菜单显示消息图标
 				this.$parent.myIconStatus = true
+			} else{
+				if(res.data == 0){
+					this.messageNum = null;
+					console.log('........')
+				}else{
+					this.messageNum = res.data
+					// 底部"我的"菜单显示消息图标
+					this.$parent.myIconStatus = true
+				}
+				
 			}
+			console.log(this.messageNum)
 			
 
 		}

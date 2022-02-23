@@ -3,7 +3,8 @@
       <div class="detailItem">
           <div class="imgparent">
                <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
-			   <van-image lazy-load :src="baseURL +   detailitem.previewImg + '&width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:47.778vw;">
+			   <!-- <van-image lazy-load :src="baseURL +   detailitem.previewImg + '&width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:57.778vw;"> -->
+			   <van-image lazy-load :src="baseURL +   detailitem.previewImg + '&token=' + token" style="width:100%;">
 					  <template v-slot:error>加载失败</template>
 					  <template v-slot:loading>
 					      <van-loading type="spinner" size="20" />
@@ -19,7 +20,7 @@
                   <!-- <div class="icon-file-text"> <span class="comment">{{!detailitem.commentlen ? 66 : detailitem.commentlen}}</span> </div> -->
               </div>
           </div>
-		  <p v-if="detailitem.descript">{{detailitem.descript}}</p>
+		  <!-- <p v-if="detailitem.descript">{{detailitem.descript}}</p> -->
           <p>{{detailitem.title}}</p>
       </div>
   </div>

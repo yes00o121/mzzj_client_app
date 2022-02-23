@@ -20,6 +20,8 @@ import NoSleep from "nosleep.js/dist/NoSleep.min.js";
 import VueClipboard from 'vue-clipboard2' // 复制包
 import VCharts from 'v-charts-v2' // 图表
 import { Panel } from 'vant';
+import { Notify } from 'vant'; // 消息组件
+Vue.use(Notify);
 Vue.use(Panel);
 Vue.use(VCharts)
 Vue.use(VueClipboard)
@@ -98,6 +100,53 @@ Vue.prototype.windowHeight = screen.height // 获取用户屏幕高度
 Vue.prototype.windowWidth = screen.width // 获取用户屏幕宽度
 
 Vue.prototype.pageScroll = {A:'10'} // 页面所有滚动位置
+
+
+// 图标列表
+Vue.prototype.Highlightlist = [
+					{img: './static/emoticom/aixin.png'},
+					{img: './static/emoticom/aojiao.png'},
+					{img: './static/emoticom/call.png'},
+					{img: './static/emoticom/chigua.png'},
+					{img: './static/emoticom/dai.png'},
+					{img: './static/emoticom/daku.png'},
+					{img: './static/emoticom/daxiao.png'},
+					{img: './static/emoticom/ganga.png'},
+					{img: './static/emoticom/goutou.png'},
+					{img: './static/emoticom/haixiu.png'},
+					{img: './static/emoticom/huafengtubian.png'},
+					{img: './static/emoticom/huaji.png'},
+					{img: './static/emoticom/jianxiao.png'},
+					{img: './static/emoticom/jingli.png'},
+					{img: './static/emoticom/jingxi.png'},
+					{img: './static/emoticom/jingya.png'},
+					{img: './static/emoticom/jiong.png'},
+					{img: './static/emoticom/koubi.png'},
+					{img: './static/emoticom/leng.png'},
+					{img: './static/emoticom/miaoa.png'},
+					{img: './static/emoticom/shengbing.png'},
+					{img: './static/emoticom/shengqi.png'},
+					{img: './static/emoticom/suan.png'},
+					{img: './static/emoticom/teng.png'},
+					{img: './static/emoticom/tiaopi.png'},
+					{img: './static/emoticom/touxiao.png'},
+					{img: './static/emoticom/tu.png'},
+					{img: './static/emoticom/weiqu.png'},
+					{img: './static/emoticom/weixiao.png'},
+					{img: './static/emoticom/wulian.png'},
+					{img: './static/emoticom/wuyu.png'},
+					{img: './static/emoticom/xia.png'},
+					{img: './static/emoticom/xiangzhi.png'},
+					{img: './static/emoticom/xianqi.png'},
+					{img: './static/emoticom/xiaoku.png'},
+					{img: './static/emoticom/xiaokule.png'},
+					{img: './static/emoticom/xihuan.png'},
+					{img: './static/emoticom/xusheng.png'},
+					{img: './static/emoticom/yinxiang.png'},
+					{img: './static/emoticom/zan.png'},
+					{img: './static/emoticom/zhichi.png'}
+		  ],
+
 
 // 跳转到指定y轴位置
 Vue.prototype.slideTo = function(targetPageY,el) {

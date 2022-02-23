@@ -2,7 +2,7 @@
 	<v-touch  v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
 <div>
 	<van-sticky>
-		<van-cell  style="z-index:99999;width:100%;"  icon="arrow-left" class="van-ellipsis" :title="person.person_name"  @click="returnPage">
+		<van-cell  style="z-index:999;width:100%;"  icon="arrow-left" class="van-ellipsis" :title="person.person_name ? person.person_name : ''"  @click="returnPage">
 			<van-button style="margin-right:1rem" plain type="default" size="mini" @click.stop="collectionClick" :class="{activeColor:collectionActive}">
 				<van-icon  name="star-o" size=".5rem" />
 				<span>&nbsp;关注</span>

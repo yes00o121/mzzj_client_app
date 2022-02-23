@@ -26,8 +26,8 @@
 	  >
 		<div class="comment">
 				  <p class="comment-title">
-				      <span>评论</span>
-				      <span>({{dataLength}})</span>
+				      <span v-if="!hideLength">评论</span>
+				      <span v-if="!hideLength">({{dataLength}})</span>
 				  		  <span>
 				  			  <van-icon name="arrow-up" style="right: 1rem;position: fixed;" v-show="!util" @click="utilClick"/>
 				  			  <van-icon name="arrow-down" style="right: 1rem;position: fixed;" v-show="util"  @click="utilClick"/>
@@ -63,8 +63,8 @@
 			</div>
 		</div> -->
 		<!--工具栏-->
-		<div style="padding-top:5px">
-			 <van-icon name="smile-o" @click="showSmile"  size="2rem"/>
+		<div style="float:left">
+			 <van-icon name="smile-o" @click="showSmile"  size="2rem" style="background:#f4f4f4;padding:.5rem"/>
 		</div>
 	  </van-popup>
 	  
@@ -74,7 +74,7 @@
 <script>
 import emoticom from '../common/emoticom'
 export default {
-  props:['dataLength'],
+  props:['dataLength','hideLength','overlay'],
   mounted(){
   	mui('.mui-scroll-wrapper').scroll({
   	deceleration: 0.0005 //flick 减速系数，系数越大，滚动速度越慢，滚动距离越小，默认值0.0006
@@ -82,6 +82,7 @@ export default {
   },
   data() {
       return {
+		  overlayStatus:false,// 遮罩状态
 		  token: 'Bearer ' + localStorage.token,
 		  tempContent:'',// 临时的内容,用于做数据变动对比
 		  utilShow:true,// 是否显示评论组件
@@ -90,44 +91,7 @@ export default {
             myuser:null,
 			sxIcon:true,
 			placeholderText:'留下你的精彩评论吧',
-            comcontent:'',
-			 Highlightlist: [
-					{img: './static/emoticom/aojiao.png'},	
-					{img: './static/emoticom/goutou.png'},
-					{img: './static/emoticom/baozang.png'},
-					{img: './static/emoticom/bixin.png'},
-					{img: './static/emoticom/chigua.png'},
-					{img: './static/emoticom/call.png'},
-					{img: './static/emoticom/daku.png'},
-					{img: './static/emoticom/daxiao.png'},
-					{img: './static/emoticom/dai.png'},
-					{img: './static/emoticom/haixiu.png'},
-					{img: './static/emoticom/huaji.png'},
-					{img: './static/emoticom/jingli.png'},
-					{img: './static/emoticom/maotou.png'},
-					{img: './static/emoticom/jingkong.png'},
-					{img: './static/emoticom/jingya.png'},
-					{img: './static/emoticom/kaixin.png'},
-					{img: './static/emoticom/koubi.png'},
-					{img: './static/emoticom/ku.png'},
-					{img: './static/emoticom/leng.png'},
-					{img: './static/emoticom/liuhan.png'},
-					{img: './static/emoticom/nanshou.png'},
-					{img: './static/emoticom/nu.png'},
-					{img: './static/emoticom/se.png'},
-					{img: './static/emoticom/shengbing.png'},
-					{img: './static/emoticom/siren.png'},
-					{img: './static/emoticom/suan.png'},
-					{img: './static/emoticom/tiaopi.png'},
-					{img: './static/emoticom/toumiao.png'},
-					{img: './static/emoticom/touxiao.png'},
-					{img: './static/emoticom/tu.png'},
-					{img: './static/emoticom/wunai.png'},
-					{img: './static/emoticom/wuyu.png'},
-					{img: './static/emoticom/xiaoku.png'},
-					{img: './static/emoticom/xu.png'},
-					{img: './static/emoticom/zan.png'}
-				  ]
+            comcontent:''
       }
   },
   components:{
@@ -246,6 +210,7 @@ export default {
 			  console.log(this)
 			  this.$parent.$parent.clearPostStatus()
 		  }
+		  this.$emit('showUtil',cur)
 	  }
   }
 };

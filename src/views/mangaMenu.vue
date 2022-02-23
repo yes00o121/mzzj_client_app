@@ -4,7 +4,7 @@
 			<van-cell  style="z-index:99999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
 		</van-sticky> -->
 		<van-sticky >
-			<van-cell  style="z-index:99999;"  icon="arrow-left" :title="manga.title"  @click="returnPage">
+			<van-cell  style="z-index:999;"  icon="arrow-left" :title="manga.title"  @click="returnPage">
 				<van-button style="margin-right:1rem" plain type="default" size="mini" @click.stop="collectionClick" :class="{activeColor:collectionActive}">
 					<van-icon  name="star-o" size=".5rem" />
 					<span>&nbsp;收藏</span>
@@ -20,9 +20,14 @@
 		</van-sticky>
   <div class="home" v-if="category" :style="'height:'+windowWidth+'px'">
 	<div style="position: relative;height:300px" >
-		 <van-image
+		<!-- <van-image
 		   fit="contain"
 		   :src="baseURL + manga.previewImg + '&width='+width+'&height='+windowWidth + '&random=1&token=' + token" rel="external nofollow" 
+		   style="width:100%;"
+		 > -->
+		 <van-image
+		   fit="contain"
+		   :src="baseURL + manga.previewImg + '&random=1&token=' + token" rel="external nofollow" 
 		   style="width:100%;"
 		 >
 		 <template v-slot:error>加载失败</template>

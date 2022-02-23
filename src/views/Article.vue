@@ -5,7 +5,7 @@
   <div v-if="model">
       <!-- <nav-bar></nav-bar> -->
 	  <van-sticky >
-	  	<van-cell  style="z-index:99999;width: 100%;" class="van-ellipsis" icon="arrow-left" :title="model.title"  @click="returnPage"/>
+	  	<van-cell  style="z-index:999;width: 100%;" class="van-ellipsis" icon="arrow-left" :title="model.title"  @click="returnPage"/>
 	  </van-sticky>
       <div class="detailinfo">
          <div class="video" >
@@ -244,7 +244,7 @@ export default {
         },
 		// 去除回复状态
 		clearPostStatus(){
-			this.$refs.commentIpt.placeholderText = '留下你的经常评论吧'
+			this.$refs.commentIpt.placeholderText = '留下你的精彩评论吧'
 			this.Postcom.parent_id = ''
 		},
         //收藏文章

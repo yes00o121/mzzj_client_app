@@ -1,7 +1,7 @@
 <template>
 <div style="width:100%">
-	<van-sticky style="position: fixed;width:100%;z-index:99999;">
-		<van-cell  style="z-index:99999;"  icon="arrow-left" title="全文检索"  @click="returnPage">
+	<van-sticky style="position: fixed;width:100%;z-index:999;">
+		<van-cell  style="z-index:999;"  icon="arrow-left" title="全文检索"  @click="returnPage">
 			<van-icon
 			    slot="right-icon"
 			    name="wap-home-o"
@@ -73,6 +73,11 @@
               @load="onLoad"
             >
              <div class="detailparent" ref="tab" style="margin-top: 3rem;">
+				 <div v-if="total" style="text-align:center;width:100%;font-size:14px;margin-bottom:1rem;margin-top:1rem;">
+				 	<div>
+						找到{{total}}项符合内容
+					</div>
+				 </div>
 				 <!-- 演员 -->
 				 <div style="display: flex;overflow: auto;" >
 					 <div  v-for="(categoryitem,categoryindex) in person" :key="categoryindex"  @click="toPage(categoryitem)">
@@ -145,6 +150,7 @@ import backTop from '@/components/backTop'
 export default {
   data() {
     return {
+		total:0,// 查询条数
 		person:[],// 人员数组
 		search:'',// 搜索条件
 		mklx:'person,works,manga,video',// 模块类型
@@ -389,6 +395,7 @@ export default {
 				  sortWay: this.sortWay
 		  })
 		  this.person = res.data.data.person.data
+		  this.total = res.data.data.ALL_CNT
 		  console.log(res)
 		  if(res.data.data.list.data.length == 0){
 		    categoryitem.finished = true;

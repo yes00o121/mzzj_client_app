@@ -28,7 +28,8 @@
           @click="chooseUser"> -->
 		  <!-- <img :src="`${baseURL}/common/image?imgId=61b88b894316b402bcbf833f&token=${token}`" alt="" width="40" height="40"
 		    > -->
-		  <img src="@/assets/user_1.png" width="40" height="40"  @click="toUserVideo(VideoItem)">
+		  <img src="@/assets/user_1.png" width="40" height="40"  @click="toUserVideo(VideoItem)" v-if="VideoItem.personId" >
+		  <img src="@/assets/user_1.png" width="40" height="40" v-if="!VideoItem.personId" >
 		  <!-- <img src="@/assets/user_2.png" width="40" height="40" v-if="user_photo == 1" @click="toUserVideo(VideoItem)">
 		  <img src="@/assets/user_3.png" width="40" height="40" v-if="user_photo == 2" @click="toUserVideo(VideoItem)">
 		  <img src="@/assets/user_4.png" width="40" height="40" v-if="user_photo == 3" @click="toUserVideo(VideoItem)">
@@ -52,7 +53,7 @@
 	  <div class="comment1 iconfont icon-message" @click.stop="changeComment()">
         <span class="commentnum">{{commentNum}}</span>
       </div>
-      <div class="share iconfont icon-share" @click.stop="$msg.fail('分析功能关闭')">
+      <div class="share iconfont icon-share" @click.stop="$msg.fail('分享功能关闭')">
         <!-- <span class="sharenum">{{commentNum}}</span> -->
 		<span class="sharenum">0</span>
       </div>
@@ -76,7 +77,7 @@
 		</div> -->
 	</div>
     <div class="text-wrap">
-      <div class="name" style="text-align: left;">@{{VideoItem.personName}}</div>
+      <div class="name" style="text-align: left;"><span v-if="VideoItem.personName">@</span>{{VideoItem.personName}}</div>
       <div class="desc van-multi-ellipsis--l2" style="text-align: initial;">{{VideoItem.title}}</div>
     </div>
 	 <div  style="text-align: initial;text-align: initial;
@@ -373,7 +374,7 @@ export default {
 		  // visibility: hidden;
 		  // console.log('销毁重新创建......')
 		  let html = `<video id="${this.VideoItem.id}"   class="video"
-	  style="width:100%;height:100%;"
+	  style="width:100%;height:100%;visibility: hidden;"
 	  poster="${this.baseURL}${this.VideoItem.previewImg}&token=${this.token}"
 	  webkit-playsinline="true" x5-video-player-type="h5-page"
 	  x5-playsinline  x-webkit-airplay="allow"
