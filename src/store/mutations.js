@@ -69,6 +69,17 @@ const mutations = {
   [types.CLEAN_PLAYLIST] (state) {
     state.playList = []
   },
+  [types.SET_PLAYLIST_DETAIL] (state, playListDetail) {
+    state.playListDetail = playListDetail
+  },
+  [types.APPEND_PLAYLIST_DETAIL] (state, playListDetail) {
+    state.playListDetail = state.playListDetail.concat(playListDetail)
+	console.log('!!!!!!')
+	console.log(state.playListDetail)
+  },
+  [types.CLEAN_PLAYLIST_DETAIL] (state) {
+    state.playListDetail = []
+  },
   GET_CATCHE_COMPONENTS (state, data) {
 		state.catch_components = data
   }

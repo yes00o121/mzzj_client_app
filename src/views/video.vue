@@ -33,7 +33,8 @@
 				  @showCommentList="fetchCommentsAndShowList"></my-video>
 			  </div>
 			  <!--留言弹窗-->
-			  <comment ref="comment" @commentNum="getCommentNum" ></comment>
+			  <!-- <comment ref="comment" @commentNum="getCommentNum" ></comment> -->
+			  
 			</scroll>
 			<footer>
 			<!--底部操作栏-->

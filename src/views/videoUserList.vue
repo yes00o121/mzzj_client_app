@@ -7,7 +7,7 @@
       :list="list"
       @chooseVideo="chooseVideo"
       @delVideo="delVideo"></video-list>
-      <no-more class="no-more"></no-more>
+      <no-more class="no-more" v-if="isBottom"></no-more>
     </div>
   </div>
 </template>
@@ -21,9 +21,10 @@ export default {
   data () {
     return {
       page: 0,
-	  pageSize:200,
+	  pageSize:12,
       isLoading: true,
-      list: []
+      list: [],
+	  isBottom:false// 是否没有更多数据
     }
   },
   computed: {
@@ -36,17 +37,21 @@ export default {
   },
   methods: {
     chooseVideo (index) {
-      this.SET_PLAYLIST(this.list)
+      this.SET_PLAYLIST_DETAIL(this.list)
       this.$emit('chooseVideo', index)
 	  
     },
+	// 加载新数据
+	fetchLikeList(){
+		this.loadVideo()
+	},
     delVideo (videoId) {
       this.$emit('delVideo', videoId)
     },
     fetchVideoList () {
 		console.log(this.$route.params)
 
-		this.loadPersonWork();
+		this.loadVideo();
 
       // let userId = this.$route.params.id === 'me' ? this.loginInfo.userId : this.$route.params.id
       // this.isLoading = true
@@ -56,7 +61,7 @@ export default {
       //   this.isLoading = false
       // })
     },
-	async loadPersonWork(){
+	async loadVideo(){
 			  this.page += 1
 			  // const res = await this.$http.post("/person/queryWebInfoDataByPersonId", {
 			  //   pageNum: this.page,
@@ -72,20 +77,29 @@ export default {
 			      pageSize: this.pageSize,
 			    search: '',
 			    loadMode: 4,
-				personId:this.$route.params.id
+				personId:this.$route.params.id,
+				sortType:2// 正序
 			  })
-			  console.log(res)
+			  console.log(res.data.data.list)
 			  this.isLoading = false
-			  this.list = res.data.data.list
-			  top.aa = this.$parent
-			  this.$parent.commentList = this.$parent.$parent.commentList.concat(this.list)
-			  
+			  // this.list = this.list.push(...res.data.data.list)
+			  this.list.push(...res.data.data.list)
+			  // top.aa = this.$parent
+			  console.log(this.list)
+			  // this.$parent.commentList = this.$parent.$parent.commentList.concat(this.list)
+			  // this.$parent.commentList = this.list
+			  // this.CLEAN_PLAYLIST_DETAIL();
 			  // this.$set(this.$parent,'videoNum',res.data.data.total)
 			  // this.$parent.videoNum = res.data.data.total
-			  // this.APPEND_PLAYLIST(this.commentList)
+			  this.APPEND_PLAYLIST_DETAIL(res.data.data.list)
+			  if(res.data.data.total <= this.list.length){
+				  this.isBottom = true
+			  }
 	},
     ...mapMutations([
-      'SET_PLAYLIST'
+      'SET_PLAYLIST_DETAIL',
+	  'APPEND_PLAYLIST_DETAIL',
+	  'CLEAN_PLAYLIST_DETAIL'
     ])
   },
   components: {

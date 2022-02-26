@@ -1,6 +1,7 @@
 <template>
 	<div >
  <v-touch v-on:panup="panup" v-on:panstart="panstart" v-on:panend="panend" v-on:panleft="panLeft" v-on:panright="panRight"  v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
+  <div style="position:relative;">
   <div class="my-video" :id="'div_' + VideoItem.id" :style="VideoItemHeightStyle" @click.stop="playVideo()" >
     <!-- <video class="video" :src="baseURL + VideoItem.videoPath"
       :poster="VideoItem.videoCover"
@@ -84,9 +85,10 @@
     position: absolute;
     bottom: 66px;
     color: white;
+	z-index:9999;
     right: 11px;">{{VideoItem.videoLength | getDateBysecond}}</div>
 	<div style="position:absolute;bottom:48px;width:100%"> <!-- 当前播放位置 -->
-	  <van-slider v-model="videoProcess" :min="0" :max="100" :button-size="1" @drag-start="dragStart" @drag-end="dragEnd" @input="dragInput" @change="dragChange"/></div>
+	  <van-slider style="z-index:9999" v-model="videoProcess" :min="0" :max="100" :button-size="1" @drag-start="dragStart" @drag-end="dragEnd" @input="dragInput" @change="dragChange"/></div>
     <div class="input-bar" v-show="bottomComment" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)">
 		
      <input class="input"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国、敬业、诚信、友善'" type="text">
@@ -97,8 +99,14 @@
     </div>
 	<img v-show="!playStatus" class="icon_play"
 	     src="@/assets/play.png"/>
+		
   </div>
+  <!--留言弹窗-->
+  <comment ref="comment" @commentNum = "setCommentNum" ></comment>
+  </div>
+  
   </v-touch>
+  
   </div>
 </template>
 
@@ -106,6 +114,7 @@
 // import { baseURL } from '@/common/js/config'
 import { mapGetters } from 'vuex'
 import comment from '@/components/comment'
+
 export default {		
   props: {
     VideoItem: {
@@ -329,7 +338,8 @@ export default {
 		  }
 		  // 结束时,获取视频时间位置,定位到那个地方
 		  let video = this.getVideo()
-		  video.currentTime = this.videoMessage.curNum
+		  console.log(this.videoMessage)
+		  video.currentTime = this.videoMessage ? this.videoMessage.curNum : 0
 		  this.$msg.clear()
 		  this.videoMessage = null;
 	  },
@@ -374,7 +384,7 @@ export default {
 		  // visibility: hidden;
 		  // console.log('销毁重新创建......')
 		  let html = `<video id="${this.VideoItem.id}"   class="video"
-	  style="width:100%;height:100%;visibility: hidden;"
+	  style="width:100%;height:100%;"
 	  poster="${this.baseURL}${this.VideoItem.previewImg}&token=${this.token}"
 	  webkit-playsinline="true" x5-video-player-type="h5-page"
 	  x5-playsinline  x-webkit-airplay="allow"
@@ -421,6 +431,7 @@ export default {
 				  	  		  type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
 				  	  		})
 					 if(curIndex == this.index){
+						 console.log('开始播放视频.......')
 						// this.$parent.$parent.$refs.scroll.scrollTo(0,this.$parent.$parent.currentHeight)
 						 this.video.play()
 						 // 加载收藏和评论数量
@@ -453,11 +464,17 @@ export default {
 		  // 暂停当前视频
 		  // this.video.pause()
 		  // this.playStatus = false
-		  this.$parent.$parent.$refs.comment.commentPop = true
-		  this.$parent.$parent.$refs.comment.videoComment = [];
-		  this.$parent.$parent.$refs.comment.getComment(this.getVideo())
+		  this.$refs.comment.commentPop = true
+		  this.$refs.comment.videoComment = [];
+		  this.$refs.comment.commentNum = this.collNum;
+		  this.$refs.comment.getComment(this.getVideo())
+		  // this.$parent.$parent.$refs.comment.commentPop = true
+		  // this.$parent.$parent.$refs.comment.videoComment = [];
+		  // this.$parent.$parent.$refs.comment.getComment(this.getVideo())
 	  },
-	  setCommentNum(num){
+	  setCommentNum(obj,num){
+		  console.log('......')
+		  console.log(num)
 	  		  this.commentNum = num
 	  },
 	  //记录播放进度
@@ -593,8 +610,9 @@ export default {
       this.$emit('showCommentList', videoId, commentNum)
     },
 	playVideo(){
+		console.log('触发....' + this.$refs.comment.commentPop)
 		// 如果打开了评论窗口,点击失效
-		if(this.commentPop){
+		if(this.$refs.comment.commentPop){
 			return;
 		}
 		// console.log(this.video)

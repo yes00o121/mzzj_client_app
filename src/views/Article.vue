@@ -125,7 +125,8 @@ export default {
 			  id:this.$route.params.id,
 			  pageNum: 1,
 			  pageSize: 10,
-			  search: ''
+			  search: '',
+			  loadMode: this.$route.params.loadMode
 			})
 			console.log(res)
 			this.model = res.data.data.list[0]

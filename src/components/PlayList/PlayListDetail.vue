@@ -5,14 +5,14 @@
 		:style="VideoItemHeightStyle"
 		ref="scroll"
 		:probeType="3"
-		:data="playList"
+		:data="playListDetail"
 		:scrollEnd="true"
 		:momentum="true"
 		:listenScroll="true"
 		@scroll="scroll"
 		@scrollEnd="scrollEnd">
 		<div>
-		  <my-video v-for="(item, index) in playList"
+		  <my-video v-for="(item, index) in playListDetail"
 			ref="videos"
 			:key="item.id"
 			:index="index"
@@ -206,7 +206,7 @@ export default {
 			this.$refs.videos[index].createVideo()
 		}
 		// 将视频前后的两个视频以为的视频都销毁,最多五个视频同时存在
-		let videoLength = this.playList.length// 视频数据
+		let videoLength = this.playListDetail.length// 视频数据
 		let startLength = index - 2; // 开始销毁位置
 		let endLength = index + 2;// 结束销毁位置
 		while(startLength > 0){
@@ -229,7 +229,7 @@ export default {
 	},
     scrollEnd (pos) {
 		// 结束将当前高度设置为0
-		let totalHeight  = -(this.clientHeight * (this.playList.length - 1)) // 总高度
+		let totalHeight  = -(this.clientHeight * (this.playListDetail.length - 1)) // 总高度
 		if(pos.y == totalHeight){
 			// console.log(this)	
 			// console.log('滑到最下面》。。。。。。。。。')
@@ -303,7 +303,7 @@ export default {
     close () {
 		// 返回将视频全部销毁
 		// console.log('视频全部销毁.......')
-		let videoLength = this.playList.length// 视频数据
+		let videoLength = this.playListDetail.length// 视频数据
 		for(let i =0;i<videoLength;i++){
 			if(this.$refs.videos[i].video){
 				this.$refs.videos[i].video.dispose()
@@ -313,7 +313,7 @@ export default {
       this.$emit('close')
     },
     closeCommentList (e) {
-		let videoLength = this.playList.length// 视频数据
+		let videoLength = this.playListDetail.length// 视频数据
 		// 获取高度,以及y轴高度,还有视频数量总高度
 		let clientHeight = this.clientHeight
 		let index = this.currentY / clientHeight
@@ -352,7 +352,7 @@ export default {
       }
     },
     ...mapGetters([
-      'playList'
+      'playListDetail'
     ])
   },
   components: {
@@ -360,7 +360,10 @@ export default {
     Scroll,
     CommentList,
 	comment
-  }
+  },
+	created(){
+		console.log(this.playListDetail)
+	}
 }
 </script>
 

@@ -102,8 +102,13 @@
 				    <div class="detailItem" >
 				        <div class="imgparent">
 				             <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
-							   <van-image fit="cover" lazy-load :src="baseURL +   categoryitem.previewImg + '?width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:200px">
-								   <template v-slot:error>加载失败</template>
+							   <van-image fit="cover" lazy-load style="height:200px" :src="baseURL +   categoryitem.previewImg + '?token=' + token">
+								   <template v-slot:error >
+									   <!-- <img src="@/assets/bk_black.png"   class="avatar" > -->
+									   <div >
+										   加载失败
+									   </div>
+								   </template>
 								   		<template v-slot:loading>
 								   		    <van-loading type="spinner" size="20" />
 								   		  </template>
@@ -371,7 +376,8 @@ export default {
 		  pageNum: categoryitem.page,
 		  pageSize: categoryitem.pagesize,
 		  personType:this.$route.params.type,
-		  personId: this.$route.params.id
+		  personId: this.$route.params.id,
+		  personLabel:'avperformer_avfemale'
 		})
 		if(res.data.data.list.length == 0){
 			categoryitem.finished = true;

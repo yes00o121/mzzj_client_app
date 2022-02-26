@@ -1,4 +1,5 @@
 <template>
+	<keep-alive>
 <div class="searchWrap " :style="searches.length == 0 ? ('height:' + windowWidth + 'px') : ''">
 	<van-sticky>
   <div class="topBar defaultBackground" >
@@ -22,6 +23,7 @@
   </div>
   <search-tool :show="showSearchTool" @search= "search"></search-tool>
   </van-sticky>
+  <!-- {{searches}} -->
   <!-- <v-touch v-on:swipeup="onSwipeup" v-on:swipeleft="onSwipeLeft" class="search-list" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}"> -->
   <router-view
     v-if="searches.length > 0"
@@ -38,6 +40,7 @@
       @close="showPlayList=false;"></play-list>
   </transition>
 </div>
+</keep-alive>
 </template>
 
 <script>
@@ -61,12 +64,13 @@ export default {
   },
   watch: {
     '$route' (newVal) {
-      this.$refs.searchBar.clear()
-      this.querykey = ''
-      this.page = 1
-      this.isEnd = false
-      this.searches = []
-      this.showPlayList = false
+		// console.log('路由跳转了')
+  //     this.$refs.searchBar.clear()
+  //     this.querykey = ''
+  //     this.page = 1
+  //     this.isEnd = false
+  //     this.searches = []
+  //     this.showPlayList = false
     }
   },
   computed: {
@@ -83,6 +87,9 @@ export default {
     ...mapGetters([
       'loginInfo'
     ])
+  },
+  created(){
+	console.log('--------')  
   },
   methods: {
 	  // 条件回调查询
@@ -137,7 +144,7 @@ export default {
     query (q) {
 	  // console.log(this.SET_PLAYLIST)
    //    console.log('chaxun 回调...')
-   //    console.log(q)
+      console.log(q)
       if (q.length < PER_PAGE_LIMIT_NUM) {
           this.isEnd = true
         }
@@ -146,7 +153,6 @@ export default {
 			// console.log(this.searches)
 			this.APPEND_PLAYLIST(q)
 			this.searches = this.searches.concat(q)
-			console.log(this.searches)
 		}else{
 			this.APPEND_PLAYLIST(q)
 			this.searches = this.searches.concat(q)

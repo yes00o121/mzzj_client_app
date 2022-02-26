@@ -24,21 +24,23 @@
 				<person-search-tool :show = "categoryItem().CODE_VALUE == '9'" @search = "personSearch"></person-search-tool>
 			</van-sticky>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh" >
-			  <!-- <van-swipe :autoplay="3000">
+			  <van-swipe :autoplay="5000" id="swipeId" v-if="showSwipe">
 			    <van-swipe-item v-for="(image, index) in item.flowData" :key="index" :loop="false" :width="300">
 				  <van-image
 				    width="22rem"
-				    height="18rem"
+				    height="15rem"
 				    fit="cover"
+					style="object-position: top;"
 				    :src="baseURL +   image.previewImg + '&token=' + token" rel="external nofollow" 
+					@click="toPage(image)"
 				  >
-					
+					<!-- <img :src="baseURL +   image.previewImg + '&token=' + token" style="object-fit: cover;height: 00px;width: 100%;"> -->
 				  </van-image>
 				  <div class="swipe-text van-ellipsis">
 					  {{image.title}}
 				  </div>
 			    </van-swipe-item>
-			  </van-swipe> -->
+			  </van-swipe>
 			  <!-- <van-grid :border="false" :column-num="5">
 			    <van-grid-item v-for="(image, index) in item.flowData" :key="index">
 					<van-image
@@ -154,6 +156,7 @@ import personSearchTool from '@/components/personSearchTool'
 export default {
   data() {
     return {
+		showSwipe:true,
 		myIconStatus:false, // "我的图标状态"
 	    personParams:{},// 人员参数
 		result: ['a', 'b'],
@@ -257,12 +260,20 @@ export default {
 	//     }
   },
   methods: {
+	  pathPush(){
+		  
+	  },
 		toPage(item){
-			// 网络资源页面
-			if(item.loadMode == 9){
-			  // alert('漫画')
-			    this.$router.push(`/netresources/${item.id}`)
+			console.log(item)
+			const categoryitem = this.categoryItem();
+			if(categoryitem.CODE_VALUE == 8){
+				 this.$router.push(`/manga/${item.dataId}`)
 			}
+			// 网络资源页面
+			// if(item.loadMode == 9){
+			//   // alert('漫画')
+			//     this.$router.push(`/netresources/${item.id}`)
+			// }
 		},
 	  slideTo (targetPageY,ref,fun) {
 	    var timer = setInterval(function () {
@@ -389,23 +400,22 @@ export default {
 		// console.log(res)
 		
       const category1 = data.map((item, index) => {
-        // console.log(item)
+        console.log(item)
         item.list = [];
         item.page = 1;
         item.finished = false;
         item.loading = true;
         item.pagesize = 20;
 		// console.log(item)
-		// if(item.CODE_VALUE == 8){
-		// 	// 初始化的时候追加热门数据
-		// 	this.$http.post("/ranking/queryLatelyFlowData", {
-		// 		dataType: 2
-		// 	}).then(res=>{
-		// 		// console.log(res)
-		// 		item.flowData = res.data.data
-		// 	})
+		if(item.CODE_VALUE == 8){
+		 	// 初始化的时候追加热门数据
+			this.$http.post("/ranking/queryLatelyFlowData", {
+				dataType: 2
+			}).then(res=>{
+				item.flowData = res.data.data
+			})
 			
-		// }
+		}
 		
         return item;
       });
@@ -500,7 +510,7 @@ export default {
 			// }
 			this.selectPerson(this.personParams)
 			return;
-		}
+		}else{
 		// 国产
 		// if(categoryitem.CODE_VALUE == 2){
 		// 	// this.selectLiterati();
@@ -508,26 +518,28 @@ export default {
 			
 		// 	return;
 		// }
-		if(categoryitem.CODE_VALUE != 5){
+		// if(categoryitem.CODE_VALUE != 5){
+			console.log(categoryitem)
 			const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
 			  typeId: categoryitem.CODE_VALUE,
 			  pageNum: categoryitem.page,
 			  pageSize: categoryitem.pagesize,
 			  search: '',
-			  loadMode:categoryitem.CODE_VALUE == 2 ? 9 : '2'
+			  loadMode:categoryitem.CODE_MODE_TYPE
+			  // loadMode:categoryitem.CODE_VALUE == 2 ? 9 : '2'
 			})
 			// 国产处理图片
-			if(categoryitem.CODE_VALUE == 2){
-				for(let i = 0;i<res.data.data.list.length;i++){
-					res.data.data.list[i].imgs = []
-					let imgs = res.data.data.list[i].previewImg.split(',')
-					// console.log(imgs)
-					for(let j =0;j<imgs.length;j++){
-						res.data.data.list[i].imgs.push(imgs[j])
-					}
-				}
+			// if(categoryitem.CODE_VALUE == 2){
+			// 	for(let i = 0;i<res.data.data.list.length;i++){
+			// 		res.data.data.list[i].imgs = []
+			// 		let imgs = res.data.data.list[i].previewImg.split(',')
+			// 		// console.log(imgs)
+			// 		for(let j =0;j<imgs.length;j++){
+			// 			res.data.data.list[i].imgs.push(imgs[j])
+			// 		}
+			// 	}
 				
-			}
+			// }
 			console.log(res.data)
 			categoryitem.list.push(...res.data.data.list);
 			categoryitem.loading = false;
@@ -535,41 +547,38 @@ export default {
 			  categoryitem.loading = true;
 			  categoryitem.finished = true;
 			}
-		}
-		if(categoryitem.CODE_VALUE == 5){
-			// 请求视频
-			const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
-			  // typeId: categoryitem.CODE_VALUE,
-			  pageNum: categoryitem.page,
-			  pageSize: categoryitem.pagesize,
-			  loadMode:'6',
-			  search: ''
-			})
-			for(let i =0;i< res.data.data.list.length;i++){
-				let videoAddress =  res.data.data.list[i].videoAddress
-				// res.data.data.list[i].previewImg = res.data.data.list[i].videoAddress''
-				let length = videoAddress.lastIndexOf('/')
-				videoAddress = videoAddress.substring(0,length)
-				let length2  = videoAddress.lastIndexOf('/')
-				videoAddress = videoAddress.substring(0,length2 + 1)
-				res.data.data.list[i].previewImg = '/video/' + videoAddress + 'cover.jpg?'
-				// console.log(res.data.data.list[i].previewImg)
 			}
-			categoryitem.list.push(...res.data.data.list);
-			categoryitem.loading = false;
-			if (res.data.data.list.length < categoryitem.pagesize) {
-			  categoryitem.loading = true;
-			  categoryitem.finished = true;
-			}
-		}
-       
-		// console.log(this.category)
+		// }
+		// if(categoryitem.CODE_VALUE == 5){
+		// 	// 请求视频
+		// 	const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
+		// 	  // typeId: categoryitem.CODE_VALUE,
+		// 	  pageNum: categoryitem.page,
+		// 	  pageSize: categoryitem.pagesize,
+		// 	  loadMode:'6',
+		// 	  search: ''
+		// 	})
+		// 	for(let i =0;i< res.data.data.list.length;i++){
+		// 		let videoAddress =  res.data.data.list[i].videoAddress
+		// 		let length = videoAddress.lastIndexOf('/')
+		// 		videoAddress = videoAddress.substring(0,length)
+		// 		let length2  = videoAddress.lastIndexOf('/')
+		// 		videoAddress = videoAddress.substring(0,length2 + 1)
+		// 		res.data.data.list[i].previewImg = '/video/' + videoAddress + 'cover.jpg?'
+		// 	}
+		// 	categoryitem.list.push(...res.data.data.list);
+		// 	categoryitem.loading = false;
+		// 	if (res.data.data.list.length < categoryitem.pagesize) {
+		// 	  categoryitem.loading = true;
+		// 	  categoryitem.finished = true;
+		// 	}
+		// }
     },
     onRefresh() {       //下拉刷新
                 setTimeout(() => {
+					this.showSwipe = false;// 下拉后隐藏滚动
                     this.finished = false;
                     this.isLoading = false;
-                    // this.list = []
                     let categoryitem = this.categoryItem();
                     categoryitem.page = 1;
                     categoryitem.list = []
@@ -578,10 +587,7 @@ export default {
                 }, 500);
             },
     onLoad() {
-		// console.log(this.$refs['pageScroll'][0].scrollTop)
-		// top.a = this.$refs['pageScroll'][0].scrollTop
       const categoryitem = this.categoryItem();
-	  console.log(categoryitem)
 	  if(categoryitem.list.length == 0){
 		  categoryitem.finished = true
 	  }
@@ -595,15 +601,7 @@ export default {
       // console.log(categoryitem)
       return categoryitem;
     },
-	// 记录列表滚动位置
- //    recordScroll(active){
-	// 	const categoryitem = this.category[active];
-		
-	// 	let rect = document.body.getBoundingClientRect()
-	// 	categoryitem.scroll = Math.abs(rect.top)
-	// },
 	personSearch(params){
-		// console.log('人员查询.....')
 		const categoryitem = this.categoryItem();
 		categoryitem.page = 1
 		categoryitem.pagesize = 20 
@@ -616,49 +614,17 @@ export default {
   
   watch: {
     active(current,before) {
-      // console.log('切换........')
 	  const categoryitem = this.categoryItem();
 	  // 切换时候记录之前位置
-
       if (!categoryitem.list.length) {
         this.selectArticle();
-      //   // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
       }
-	  // 定位指定位置
-	 //  if(categoryitem.scroll){
-	 //  	// console.log('开始定位...' + categoryitem.scroll)
-		// setTimeout(()=>{
-		// 	scrollTo(0,categoryitem.scroll)
-		// },50)
-	  	
-	 //  }
     },
 	tabActive(cur,bef){
-		console.log(this.pageScroll)
-		console.log(cur)
-		 console.log(bef)
 		this.recordScroll(bef)
 		this.$nextTick(()=>{
 			this.toBeforeScroll(cur)
 		})
-		// 
-
-		// console.log(this.curScroll)
-		// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
-		// if(cur != 0){
-		// 	// console.log('记录高度。。。。。。。。。。。。。。。。。。' + (document.documentElement.scrollTop ))
-		// 	this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
-		// 	// alert('首页高度' + this.curScroll)
-		// }else{
-		// 	if(this.curScroll > 0){
-		// 		this.$nextTick(()=>{
-		// 			// alert('首页高度....' + this.curScroll)
-		// 			scroll(0,this.curScroll)
-		// 		})
-		// 	} else {
-		// 		scroll(0,0)
-		// 	}
-		// }
 	}
   },
   created() {
@@ -735,5 +701,9 @@ export default {
 	/* height:90px; */
 	margin:.0rem .3rem;
 	/* float:left */
+}
+#swipeId img{
+	object-position:top;
+	border-radius:15px;
 }
 </style>

@@ -10,6 +10,7 @@ const state = {
   allPrivateLetter: [],
   popularVideo: [],
   playList: [],
+  playListDetail: [],
   catch_components: []
 }
 export default state

@@ -7,7 +7,6 @@
 <!--  <v-touch v-on:swipeleft="onSwipeLeft" class="search-list" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}"> -->
   <!-- <tip ref="tip"></tip> -->
   <ul class="container">
-    <!-- {{searches}} -->
     <li class="search-item" v-for="(item, index) in searches" :key="index" @click="chooseVideo(index)" style="padding: 1px 1px" v-if="item.videoType">
 		<van-image class="videoCover" fit="cover" :style="VideoItemHeightStyle" lazy-load :src="baseURL + item.previewImg + '&token=' + token" />
       <!-- <img class="videoCover" :style="VideoItemHeightStyle" :src="baseURL + item.previewImg + '&token=' + token"> -->

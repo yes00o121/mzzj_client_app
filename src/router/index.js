@@ -218,14 +218,22 @@ Vue.use(VueRouter)
         {
           name: 'videosearch/video',
           path: 'video',
-          component: () => import('@/base/searchVideoList/searchVideoList.vue')
+          component: () => import('@/base/searchVideoList/searchVideoList.vue'),
+		  meta:{
+		  		index:2,
+		    keepalive:true
+		  }
         },
         // {
         //   name: 'videosearch/user',
         //   path: 'user',
         //   component: () => import('@/base/searchUserList/searchUserList.vue')
         // }
-      ]
+      ],
+	  meta:{
+	  		index:2,
+	    keepalive:true
+	  }
     },
 	{
 	  path:'/videoUserInfo/:id/:type/',

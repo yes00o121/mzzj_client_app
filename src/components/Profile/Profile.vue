@@ -104,11 +104,11 @@
     </transition> -->
 </div style="z-index:9999">
 <transition name="left">
-      <play-list
+      <play-list-detail
         class="play-list"
-        ref="playList"
+        ref="playListDetail"
         v-show="showPlayList"
-        @close="showPlayList=false"></play-list>
+        @close="showPlayList=false"></play-list-detail>
     </transition>
 </div>
 </template>
@@ -117,7 +117,7 @@
 import Scroll from '@/base/scroll/scroll'
 import MeTab from '@/components/MeTab/MeTab'
 import CommentList from '@/components/CommentList/CommentList'
-import PlayList from '@/components/PlayList/PlayList'
+import playListDetail from '@/components/PlayList/PlayListDetail'
 import ModifyInfomation from '@/components/ModifyInfomation/ModifyInfomation'
 // import Confirm from '@/base/confirm/confirm'
 import { mapGetters, mapMutations } from 'vuex'
@@ -197,7 +197,8 @@ export default {
 		  pageNum: 1,
 		  pageSize: 10,
 		  personType:this.$route.params.type,
-		  personId: this.$route.params.id
+		  personId: this.$route.params.id,
+		  personLabel:'avperformer_91'
 		})
 		console.log(res)
 		this.userInfo = res.data.data.list[0]
@@ -268,7 +269,8 @@ export default {
     },
     GoBack () {
 	$('#app').css('background','white')  
-      this.$router.back()
+      // this.$router.back()
+	  this.$router.go(-1)
     },
     GoInterestList () {
       this.$router.push(`/InterestList/${this.$route.params.id}`)
@@ -283,10 +285,12 @@ export default {
 		},500)
 		// alert(10)
 		console.log(index)
-		// this.CLEAN_PLAYLIST()
-		// this.SET_PLAYLIST(this.commentList)
+		console.log(this.commentList)
+		// this.CLEAN_PLAYLIST_DETAIL()
+		// this.SET_PLAYLIST_DETAIL(this.commentList)
+		console.log(this.$refs.playListDetail)
       this.showPlayList = true
-      this.$refs.playList.scrollToIndex(index)
+      this.$refs.playListDetail.scrollToIndex(index)
 	  
 	  // this.showPlayList = true
 	  // console.log(this.searches)
@@ -431,8 +435,8 @@ export default {
       'SET_ISLOGGED',
       'SET_LOGININFO',
       'SET_FANUNREADNUM',
-	  'SET_PLAYLIST',
-	  'CLEAN_PLAYLIST',
+	  'SET_PLAYLIST_DETAIL',
+	  'CLEAN_PLAYLIST_DETAIL',
     ])
 	// ...mapMutations([
 	//   'SET_PLAYLIST',
@@ -460,7 +464,7 @@ export default {
     Scroll,
     MeTab,
     CommentList,
-    PlayList,
+    playListDetail,
     ModifyInfomation,
     // Confirm
   }

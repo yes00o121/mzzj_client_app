@@ -1,12 +1,12 @@
 <!-- 评论组件 -->
 <template>
-	<div>
+	<div style="z-index:9999">
 		<!--留言弹窗-->
-		<van-popup v-model="commentPop"  closeable :overlay="true" class="comment_container" position="bottom" >
+		<van-popup v-model="commentPop"  closeable :overlay="true" class="comment_container" position="bottom"  @click-overlay = "closeComment" :overlay-style="{background:'rgba(255,255,255,0)'}">
 			<div class="comment_box">
 				<div class="comment_top">
 					{{commentNum}}条评论
-					<i class="iconfont icon-guanbi1 guanbi3" @click="closeComment"></i>
+					<i class="iconfont icon-guanbi1 guanbi3" @click.stop="closeComment"></i>
 				</div>
 				<ul class="comment_ul">
 					<div v-if="videoComment.length!=0">
@@ -114,25 +114,27 @@ export default{
 	    comment_text(newV, oldV) {
 	        newV == '' ? this.canSend = false : this.canSend = true
 	    },
-		commentPop(newV, oldV) {
-			// console.log(this)
-			if(!newV){
-				this.closeComment()
-				setTimeout(()=>{
-					if(this.$root.$children[0]){
-						if(this.$root.$children[0].$children[0]){
-							this.$root.$children[0].$children[0].bottomShow = true
-						}
-					}
-				},200)
-			}else{
-				if(this.$root.$children[0]){
-					if(this.$root.$children[0].$children[0]){
-						this.$root.$children[0].$children[0].bottomShow = false
-					}
-				}
-			}
-		}
+		// commentPop(newV, oldV) {
+		// 	// console.log(this)
+		// 	if(!newV){
+		// 		this.closeComment()
+		// 		setTimeout(()=>{
+		// 			// this.$parent.commentPop = false
+		// 			// if(this.$root.$children[0]){
+		// 			// 	if(this.$root.$children[0].$children[0]){
+		// 			// 		this.$root.$children[0].$children[0].bottomShow = true
+		// 			// 	}
+		// 			// }
+		// 		},200)
+		// 	}else{
+		// 		// this.$parent.commentPop = true
+		// 		// if(this.$root.$children[0]){
+		// 		// 	if(this.$root.$children[0].$children[0]){
+		// 		// 		this.$root.$children[0].$children[0].bottomShow = false
+		// 		// 	}
+		// 		// }
+		// 	}
+		// }
 	},
 	methods:{
 		changeCommentData(data) {
@@ -328,6 +330,7 @@ export default{
 		},
 		//关闭评论弹窗
 		closeComment() {
+			console.log('弹出关闭.....')
 		    this.commentPop = false;
 		    this.commentPlaceholder = '留下你精彩的评论吧';
 		    this.replayUserData = '';
@@ -799,6 +802,7 @@ export default{
 	        width: 100%;
 	        border-top-left-radius: 10px;
 	        border-top-right-radius: 10px;
+			position: absolute;
 	    }
 	
 	    .comment_box {
@@ -919,7 +923,7 @@ export default{
 	    }
 	
 	    .comment_input_box {
-	        position: fixed;
+	        position: absolute;
 	        bottom: 0;
 	        z-index: 3500;
 	        width: 100%;
@@ -1167,4 +1171,21 @@ export default{
 	        border-bottom: 2px solid #fff;
 	        color: #fff;
 	    }
+/* /deep/ .van-overlay{
+	position: fixed;
+	    opacity: 0;
+	    top: 0;
+	    left: 0;
+	    z-index: 1;
+	    width: 100%;
+	    height: 100%;
+	    background-color: none;
+} */
+
+/* /deep/ .comment_contain{
+	width: 100%;
+		border-top-left-radius: 10px;
+		border-top-right-radius: 10px;
+		position: absolute;
+} */
 </style>

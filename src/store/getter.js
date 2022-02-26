@@ -8,4 +8,5 @@ export const followedNewsNum = state => state.followedNewsNum
 export const allPrivateLetter = state => state.allPrivateLetter
 export const popularVideo = state => state.popularVideo
 export const playList = state => state.playList
+export const playListDetail = state => state.playListDetail
 export const catch_components =  state => state.catch_components
