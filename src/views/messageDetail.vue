@@ -9,10 +9,10 @@
 	  	<van-cell  style="z-index:999;width: 100%;" class="van-ellipsis" icon="arrow-left" :title="model.nickName"  @click="returnPage"/>
 	  </van-sticky>
 	 
-      <div class="detailinfo">
+      <!-- <div class="detailinfo"> -->
 			<!-- <van-pull-refresh v-model="isLoading" @refresh="onRefresh" style="height:100%"> -->
 
-			  <div :style="'overflow:auto;height:'+(parseInt(windowHeight*0.8))+'px'" ref="scrollDiv">
+			  <div :style="'-webkit-overflow-scrolling:touch;overflow:auto;height:'+(parseInt(windowHeight*0.8))+'px'" ref="scrollDiv">
 				  <van-pull-refresh v-model="isLoading" @refresh="onRefresh" >
 			<!-- <div class="detailparent"> -->
 				<div class="van-swipe-cell" style="width: 100%;" v-for="(item,categoryindex) in list"  >
@@ -103,13 +103,14 @@
 	  <comment-title :dataLength="lens" @Postcomment="PostSuccess" ref="commentIpt" :hideLength="true" @showUtil="showUtil" />
       <!-- </div> -->
 
-  </div>
+  <!-- </div> -->
 
   </div>
   </v-touch>
 </template>
 
 <script>
+import { mapGetters, mapMutations } from 'vuex'
 import NavBar from '@/components/common/Navbar.vue'
 import cover from './cover'
 import commentTitle from '@/components/article/commentTitle.vue'
@@ -143,7 +144,8 @@ export default {
             subscritionActive:null,
 			pageNum:1,
 			pageSize:20,
-			curUser:{}
+			curUser:{},
+			currentScroll:0
 
         }
     },
@@ -176,6 +178,9 @@ export default {
 
 	},
     methods:{
+		...mapMutations([
+			'SET_MESSAGE_TOTAL_NUM'
+		]),
 		// 接收消息
 		getWebSocketMessage(data){
 			// 判断消息是否是当前聊天用户发的,如果是消息追加到当前内容中,不然将消息提示出来
@@ -197,7 +202,8 @@ export default {
 				// 滚动到最下面
 				this.$nextTick(()=>{
 					 if(this.pageNum == 1){
-						 this.$refs.scrollDiv.scrollTo(0,9999999999)
+						 this.$refs.scrollDiv.scrollTop = this.$refs.scrollDiv.scrollHeight
+						 // this.$refs.scrollDiv.scrollTo(0,9999999999)
 					 } else {
 						 // this.$refs.scrollDiv.scrollTo(0,0)
 					 }
@@ -351,7 +357,7 @@ export default {
 							user_id: this.model.id
 						})
 						this.$nextTick(()=>{
-							 this.$refs.scrollDiv.scrollTo(0,9999999999)
+							 this.$refs.scrollDiv.scrollTop = this.$refs.scrollDiv.scrollHeight
 						})
 					}
 					
@@ -476,7 +482,7 @@ export default {
 			  
 			this.$nextTick(()=>{
 				 if(this.pageNum == 1){
-					 this.$refs.scrollDiv.scrollTo(0,9999999999)
+					this.$refs.scrollDiv.scrollTop = this.$refs.scrollDiv.scrollHeight
 				 } else {
 					 // this.$refs.scrollDiv.scrollTo(0,0)
 				 }
@@ -484,6 +490,8 @@ export default {
 			
 			// 修改用户查看状态
 			this.$http.get('/message/updateMessageReadStatus?sourceUserId=' + this.$route.params.id);
+			// 清空消息数量
+			this.SET_MESSAGE_TOTAL_NUM(0)
 		 },
 		 changeCommentData(data) {
 		 	  const imgList = this.Highlightlist
@@ -651,19 +659,29 @@ export default {
 	// // 	}
 		
 	// },
+	// 跳转其他页面之前
+	beforeRouteLeave(to, from ,next){
+		if(from.name == 'messageDetail'){
+			console.log('....@@@@')
+			top.a = this.$refs
+			this.currentScroll = this.$refs.scrollDiv.scrollTop
+			// alert(this.currentScroll)
+		}
+	 next();
+	},
     watch:{
-        'model.content'(){
-          // alert(11)
-          // this.play(this.model.content)
-        },
 		$route(to,from) {
+			// top.a = this.$refs
 			// console.log(to)
 			// 跳转高度
 			if(to.name == 'messageDetail'){
 				// alert(this.currentScroll)
 				this.$nextTick(()=>{
-					document.documentElement.scrollTop = this.currentScroll
-					document.body.scrollTop = this.currentScroll
+					// document.documentElement.scrollTop = this.currentScroll
+					// document.body.scrollTop = this.currentScroll
+					this.$refs.scrollDiv.scrollTop = this.currentScroll
+					console.log('跳转之前位置....' + this.currentScroll)
+					this.SET_MESSAGE_TOTAL_NUM(0)
 				})
 			}
 			

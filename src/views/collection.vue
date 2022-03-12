@@ -90,9 +90,12 @@
 			  								<!-- <img class="van-image__img" data-src="http://192.168.1.4:8090/common/image?imgId=6102545b1734cb921086f39f&amp;region=true&amp;token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5YW5nY2hlbiIsImNyZWF0ZWQiOjE2MzE4NDM0MTIwNTYsImV4cCI6MjIzNjY0MzQxMn0.3dTJCHt_n7ZH--Nt23vYHQXPeWaWkbGE97zSqvF-lCrlZvOGys6FQO4x4h4TnorBXutuB_IpZFwU2NCI1IfUXA"
 			  								src="http://192.168.1.4:8090/common/image?imgId=6102545b1734cb921086f39f&amp;region=true&amp;token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5YW5nY2hlbiIsImNyZWF0ZWQiOjE2MzE4NDM0MTIwNTYsImV4cCI6MjIzNjY0MzQxMn0.3dTJCHt_n7ZH--Nt23vYHQXPeWaWkbGE97zSqvF-lCrlZvOGys6FQO4x4h4TnorBXutuB_IpZFwU2NCI1IfUXA"
 			  								lazy="loaded" style="object-fit: cover;"> -->
-											<van-image ref="workImage" v-if="categoryitem.loadMode <= 5" fit="cover" @load="imgLoad(categoryindex)" lazy-load :src="baseURL + categoryitem.previewImg +'&region=true&token=' + token" style="width:100%"/>
-											<van-image v-if="categoryitem.loadMode == 6" fit="cover"  lazy-load :src="baseURL + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
-											<van-image v-if="categoryitem.loadMode == 7" fit="cover"  lazy-load :src="baseURL + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
+											<div v-if="categoryitem.previewImg">
+												<van-image ref="workImage" v-if="categoryitem.loadMode <= 5" fit="cover" @load="imgLoad(categoryindex)" lazy-load :src="baseURL + categoryitem.previewImg +'&region=true&token=' + token" style="width:100%"/>
+												<van-image v-if="categoryitem.loadMode == 6" fit="cover"  lazy-load :src="baseURL + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
+												<van-image v-if="categoryitem.loadMode == 7" fit="cover"  lazy-load :src="baseURL + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
+											</div>
+											<img src="@/assets/nowprinting.gif" alt v-else  />
 											
 			  							</div>
 			  							<!-- <div class="van-card__tag">
@@ -315,29 +318,6 @@ export default {
           // search: ''
 		  loadMode: categoryitem.loadMode
         })
-        // if(res.data.data.list == 0){
-        //   categoryitem.finished = true;
-        //   return
-        // }
-        // categoryitem.list.push(...res.data.data.list);
-        // categoryitem.loading = false;
-        // if (res.data.data.list.length < categoryitem.pagesize) {
-        //   categoryitem.finished = true;
-        // }
-      // }
-	  // if(categoryitem.DICT_NAME == '历史'){
-		 //  res = await this.$http.post("/history/queryHistory", {
-		 //    // typeId: categoryitem.CODE_VALUE,
-		 //    pageNum: categoryitem.page,
-		 //    pageSize: categoryitem.pagesize,
-		 //    // search: ''
-			// loadMode: this.loadMode == 0 ? '' : this.loadMode
-		 //  })
-	  //   categoryitem.loading = false;
-	  //   // if(res.data.data.list == 0){
-	  //   //   categoryitem.finished = true;
-	  //   // }
-	  // }
 	  
 	  if(res.data.data.list == 0){
 	    categoryitem.finished = true;
@@ -377,7 +357,14 @@ export default {
 		}
 		//  人员
 		if(detailitem.loadMode == 6){
-		    this.$router.push(`/person/${detailitem.id}/SEX`)
+			// 判断是91的还是女优,跳转不同页面
+			if(detailitem.personLabel == 'avperformer_avfemale'){
+				this.$router.push(`/person/${detailitem.id}/SEX`)
+			}
+			if(detailitem.personLabel == 'avperformer_91'){
+				this.$router.push('/videoUserInfo/' + detailitem.id + '/SEX/video')
+			}
+		    
 		}
 		// 作品
 		if(detailitem.loadMode == 7){

@@ -1,5 +1,5 @@
 <template>
-  <div  v-if="category">
+  <div>
 	  <van-sticky>
 	  	<van-cell  style="z-index:999;width:100%;"  icon="arrow-left" class="van-ellipsis" title="消息"  @click="returnPage">
 	  		<!-- <van-button style="margin-right:1rem" plain type="default" size="mini" @click.stop="collectionClick" :class="{activeColor:collectionActive}">
@@ -21,7 +21,7 @@
         <!-- <van-tab v-for="(item,index) in category" scrollspy :key="index" :title="(item.DICT_NAME == '演员' ? '视频' : item.DICT_NAME)" scrollspy > -->
 			<!-- 嵌套一层div做内容滚动区域, 一定要有确定高度，可以使用高度100%或calc(100vh - ?px) -->
 			
-		<div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'" v-for="(item,index) in category" scrollspy :key="index">
+		<div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'" >
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
            <!-- <van-list
 			style="padding-bottom: 50px;"
@@ -40,14 +40,14 @@
                 />
               </div>
             </van-list> -->
-			<van-list
+<!-- 			<van-list
 			  v-model="item.loading"
 			  :immediate-check="false"
 			  :finished="item.finished"
 			  finished-text="我也是有底线的"
 			  @load="onLoad"
 			  style="padding-bottom: 20%;"
-			>
+			> -->
 			<!-- :icon="baseURL + categoryitem.imgUrl" -->
 			 <!-- <div class="detailparent" ref="tab">
 				 <van-swipe-cell style="width:100%">
@@ -68,7 +68,7 @@
 			  </div> -->
 			  <div role="feed" class="van-list">
 			  	<div class="detailparent">
-			  		<div class="van-swipe-cell" style="width: 100%;" v-for="(categoryitem,categoryindex) in item.list" @click="toPage(categoryitem)">
+			  		<div class="van-swipe-cell" style="width: 100%;" v-for="(categoryitem,categoryindex) in messageList()" @click="toPage(categoryitem)" :key="categoryindex">
 			  			<div class="van-swipe-cell__wrapper" style="transform: translate3d(0px, 0px, 0px); transition-duration: 0.6s;">
 			  				<div class="goods-card van-card" style="border-bottom: 1px solid rgb(235, 237, 240);">
 			  					<div class="van-card__header">
@@ -115,7 +115,7 @@
 												{{categoryitem.messageContent ? categoryitem.messageContent : '暂无消息'}}
 											</div>
 											<div class="van-card__desc van-ellipsis " style="top:2rem">
-												{{categoryitem.lastTime ? categoryitem.lastTime : '' | filterTime}}
+												{{categoryitem | filterTime}}
 											</div>
 											<!-- <div class="van-card__type2 van-ellipsis" style="right:0;left:5rem">
 												{{categoryitem.lastTime ? categoryitem.lastTime : '' | filterTime}}
@@ -164,7 +164,7 @@
 			  	<div class="van-list__placeholder">
 			  	</div>
 			  </div>
-			</van-list>
+			<!-- </van-list> -->
           </van-pull-refresh>
 		  </div>
         <!-- </van-tab> -->
@@ -176,6 +176,7 @@
 <script>
 import NavBar from "@/components/common/Navbar.vue";
 import backTop from '@/components/backTop'
+import { mapGetters, mapMutations } from 'vuex'
 export default {
 	data() {
     return {
@@ -209,10 +210,13 @@ export default {
 	 //  // 
   // },
   filters:{
-  	filterTime(val) {
+  	filterTime(data) {
+		let val = data.lastTime
   	  if(val){
+		  console.log(val)
   	    // return val.split('T')[0]
-		return val.substring(0,10)
+		// return val.substring(0,10)
+		return (1900 + val.year) + '-' + (val.month + 1) + '-' + (val.day) + ' ' +  val.hours + ':' + val.minutes
   	  }
   	  return "";
   	},
@@ -237,6 +241,14 @@ export default {
 	}
   },
   methods: {
+	  // ...mapMutations([
+	  // 	'SET_MESSAGE_MAP',
+	  // 	'GET_MESSAGE_MAP',
+	  	
+	  // ]),
+	  ...mapGetters([
+	  	'messageList'
+	  ]),
 	  returnPage(){
 	  	this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 	  	this.$router.go(-1)
@@ -273,10 +285,12 @@ export default {
       
     },
 	toPage(item){
+		console.log(item)
 		// 记录当前位置
 		this.recordScroll();
 		//this.$msg.fail('功能开发中')
-		
+		// 清除查询状态
+		// this.overallMessage.messageMap.get(item.user_id).noReadNum = 0
 		// 跳转明细页面、携带用户id和页面标识
 		this.$router.push(`/messageDetail/${item.messageSource}/${item.user_id}`)
 		
@@ -329,25 +343,25 @@ export default {
 		 //  pageSize: categoryitem.pagesize,
 	  // },{timeout:10000})
 	  // console.log(res)
-	const res = await this.$http.post("/message/queryTypeMessage", {
-          // typeId: categoryitem.CODE_VALUE,
-          pageNum: categoryitem.page,
-          pageSize: categoryitem.pagesize,
-          // : ''
-        })
-        if(res.data.data.list == 0){
+	// const res = await this.$http.post("/message/queryTypeMessage", {
+ //          // typeId: categoryitem.CODE_VALUE,
+ //          pageNum: categoryitem.page,
+ //          pageSize: categoryitem.pagesize,
+ //          // : ''
+ //        })
+		
+  //       if(res.data.data.list == 0){
           categoryitem.finished = true;
-          return
-        }
-        categoryitem.list.push(...res.data.data.list);
-		categoryitem.loading = false;
-		if (res.data.length < categoryitem.pagesize) {
-		  categoryitem.loading = true;
-		  categoryitem.finished = true;
-		}
+  //         return
+  //       }
+  //       categoryitem.list.push(...res.data.data.list);
+		// categoryitem.loading = false;
+		// if (res.data.length < categoryitem.pagesize) {
+		//   categoryitem.loading = true;
+		//   categoryitem.finished = true;
+		// }
 
     },
-	
     onRefresh() {       //下拉刷新
                 setTimeout(() => {
                     this.finished = false;
@@ -378,15 +392,23 @@ export default {
     },
 
   },
-  watch: {
-    active() {
+  activated() {
+  		// 页面显示了,去更新各类消息信息
+  		
       const categoryitem = this.categoryItem();
-      if (!categoryitem.list.length) {
-        this.selectArticle();
-		
-        // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
-      }
+  	  console.log(categoryitem)
+	  for(let i =0;i<categoryitem.list.length;i++){
+		  // 更新各类消息数量
+		  // categoryitem.list[i].noReadNum = this.overallMessage.messageMap.get(categoryitem.list[i].user_id).noReadNum
+	  }
+  //     if (!categoryitem.list.length) {
+  //       this.selectArticle();
+  		
+  //       // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
+  //     }
     },
+  watch: {
+
 	$route(to,from) {
 		// console.log(to)
 		// 跳转高度
@@ -399,21 +421,21 @@ export default {
 		}
 		
 		// id不同刷新
-		if(to.name =='message'){
-			console.log('数据刷新...')
-			this.selectCategory();
-			// this.$forceUpdate()
-			// scroll(0,0)
-			// this.loadMode = 0
-			// this.person = {}
-			// const categoryitem = this.categoryItem();
-			// categoryitem.list = []
-			// categoryitem.page = 1
-			// categoryitem.finished = false;
-			// categoryitem.loading = true;
-			// this.selectArticle();
-			// this.collectionInit()
-		}
+		// if(to.name =='message'){
+		// 	console.log('数据刷新...')
+		// 	this.selectCategory();
+		// 	// this.$forceUpdate()
+		// 	// scroll(0,0)
+		// 	// this.loadMode = 0
+		// 	// this.person = {}
+		// 	// const categoryitem = this.categoryItem();
+		// 	// categoryitem.list = []
+		// 	// categoryitem.page = 1
+		// 	// categoryitem.finished = false;
+		// 	// categoryitem.loading = true;
+		// 	// this.selectArticle();
+		// 	// this.collectionInit()
+		// }
 	},
 	// '$parent.tabActive'(){
 	// 	console.log('===============================')

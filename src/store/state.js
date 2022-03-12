@@ -11,6 +11,8 @@ const state = {
   popularVideo: [],
   playList: [],
   playListDetail: [],
-  catch_components: []
+  catch_components: [],
+  messageTotalNum:0 ,// 消息总数
+  messageList:[] // 消息map对象
 }
 export default state

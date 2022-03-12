@@ -74,12 +74,26 @@ const mutations = {
   },
   [types.APPEND_PLAYLIST_DETAIL] (state, playListDetail) {
     state.playListDetail = state.playListDetail.concat(playListDetail)
-	console.log('!!!!!!')
-	console.log(state.playListDetail)
   },
   [types.CLEAN_PLAYLIST_DETAIL] (state) {
     state.playListDetail = []
   },
+  [types.SET_MESSAGE_TOTAL_NUM] (state,num) {
+    state.messageTotalNum = num
+  },
+  [types.APPEND_MESSAGE_LIST] (state,value) {
+	// console.log('初始化数据')
+    state.messageList.push(value)
+  },
+  [types.GET_MESSAGE_LIST] (state,key) {
+	for(let i =0;i<state.messageList.length;i++){
+		if(state.messageList[i].user_id == key){
+			return state.messageList[i];
+		}
+	}
+	return null;
+  },
+  
   GET_CATCHE_COMPONENTS (state, data) {
 		state.catch_components = data
   }

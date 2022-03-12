@@ -9,7 +9,7 @@
 			    :style="{ height: '5%' ,overflow: 'hidden'}"
 				@open="changeSlider"
 			  >
-			  <van-cell style="background: black;color:white;"  icon="arrow-left" :title="(chapterList[this.$route.params.pxh - 1] ? chapterList[this.$route.params.pxh - 1].title : '')"  @click="$router.go(-1)"/>
+			  <van-cell style="background: black;color:white;"  icon="arrow-left" :title="(chapterList[this.$route.params.pxh - 1] ? chapterList[this.$route.params.pxh - 1].title : '')"  @click="toBack"/>
 		</van-popup>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
 		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"/>
@@ -20,7 +20,7 @@
 		  </van-pull-refresh>
 		  <!-- 底部弹出 -->
 		  <van-popup
-		  :overlay-style="{zIndex:'2000'}"
+		  :overlay-style="{zIndex:'2000',background:'rgba(255,255,255,0)'}"
 		  style="background: black;
     opacity: 0.7;"
 		    v-model="bottom"
@@ -156,7 +156,10 @@ export default {
 	  imgQuality:{},// 图片清晰度
 	  chapterList:[], // 章节数据集合
 	  mangaMode:'1' ,// 漫画模式,1略所模式,2列表模式
-	  chapterTopSize: document.body.clientHeight * 0.35 // 章节菜单高度距离顶部距离像素
+	  chapterTopSize: document.body.clientHeight * 0.35, // 章节菜单高度距离顶部距离像素
+	  browseRecordObj:{
+		  loadMode:2
+	  } // 浏览记录对象
     };
   },
   components:{Scroll},
@@ -183,6 +186,7 @@ export default {
   },
   // 跳转其他页面之前
   beforeRouteLeave(to, from ,next){
+	  // console.log('切换其他页面.....')
 	next();  
   },
   
@@ -190,6 +194,12 @@ export default {
 	  next()
   },
   methods: {
+	  // 返回
+	  toBack(){
+		  // 记录浏览数据
+		  this.addBrowseRecord(this.$route.params.pxh)
+		  this.$router.go(-1)
+	  },
 	  // 点击章节按钮
 	  selectChapter(){
 		  this.chapter = true
@@ -248,10 +258,13 @@ export default {
 	},
 	changePage(type){
 		var pxh = parseInt(this.$route.params.pxh)
+		// 记录当前位置
+		this.browseRecordObj.pxh = pxh
 		if(pxh == 1 && type == 'up'){
 			// this.$msg.fail('已经是第一话')
 			return;
 		} else {
+			
 			// 跳转
 			if(type == 'next'){
 				// 最后一页,不跳转
@@ -262,14 +275,20 @@ export default {
 				this.$route.params.pxh = pxh + 1
 				this.bottom = false
 			}
+			
 			if(type == 'up'){
 				// pxh = pxh - 1
 				this.$route.params.pxh = pxh - 1
 				this.bottom = false
 			}
 			this.value = 1;
-			scrollTo(0,0)
+			
+			this.addBrowseRecord(pxh)
+			// scrollTo(0,0)
+			// this.addBrowseRecord()
+			this.browseRecordObj.pxh = this.$route.params.pxh
 			this.selectCategory();
+			
 		}
 	},
 	changeSlider(){
@@ -338,11 +357,52 @@ export default {
 	},
 	// 切换漫画
 	changeManga(item){
+		// 切换的时候记录当前漫画位置
+		// this.browseRecordObj.pxh = this.$route.params.pxh
+		this.addBrowseRecord(this.$route.params.pxh)
 		let pxh = item.pxh
 		this.$route.params.pxh = pxh;
+		// console.log('切换')
 		this.value = 1;
-		scrollTo(0,0)
+		// scrollTo(0,0)
+
+		this.browseRecordObj.pxh = pxh
 		this.selectCategory();
+	},
+	// 查询当前浏览位置
+	async queryPosition(){
+		// 有数据定位响应位置，没有不处理
+		const res = await this.$http.post('/browseRecord/queryMaxBrowerRecord',this.browseRecordObj)
+		// console.log(res)
+		if(res.data.data){
+			// 跳转到指定位置
+			this.$nextTick(()=>{
+				// console.log('开始定位.....')
+				// console.log(document.getElementById(res.data.data.position).offsetTop )
+				// console.log('img' + res.data.data.position)
+				// console.log(this.$refs['img' + res.data.data.position][0].$el)
+				// top.a = this.$refs['img' + res.data.data.position][0]
+				document.documentElement.scrollTop = this.$refs['img' + res.data.data.position][0].$el.offsetTop
+				// document.getElementById(res.data.data.position).scrollIntoView(true)
+				
+			})
+		}else{
+			scrollTo(0,0) // 没有数据直接定位到0
+		}
+	},
+	// 保存浏览记录位置
+	async addBrowseRecord(pxh){
+		// 获取当前时间,计算停留时间
+		let endTime  = new Date().getTime();
+		this.browseRecordObj.stopTime = endTime - this.browseRecordObj.startTime
+		const res = await this.$http.post('/browseRecord/addBroseRecord',{
+			pxh:pxh,
+			position:this.browseRecordObj.position,
+			webInfoDataId:this.browseRecordObj.webInfoDataId,
+			stopTime:0,
+			loadMode:2
+		})
+		// console.log(res)
 	},
 	showpopUp(){
 		this.bottom = !this.bottom
@@ -367,7 +427,8 @@ export default {
 	  this.mangaList = res.data.data
 	  this.isLoading = false
 	  // 定位之前位置
-	  this.toBeforeScroll()
+	  this.queryPosition()
+	  // this.toBeforeScroll()
 	  // this.hideloading()
 	  this.$msg.clear()
     },
@@ -451,20 +512,50 @@ export default {
 		})
 		this.chapterList = res.data.data
 	},
+	// 跳转之前位置
 	toBeforeScroll(){
-		let y = localStorage['mangaDetail_' + this.$route.params.id+'_' + this.$route.params.pxh]
-		if(y){
-		  setTimeout(()=>{
-			  scrollTo(0,parseInt(y))
-		  },500)
-		}
-	}
+		// let y = localStorage['mangaDetail_' + this.$route.params.id+'_' + this.$route.params.pxh]
+		// if(y){
+		//   setTimeout(()=>{
+		// 	  scrollTo(0,parseInt(y))
+		//   },500)
+		// }
+		this.$nextTick(()=>{
+			
+		})
+	},
   },
   created() {
+	  // 浏览记录数据初始化
+	  this.browseRecordObj.webInfoDataId = this.$route.params.id
+	  this.browseRecordObj.startTime = new Date().getTime() // 进入时间
+	  this.browseRecordObj.pxh = this.$route.params.pxh// 章节
 	  window.addEventListener('scroll', (e)=>{
-	  	if(this.$route.name == 'mangaDetail' && (document.documentElement.scrollTop||document.body.scrollTop) > 100){
-	  		localStorage['mangaDetail_' + this.$route.params.id+'_' + this.$route.params.pxh] = (document.documentElement.scrollTop||document.body.scrollTop)
-	  	}
+		  this.$nextTick(()=>{
+				  let curHeight = document.documentElement.scrollTop||document.body.scrollTop// 当前高度
+				  let curTotal = 0;// 当前位置
+		  		  let total = $('.van-pull-refresh').height();
+		  		  // console.log('总高度' + total)
+				  // 标签数组
+				  let imgs = $('.van-pull-refresh .van-image')
+				  // 遍历获取个个高度
+				  for(var i =0;i<imgs.length;i++){
+					  let img = imgs[i]
+					  curTotal += img.scrollHeight
+					  // 如果当前图片累计位置大于当前位置，说明滚动这个图片上了
+					  if(curTotal > curHeight){
+						  // console.log(i+1)
+						  // 修改浏览记录id
+						  this.browseRecordObj.position = (i + 1)
+						  break;
+					  }
+				  }
+		  })
+		 //  console.log(e)
+		 //  console.log('当前滚动位置' + e)
+	  // 	// if(this.$route.name == 'mangaDetail' && (document.documentElement.scrollTop||document.body.scrollTop) > 100){
+	  // 	// 	localStorage['mangaDetail_' + this.$route.params.id+'_' + this.$route.params.pxh] = (document.documentElement.scrollTop||document.body.scrollTop)
+	  // 	// }
 	  })
 	  this.initConfig();
 	  this.initChapter();

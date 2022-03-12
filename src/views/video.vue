@@ -4,9 +4,12 @@
 		<!-- 查询按钮 -->
 		<van-icon name="search" size="24" color="white" style="position: absolute;
 		    top: 0rem;z-index:1550;padding:1rem;
-			
-		    right: 0rem;" @click.stop="toQuery"/>
-		，
+		    right: 0rem;" @click.stop="toQuery" v-show="showPageTool"/>
+		
+		<!-- 隐藏模式下的工具栏图标 -->
+<!-- 		<van-icon name="ellipsis" size="24" color="white" style="position: absolute;
+		    top: 0rem;z-index:1550;padding:1rem;
+		    right: 0rem;" @click.stop="toolShow = true" v-show="!showPageTool"/> -->
 			<!-- 返回按钮 -->
 		<van-icon name="arrow-left" size="24" color="white" style="position: absolute;
 			top: 0rem;z-index:1550;padding:1rem;
@@ -30,13 +33,16 @@
 					:bottomComment="false"
 				  @playVideo="playHandler"
 				  :VideoItem="item"
-				  @showCommentList="fetchCommentsAndShowList"></my-video>
+				  @showCommentList="fetchCommentsAndShowList"
+				  @showPageToolMethod="showPageToolMethod"
+				  :showPageTool="showPageTool"
+				  ></my-video>
 			  </div>
 			  <!--留言弹窗-->
 			  <!-- <comment ref="comment" @commentNum="getCommentNum" ></comment> -->
 			  
 			</scroll>
-			<footer>
+			<footer v-show="showPageTool">
 			<!--底部操作栏-->
 				<div class="container_bottom" v-show="bottomShow">
 					<div class="bottom_tab" :class="tabIndex==0?'tab_active':''" @click="changeTab(0)">
@@ -51,8 +57,34 @@
 				</div>
 			</footer>
 			</div>
+			<!-- 弹出工具栏 -->
+			<!-- <van-popup
+			  v-model="toolShow"
+			  :overlay-style="{background:'rgba(255,255,255,0)',zIndex:'2000'}"
+			  round
+			  position="bottom"
+			  :style="{ height: '10%'}"
+			>
+			<van-row  justify="space-around" style="padding-top:5%">
+			  <van-col span="6" @click="fullVideo()">
+					<span >
+								<van-icon name="exchange" size="1.5rem" />
+								<p style="padding-top:.5rem">全屏</p>
+							</span>
+						</van-col>
+			  <van-col span="6" @click.stop="showPageToolMethod">
+							<span>
+			  		<van-icon name="orders-o" size="1.5rem" />
+			  		<p style="padding-top:.5rem" v-if="showPageTool" >正常</p>
+					<p style="padding-top:.5rem" v-if="!showPageTool">简约</p>
+					</span>
+			  </van-col>
+			</van-row>
+			</van-popup> -->
 
 	</div>
+
+
 </template>
 <script>
 // import PlayList from '@/components/PlayList/PlayList'
@@ -87,6 +119,8 @@ import MyVideo from '@/components/MyVideo/MyVideo'
         data() {
             let u = navigator.userAgent;
             return {
+				showPageTool:this.showPageTool,// 隐藏除视频和工具栏外的所有东西
+				toolShow:false,// 显示工具
 				bottomShow:true, // 是否显示底部菜单
 				currentY: 0,
 				// showCommentList: false,
@@ -191,6 +225,27 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 
         },
         methods: {
+			// openToolsMethod(item){
+			// 	console.log('点击工具.....')
+			// 	console.log(item)
+			// 	this.toolShow = true;
+			// },
+			// 隐藏视频和工具栏外所有东西
+			showPageToolMethod(){
+				console.log('触发......')
+				this.showPageTool = !this.showPageTool
+				this.toolShow = false
+				// this.showPageTool = !this.showPageTool
+				
+				// this.hidePageTool = true
+			},
+			// 全屏当前看的视频
+			fullVideo(){
+				this.toolShow = false
+				let clientHeight = this.clientHeight
+				let index = this.currentY / clientHeight
+				this.$refs['videos'][index].screen()
+			},
 			getCommentNum(video,commentNum){
 				// console.log(video)
 				// console.log('ping论数量' + commentNum)

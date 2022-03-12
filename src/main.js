@@ -101,6 +101,11 @@ Vue.prototype.windowWidth = screen.width // 获取用户屏幕宽度
 
 Vue.prototype.pageScroll = {A:'10'} // 页面所有滚动位置
 
+Vue.prototype.showPageTool = true// 短视频是否简约莫是
+
+// 全局消息对象
+Vue.prototype.overallMessage = {}
+
 
 // 图标列表
 Vue.prototype.Highlightlist = [

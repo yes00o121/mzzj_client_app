@@ -34,7 +34,7 @@
 		<van-tabbar v-model="active" :fixed = "false" :border="false" inactive-color="rgb(25, 137, 250)" >
 			<van-tabbar-item icon="star-o" @click="pathPush(1)">收藏</van-tabbar-item>
 		  <van-tabbar-item icon="clock-o" @click="pathPush(2)">历史记录</van-tabbar-item>
-		  <van-tabbar-item icon="chat-o" :badge="messageNum" @click="pathPush(4)">消息</van-tabbar-item>
+		  <van-tabbar-item icon="chat-o" :badge="messageTotalNum ? messageTotalNum : null" @click="pathPush(4)">消息</van-tabbar-item>
 <!-- 		  <van-icon name="chat-o" badge="99+" /> -->
 		  <van-tabbar-item icon="friends-o" v-if="root == 1" @click="pathPush(3)">用户日志</van-tabbar-item>
 		</van-tabbar>
@@ -49,6 +49,7 @@ import NavBar from '@/components/common/Navbar.vue'
 import userDetail from '@/components/userComponent/userDetail'
 import userArticle from '@/components/userComponent/userArticle'
 import app from '@/App.vue'
+import { mapGetters, mapMutations } from 'vuex'
 export default {
     data() {
         return {
@@ -60,6 +61,11 @@ export default {
 			messageNum:null	
         }
     },
+	computed:{
+		...mapGetters([
+		  'messageTotalNum'
+		])
+	},
     components:{
         NavBar,
         userDetail,
@@ -78,6 +84,8 @@ export default {
 				this.$router.push(`/userlog`)
 			}
 			if(index == 4){
+				// 清空消息
+				this.overallMessage.messageTotalNum = 0
 				this.$router.push(`/message`)
 			}
 			
@@ -167,24 +175,36 @@ export default {
 		},
 		// 加载消息数据
 		async loadMessage(){
-			const res = await this.$http.get("/message/queryMessageNum")
-			console.log(res.data)
-			if(res.data > 99){
-				this.messageNum = '99+'
-				// 底部"我的"菜单显示消息图标
-				this.$parent.myIconStatus = true
-			} else{
-				if(res.data == 0){
-					this.messageNum = null;
-					console.log('........')
-				}else{
-					this.messageNum = res.data
-					// 底部"我的"菜单显示消息图标
-					this.$parent.myIconStatus = true
-				}
+			// let statistics = localStorage.getItem('statistics')
+			// if(statistics){
+			// 	let statisticsJson = JSON.parse(statistics)
+			// 	for(let i =0;i<statisticsJson.message.length;i++){
+			// 		this.messageNum += statisticsJson.message[i].noReadNum ? statisticsJson.message[i].noReadNum : 0
+			// 	}
+			// 	if(this.messageNum == 0){
+			// 		this.messageNum = null;
+			// 	}
+			// }else{
+			// 	this.messageNum = null;
+			// }
+			// const res = await this.$http.get("/message/queryMessageNum")
+			// console.log(res.data)
+			// if(res.data > 99){
+			// 	this.messageNum = '99+'
+			// 	// 底部"我的"菜单显示消息图标
+			// 	this.$parent.myIconStatus = true
+			// } else{
+			// 	if(res.data == 0){
+			// 		this.messageNum = null;
+			// 		console.log('........')
+			// 	}else{
+			// 		this.messageNum = res.data
+			// 		// 底部"我的"菜单显示消息图标
+			// 		this.$parent.myIconStatus = true
+			// 	}
 				
-			}
-			console.log(this.messageNum)
+			// }
+			// console.log(this.messageNum)
 			
 
 		}

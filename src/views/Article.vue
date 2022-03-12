@@ -1,9 +1,9 @@
 
 <template>
    <!-- <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div"> -->
-	   <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
-  <div v-if="model">
-      <!-- <nav-bar></nav-bar> -->
+	   <v-touch  v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+(Item ? '100%' : (windowHeight + 'px'))+''" :swipe-options="{direction: 'horizontal'}">
+  <div  v-if="model && !Item">
+	  <!-- <nav-bar></nav-bar> -->
 	  <van-sticky >
 	  	<van-cell  style="z-index:999;width: 100%;" class="van-ellipsis" icon="arrow-left" :title="model.title"  @click="returnPage"/>
 	  </van-sticky>
@@ -51,7 +51,17 @@
       </div>
 
   </div>
+  <!-- 组件形式 -- >
+  <div v-if="Item">
+  	 <div class="detailinfo">
+  		 <div class="video" >
+			<!-- <video ref="videoPlayer" id="myVideo" controls="controls" :src="baseURL + '/video/234034?token=' + token" ></video> -->
+			<video  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid"  controls="controls"></video>
+  		</div>
+  	 </div>
+  </div>
   </v-touch>
+
 </template>
 
 <script>
@@ -60,10 +70,15 @@ import cover from './cover'
 import commentTitle from '@/components/article/commentTitle.vue'
 import comment from '@/components/article/comment.vue'
 export default {
+	props:{
+		Item: {
+		  type: Object
+		}
+	},
     data() {
         return {
 			token: 'Bearer ' + localStorage.token,
-            model:null,
+            model:{},
             commendList:null,
             lens:null,
             myVideo:null,
@@ -126,7 +141,8 @@ export default {
 			  pageNum: 1,
 			  pageSize: 10,
 			  search: '',
-			  loadMode: this.$route.params.loadMode
+			  loadMode: this.$route.params.loadMode,
+			  sortType:1
 			})
 			console.log(res)
 			this.model = res.data.data.list[0]
@@ -318,37 +334,60 @@ export default {
             // }
         },
          play(vdoSrc){
+			 let _this = this
 			 console.log(this.$refs.videoPlayer)
                          //初始化播放器
               this.myVideo = this.$video(
                       this.$refs.videoPlayer,
-                      // this.options,
-                      function onPlayerReady() {}
+                      {
+                      				  	  			  // autoplay: 'muted',//自动播放
+						  loop:true,
+						  controls: false,//用户可以与之交互的控件
+                      },
+                      function onPlayerReady() {
+						  // 播放事件
+						  this.on('play',function(){
+							  console.log('开始播放....')
+							  // 调用父组件事件,暂时出了该视频外的所有视频
+							  _this.$emit('playVideo',_this.Item)
+						  })
+					  }
                     );
             this.myVideo.src({
               src:vdoSrc,
               type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
             })
-            this.myVideo.play()
+			// 不自动播放
+			if(!this.Item){
+				this.myVideo.play()
+			}
+
 
          }
     },
     created() {
 		if(this.$route.params.loadMode == 6){
 			this.getVideo()
-		}else{
+			 this.collectionInit()
+		}
+		if(this.$route.params.loadMode == 4){
+			console.log('.....')
 			this.myVideo = null;
 			  // $('#myVideo').empty()
 			if(this.myVideo){
 			  this.myVideo.destory();
 			}
 		   this.getVideo()
-			   // this.articleitemData()
-
 		}
-       
+       if(this.Item){
+		   console.log('参数形式....')
+		   this.$nextTick(()=>{
+			   let id = this.Item.vId.split('_-')[1]
+			   this.play(this.baseURL + `/webInfoVideo/${id}/${id}?token=` + this.token)
+		   })
+	   }
          // this.commendData()
-         this.collectionInit()
+        
     },
     watch:{
         'model.content'(){

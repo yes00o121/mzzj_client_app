@@ -20,6 +20,8 @@
 			@playVideo="playHandler"
 			:bottomComment="true"
 			:VideoItem="item"
+			@showPageToolMethod="showPageToolMethod"
+			:showPageTool="showPageTool"
 			@showCommentList="fetchCommentsAndShowList"></my-video>
 		</div>
 		
@@ -48,6 +50,7 @@ import { mapGetters, mapActions } from 'vuex'
 export default {
   data () {
     return {
+	  showPageTool:this.showPageTool,// 隐藏除视频和工具栏外的所有东西
 	  videoHeight:document.body.clientHeight, // 视频高度
       currentY: 0,
       showCommentList: false,
@@ -61,6 +64,16 @@ export default {
     }
   },
   methods: {
+	  // 隐藏视频和工具栏外所有东西
+	  showPageToolMethod(){
+		  // console.log('333')
+		  this.showPageTool = !this.showPageTool
+	  },
+	  openToolsMethod(item){
+	  	console.log('点击工具.....')
+	  	console.log(item)
+	  	this.toolShow = true;
+	  },
 	  getCommentNum(video,commentNum){
 	  	// console.log(video)
 	  	// console.log('ping论数量' + commentNum)

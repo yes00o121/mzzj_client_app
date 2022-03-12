@@ -79,7 +79,7 @@
 					</div>
 				 </div>
 				 <!-- 演员 -->
-				 <div style="display: flex;overflow: auto;" >
+				 <div style="display: flex;overflow: auto;" ref="personScroll">
 					 <div  v-for="(categoryitem,categoryindex) in person" :key="categoryindex"  @click="toPage(categoryitem)">
 						 
 						 <div class="userdetail">
@@ -107,12 +107,13 @@
 						 <div style="flex-wrap: wrap;display: flex;width:100%">
 							 <div style="font-size:14px;text-align: left;width:60%;margin-top: 0.4rem;" class="van-multi-ellipsis" v-html="categoryitem.title"></div>
 							<div style="width:35%;padding: .3rem;">
-								<van-image  style="width:100%;height:25.778vw;" rel="external nofollow"  fit="contain" lazy-load :src="baseURL +  categoryitem.photo + (categoryitem.photo.indexOf('?') != -1 ? '&' : '?') + 'token=' + token" class="participates-photo"  >
+								<van-image v-if="categoryitem.photo"  style="width:100%;height:25.778vw;" rel="external nofollow"  fit="contain" lazy-load :src="baseURL +  categoryitem.photo + (categoryitem.photo.indexOf('?') != -1 ? '&' : '?') + 'token=' + token" class="participates-photo"  >
 									<template v-slot:error>加载失败</template>
 											<template v-slot:loading>
 											    <van-loading type="spinner" size="20" />
 											  </template>
 									</van-image>
+							<img src="@/assets/nowprinting.gif" v-else />		
 								<!-- <van-image style="width:100%;height:45.778vw;" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +   categoryitem.photo + '?token=' + token" class="participates-photo" v-if="categoryitem.mklx != 'video'" /> -->
 							</div>
 							<!-- <div class="right-descript van-multi-ellipsis--l2" v-html="categoryitem.summary">
@@ -161,6 +162,7 @@ export default {
 		dateType:'5',
 		token: 'Bearer ' + localStorage.token,
 		currentScroll:0,// 当前滚动高度
+		personScroll:0,// 人员滚动位置
       category: [],
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
@@ -185,6 +187,7 @@ export default {
 	  
 	  	this.currentScroll = document.documentElement.scrollTop || document.body.scrollTop;
 	  	this.$refs.backtop.show = false
+		this.personScroll = this.$refs.personScroll[0].scrollLeft
 	  	// alert('记录高度' + this.currentScroll)
 	  }
 	  next();
@@ -197,6 +200,7 @@ export default {
 		if(to.path == '/search'){
 			document.documentElement.scrollTop = this.currentScroll
 			document.body.scrollTop = this.currentScroll
+			this.$refs.personScroll[0].scrollLeft = this.personScroll
 			if(this.currentScroll >= 300){
 				this.$refs.backtop.show = true
 			}
@@ -326,7 +330,14 @@ export default {
 		}
 		if(detailitem.mklx == 'person'){
 			id = detailitem.id.replace('person_','')
-			this.$router.push(`/person/${id}/SEX`)
+			// 判断是91还是女优
+			if(detailitem.label == 'avperformer_avfemale'){
+				this.$router.push(`/person/${id}/SEX`)
+			}
+			if(detailitem.label == 'avperformer_91'){
+				this.$router.push(`/videoUserInfo/${id}/SEX/video`)
+			}
+
 		}
 		if(detailitem.mklx == 'manga'){
 			id = detailitem.id.replace('manga_','')

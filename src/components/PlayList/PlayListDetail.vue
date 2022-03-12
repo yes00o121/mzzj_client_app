@@ -20,6 +20,8 @@
 			@playVideo="playHandler"
 			:bottomComment="true"
 			:VideoItem="item"
+			@showPageToolMethod="showPageToolMethod"
+			:showPageTool="showPageTool"
 			@showCommentList="fetchCommentsAndShowList"></my-video>
 		</div>
 		
@@ -48,6 +50,7 @@ import { mapGetters, mapActions } from 'vuex'
 export default {
   data () {
     return {
+		showPageTool:this.showPageTool,// 隐藏除视频和工具栏外的所有东西
 	  videoHeight:document.body.clientHeight, // 视频高度
       currentY: 0,
       showCommentList: false,
@@ -85,6 +88,10 @@ export default {
       //   v.pause()
       // }
     },
+	// 隐藏视频和工具栏外所有东西
+	showPageToolMethod(){
+		 this.showPageTool = !this.showPageTool
+	},
     scroll (pos) {
 		// console.log(pos.y)
 	  if(this.currentHeight > 0){

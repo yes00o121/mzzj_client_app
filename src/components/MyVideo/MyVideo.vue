@@ -2,6 +2,10 @@
 	<div >
  <v-touch v-on:panup="panup" v-on:panstart="panstart" v-on:panend="panend" v-on:panleft="panLeft" v-on:panright="panRight"  v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
   <div style="position:relative;">
+	  <!-- 隐藏模式下的工具栏图标 -->
+	  <van-icon name="ellipsis" size="24" color="white" style="position: absolute;
+	      top: 0rem;z-index:9999;padding:1rem;
+	      right: 0rem;" @click.stop="openTools(VideoItem)" v-show="!showPageTool"/>
   <div class="my-video" :id="'div_' + VideoItem.id" :style="VideoItemHeightStyle" @click.stop="playVideo()" >
     <!-- <video class="video" :src="baseURL + VideoItem.videoPath"
       :poster="VideoItem.videoCover"
@@ -24,7 +28,7 @@
 	  object-fit="fill"
 	  ></video> -->
     <div class="side-bar">	
-      <div class="avatar" @click.stop="" style="border:none">
+      <div class="avatar" @click.stop="" style="border:none" v-show="showPageTool">
        <!-- <img :src="`${baseURL}${VideoItem.userAvatar}`" alt="" width="40" height="40"
           @click="chooseUser"> -->
 		  <!-- <img :src="`${baseURL}/common/image?imgId=61b88b894316b402bcbf833f&token=${token}`" alt="" width="40" height="40"
@@ -46,20 +50,24 @@
 	  <!-- 加载状态-->
 	  <van-loading class="iconfont" v-show="collStatus"/>
 	  <!-- 收藏按钮 -->
-      <div class="like iconfont icon-heart-fill" v-show="!collStatus" :class="{ 'red-heart': like }" @click.stop="collectionClick()">
+      <div class="like iconfont icon-heart-fill" v-show="!collStatus && showPageTool" :class="{ 'red-heart': like }" @click.stop="collectionClick()" >
         <span class="likenum">{{collNum}}</span>
       </div>
 	  <!-- 评论图标-->
       <!-- <div class="comment iconfont icon-message" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)"> -->
-	  <div class="comment1 iconfont icon-message" @click.stop="changeComment()">
+	  <div class="comment1 iconfont icon-message" @click.stop="changeComment()" v-show="showPageTool">
         <span class="commentnum">{{commentNum}}</span>
       </div>
-      <div class="share iconfont icon-share" @click.stop="$msg.fail('分享功能关闭')">
-        <!-- <span class="sharenum">{{commentNum}}</span> -->
+<!--      <div class="share iconfont icon-share" @click.stop="$msg.fail('分享功能关闭')">
 		<span class="sharenum">0</span>
-      </div>
+      </div> -->
+	  <!-- 工具栏 -->
+	  <div class="share iconfont icon-ellipsis" @click.stop="openTools(VideoItem)" v-show="showPageTool">
+
+	  </div>
+
     </div>
-	<div class="label-wrap">
+	<!-- <div class="label-wrap"> -->
 	<!-- 	<div style="text-align: left;margin-right: 20px;box-sizing: border-box;
     margin-right: 8px;
 	margin-top: 10px;
@@ -76,9 +84,11 @@
 			{{item.name}} 
 	</span>
 		</div> -->
-	</div>
-    <div class="text-wrap">
+	<!-- </div> -->
+
+    <div class="text-wrap" v-show="showPageTool">
       <div class="name" style="text-align: left;"><span v-if="VideoItem.personName">@</span>{{VideoItem.personName}}</div>
+
       <div class="desc van-multi-ellipsis--l2" style="text-align: initial;">{{VideoItem.title}}</div>
     </div>
 	 <div  style="text-align: initial;text-align: initial;
@@ -86,10 +96,10 @@
     bottom: 66px;
     color: white;
 	z-index:9999;
-    right: 11px;">{{VideoItem.videoLength | getDateBysecond}}</div>
-	<div style="position:absolute;bottom:48px;width:100%"> <!-- 当前播放位置 -->
-	  <van-slider style="z-index:9999" v-model="videoProcess" :min="0" :max="100" :button-size="1" @drag-start="dragStart" @drag-end="dragEnd" @input="dragInput" @change="dragChange"/></div>
-    <div class="input-bar" v-show="bottomComment" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)">
+    right: 11px;" v-show="showPageTool">{{VideoItem.videoLength | getDateBysecond}}</div>
+	<div style="position:absolute;bottom:48px;width:100%" v-show="showPageTool"> <!-- 当前播放位置 -->
+	  <van-slider style="z-index:200" v-model="videoProcess" :min="0" :max="100" :button-size="1" @drag-start="dragStart" @drag-end="dragEnd" @input="dragInput" @change="dragChange"/></div>
+    <div class="input-bar" v-show="bottomComment & showPageTool" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)">
 		
      <input class="input"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国、敬业、诚信、友善'" type="text">
 	 <!-- <input class="input"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国'" type="text"> -->
@@ -103,10 +113,34 @@
   </div>
   <!--留言弹窗-->
   <comment ref="comment" @commentNum = "setCommentNum" ></comment>
+  <!-- 弹出工具栏 -->
+  <van-popup
+    v-model="toolShow"
+    :overlay-style="{background:'rgba(255,255,255,0)',zIndex:'2000'}"
+    round
+    position="bottom"
+    :style="{ height: '10%',position: 'absolute'}"
+  >
+  <van-row  justify="space-around" style="padding-top:5%">
+    <van-col span="6" @click="fullVideo()">
+  		<span >
+  					<van-icon name="exchange" size="1.5rem" />
+  					<p style="padding-top:.5rem">全屏</p>
+  				</span>
+  			</van-col>
+    <van-col span="6" @click.stop="showPageToolMethod">
+  				<span>
+    		<van-icon name="orders-o" size="1.5rem" />
+    		<p style="padding-top:.5rem" v-if="showPageTool" >简约</p>
+  		<p style="padding-top:.5rem" v-if="!showPageTool">正常</p>
+  		</span>
+    </van-col>
+  </van-row>
+  </van-popup>
   </div>
   
   </v-touch>
-  
+
   </div>
 </template>
 
@@ -130,6 +164,9 @@ export default {
 	},
 	videoHeight:{
 		type:Number
+	},
+	showPageTool:{
+		type:Boolean
 	}
   },
   beforeDestroy: function () {
@@ -141,6 +178,7 @@ export default {
    },
   data () {
     return {
+		toolShow:false,// 显示工具
 		showIcon:true, // 显示页面图标工具
 		touchTime:0,// 长按时间,超过两秒隐藏图标工具
   		commentPop:false,
@@ -167,7 +205,8 @@ export default {
   	  maxVideoProcess: 0, // 当前视频长度
   	  videoProcessInterval:null,
 	  videoMessage: null, // 视频滑动进度消息对象
-	  upOrDown:false // 是否上下滑动,用于控制左右滑动失效
+	  upOrDown:false, // 是否上下滑动,用于控制左右滑动失效
+	  showFull:false,// 显示全屏按钮
     }
   },
   watch:{
@@ -218,6 +257,18 @@ export default {
     ])
   },
   methods: {
+	  // 全屏
+	  fullVideo(){
+		  this.toolShow = false
+		  this.screen()
+	  },
+			// 隐藏视频和工具栏外所有东西
+			showPageToolMethod(){
+				// console.log('触发......')
+				this.toolShow = false
+				// this.showPageTool = !this.showPageTool
+				this.$emit('showPageToolMethod',this.showPageTool)
+			},
 	  toUserVideo(item){
 		this.$router.push('/videoUserInfo/' + item.personId + '/SEX/video')
 	  },
@@ -405,6 +456,7 @@ export default {
 				  // 判断位置,如果高度和index相同,跳转并且播放该视频
 				  let curIndex = this.$parent.$parent.currentHeight  /  document.body.clientHeight
 				  if(this.VideoItem.videoType == 'm3u8'){
+					  let _this = this
 				  	  this.video = this.$video(
 				  	            // this.$refs.videoPlayer ,
 								this.getVideoHtml(),
@@ -421,9 +473,26 @@ export default {
 				  	  					// console.log("正在请求数据 ");
 				  	  					this.el_.getElementsByTagName('span')[0].innerText = ''
 				  	  				})
+									// 视频加载完成
+									this.on('canplaythrough',function(){
+										// 添加手势缩放监听
+										console.log(this)
+										
+										// console.log('视频加载终了.....')
+										// // 获取视频高度,判断是否添加全屏按钮,高度低于视频一半显示全屏按钮
+										// let vHeight = _this.video.videoHeight();
+										// let vWidth = _this.video.videoWidth();
+										// console.log(vHeight)
+										// console.log(_this.windowHeight)
+										// if(_this.windowHeight/ 2 > vHeight){
+										// 	console.log('视频小于............')
+										// 	// 全屏按钮定位在视频高度之下
+										// 	_this.showFull = true
+										// }
+									})
 				  	  		  }
 				  	          );
-							  top.a = this.video
+							  // top.a = this.video
 				  	  let nextAddress = this.VideoItem.nextAddress
 				  	  nextAddress = nextAddress.split('_-')[1]
 				  	  this.video.src({
@@ -439,9 +508,7 @@ export default {
 						this.stopProcess()
 						this.startProcess();
 						this.recordFlowNum()
-						
-						// 记录视频流量
-						
+
 						
 						// console.log($('.my-video'))
 						// $('.my-video').each((index,e)=>{alert($(e).height())})
@@ -454,6 +521,29 @@ export default {
 				    
 				  }
 		})  
+	  },
+	  // 全屏
+	  screen () {
+		  if (this.video.requestFullscreen) {
+			  this.video.requestFullscreen();
+		  } else if (this.video.mozRequestFullScreen) {
+			  this.video.mozRequestFullScreen();
+		  } else if (this.video.msRequestFullscreen) {
+			  this.video.msRequestFullscreen();
+		  } else if (this.video.oRequestFullscreen) {
+			  this.video.oRequestFullscreen();
+		  } else if (this.video.webkitRequestFullscreen) {
+			  this.video.webkitRequestFullScreen();
+		  } else {
+			// 不支持全屏
+			this.$msg.fail('设备不支持全屏')
+			 
+		  }
+	  },
+	  // 打开工具栏
+	  openTools(item){
+		  console.log('...............')
+		this.toolShow = true  
 	  },
 	  recordFlowNum(){
 		// this.$http.get('')  
@@ -473,8 +563,8 @@ export default {
 		  // this.$parent.$parent.$refs.comment.getComment(this.getVideo())
 	  },
 	  setCommentNum(obj,num){
-		  console.log('......')
-		  console.log(num)
+		  // console.log('......')
+		  // console.log(num)
 	  		  this.commentNum = num
 	  },
 	  //记录播放进度
@@ -610,6 +700,7 @@ export default {
       this.$emit('showCommentList', videoId, commentNum)
     },
 	playVideo(){
+		// 延迟0.3秒如果clickFlag还是false说明是单击
 		console.log('触发....' + this.$refs.comment.commentPop)
 		// 如果打开了评论窗口,点击失效
 		if(this.$refs.comment.commentPop){
@@ -623,6 +714,7 @@ export default {
 			this.video.play()
 		}
 		this.playStatus = !this.playStatus
+
 	},
     toggleLike (videoId) {
       if (this.isLogged) {

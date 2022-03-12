@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import { mapGetters, mapMutations } from 'vuex'
 export default{
 	name:'catch_components',
 	data(){
@@ -54,8 +55,8 @@ export default{
 			websocket:null // websocket
 		}
 	},
+
 	created(){
-		 
 		let _this = this;
 		// 判断当前设置,如果是电脑禁止访问
 		if(navigator.appVersion.indexOf('Mobile') == -1){
@@ -85,12 +86,22 @@ export default{
 						   // console.log(this.dynamicNum)
 						   let data = JSON.parse(event.data) // 接收消息
 						   // 判断消息类型
-						   if(data.msgType == 'COMMENT'){
+						   if(data.msgType == 'STATISTICS'){
+							   // 统计消息,将消息写入localStorage该类统计实时各类消息情况
+							   console.log('统计消息....')
+							   // localStorage.setItem('statistics',event.data)
+							   // 统计消息数量
+							   _this.initMessage(data);
+						   }else if(data.msgType == 'COMMENT'){
+							   // console.log('消息数量....' +this.overallMessage.messageMap.get(data.message.user_id).noReadNum )
+							   // this.overallMessage.messageMap.get(data.message.user_id).noReadNum +=1;
+							   // console.log(this.overallMessage.messageMap.get(data.message.user_id))
+							   
 							   console.log(data)
 							   // 判断是否在消息页面,在消息页面直接追加数据,否则弹出窗口
-							   console.log(this.$route)
-							   if(this.$route.name == 'messageDetail'){
-								   console.log(this)
+							   console.log(_this.$route)
+							   if(_this.$route.name == 'messageDetail'){
+								   console.log(_this)
 								   // 获取到消息页面,推送消息过去
 								   for(let i = 0;i<_this.$children.length;i++){
 									   if(_this.$children[i].name == 'messageDetail'){
@@ -102,6 +113,37 @@ export default{
 								   }
 								   // this.websocket_message = data
 							   }else{
+								   // 更新消息数量
+								   // _this.messageMap().get(data.message.user_id).noReadNum = _this.messageMap().get(data.message.user_id).noReadNum + 1
+								   // _this.GET_MESSAGE_LIST(data.message.user_id).noReadNum = _this.GET_MESSAGE_LIST(data.message.user_id).noReadNum + 1
+								   // console.log(_this.$store.messageList)
+								   // top.a = _this.$store
+								   let messageTotalNum = 0
+								   // 消息总数更新
+								   // alert(_this.messageTotalNum)
+								   // if(_this.messageTotalNum != '99+'){
+									   // _this.messageMap().forEach((v,k)=>{
+										  //  messageTotalNum = messageTotalNum + (v.noReadNum ? v.noReadNum : 0)
+									   // })
+								   for(let i =0;i<_this.$store.getters.messageList.length;i++){
+									   messageTotalNum = messageTotalNum + (_this.$store.getters.messageList[i].noReadNum ? _this.$store.getters.messageList[i].noReadNum : 0)
+
+									   if(data.message.user_id == _this.$store.getters.messageList[i].user_id){
+										   if(_this.$store.getters.messageList[i].noReadNum > 99){
+											   _this.$store.getters.messageList[i].noReadNum = '99+'
+										   }else{
+											   _this.$store.getters.messageList[i].noReadNum = _this.$store.getters.messageList[i].noReadNum + 1
+										   }
+									   }
+								   }
+								   console.log(_this.$store.getters.messageTotalNum)
+								   if(_this.$store.getters.messageTotalNum != '99+'){
+										_this.SET_MESSAGE_TOTAL_NUM(messageTotalNum)		   
+								   }else{
+									   _this.SET_MESSAGE_TOTAL_NUM('99+')
+								   }
+								   // }
+								   
 								   // 评论消息,弹出提示窗口
 								   _this.$notify({
 								   	message: data.title + '\n' + data.message.content,
@@ -111,10 +153,12 @@ export default{
 							   }
 
 						   }
+
 				})
 				//连接响应
 				this.websocket.onopen = function(){
 				  console.log('websocket连接达成');
+				  // 达成的时候将未读的消息记录下来
 					// _this.$notify({
 					// 	message: '<div>1111111</div>薄荷七喜\n你有一条新消息',
 					// 	  duration: 1000,
@@ -126,6 +170,7 @@ export default{
 				  console.log('websocket错误');
 				}
 				window.onbeforeunload = ()=>{
+					console.log('被关闭了......')
 				   if(this.websocket != null){
 					   this.websocket.close();
 				   }
@@ -137,6 +182,38 @@ export default{
 	},
 	mounted(){
 
+	},
+	methods:{
+		...mapMutations([
+			'SET_MESSAGE_TOTAL_NUM',
+			'APPEND_MESSAGE_LIST',
+			'GET_MESSAGE_LIST',
+			
+		]),
+		...mapGetters([
+			'messageTotalNum',
+			'messageList'
+		]),
+		// 初始化消息数据
+		initMessage(data){
+			// console.log(data)
+			let messageNum = 0;
+			// let statistics = localStorage.getItem('statistics')
+			if(data){
+				for(let i =0;i<data.message.length;i++){
+					messageNum += data.message[i].noReadNum ? data.message[i].noReadNum : 0
+					// this.overallMessage.messageMap.set(data.message[i].user_id,data.message[i])
+					this.APPEND_MESSAGE_LIST(data.message[i])
+				}
+				console.log(this.messageList())
+				if(messageNum > 99){
+					messageNum = '99+'
+				}
+				console.log(messageNum + '..............')
+				this.SET_MESSAGE_TOTAL_NUM(messageNum)
+				// console.log(this.overallMessage.messageMap)
+			}
+		}
 	},
 	watch: {
 		$route(to, from) {

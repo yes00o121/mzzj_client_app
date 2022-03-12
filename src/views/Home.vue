@@ -359,7 +359,7 @@ export default {
 	  },
 	  dynamic(){
 		  this.beforetabActive = this.tabActive 
-		  this.$msg('功能开发中')
+		  // this.$msg('功能开发中')
 	  },
 	  my(){
 		  this.beforetabActive = this.tabActive
@@ -432,7 +432,10 @@ export default {
 		// console.log(res)
 		for(let i =0;i<res.data.data.list.length;i++){
 			res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
-			res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
+			if(res.data.data.list[i].person_label == 'avperformer_avfemale'){
+				res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
+			}
+			
 			res.data.data.list[i].title = res.data.data.list[i].person_name
 			res.data.data.list[i].descript = ''
 			// if(res.data.data.list[i].person_birthday){
@@ -483,33 +486,21 @@ export default {
       const categoryitem = this.categoryItem();
 		// 如果categoryitem.CODE_VALUE等于9,但是查询女优数据
 		if(categoryitem.CODE_VALUE == 9){
-			// console.log('??????')
-			// const res = await this.$http.post("/person/queryPerson", {
-			  // pageNum: categoryitem.page,
-			  // pageSize: categoryitem.pagesize,
-			  // personType:'SEX'
-			// })
-			// // console.log(res)
-			// for(let i =0;i<res.data.data.list.length;i++){
-			// 	res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
-			// 	// res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
-			// 	res.data.data.list[i].title = res.data.data.list[i].person_name
-			// 	res.data.data.list[i].descript = ''
-			// 	// if(res.data.data.list[i].person_birthday){
-			// 	// 	res.data.data.list[i].descript += '生日：' + res.data.data.list[i].person_birthday
-			// 	// }
-			// 	// if(res.data.data.list[i].person_cup){
-			// 	// 	res.data.data.list[i].descript += '罩杯：' + res.data.data.list[i].person_cup
-			// 	// }
-			// }
-			// // console.log(res)
-			// categoryitem.list.push(...res.data.data.list);
-			// categoryitem.loading = false;
-			// if (res.data.length < categoryitem.pagesize) {
-			//   categoryitem.finished = true;
-			// }
 			this.selectPerson(this.personParams)
 			return;
+		}else if(categoryitem.CODE_VALUE == 7){
+			const res = await this.$http.post("/person/queryPersonWorks", {
+			  pageNum: categoryitem.page,
+			  pageSize: categoryitem.pagesize,
+			  loadMode: categoryitem.CODE_VALUE
+			})
+			console.log(res)
+			categoryitem.list.push(...res.data.data.list);
+			categoryitem.loading = false;
+			if (res.data.data.list.length < categoryitem.pagesize) {
+			  categoryitem.loading = true;
+			  categoryitem.finished = true;
+			}
 		}else{
 		// 国产
 		// if(categoryitem.CODE_VALUE == 2){
