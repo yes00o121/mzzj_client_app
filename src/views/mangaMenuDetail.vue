@@ -371,24 +371,34 @@ export default {
 	},
 	// 查询当前浏览位置
 	async queryPosition(){
-		// 有数据定位响应位置，没有不处理
-		const res = await this.$http.post('/browseRecord/queryMaxBrowerRecord',this.browseRecordObj)
-		// console.log(res)
-		if(res.data.data){
-			// 跳转到指定位置
-			this.$nextTick(()=>{
-				// console.log('开始定位.....')
-				// console.log(document.getElementById(res.data.data.position).offsetTop )
-				// console.log('img' + res.data.data.position)
-				// console.log(this.$refs['img' + res.data.data.position][0].$el)
-				// top.a = this.$refs['img' + res.data.data.position][0]
-				document.documentElement.scrollTop = this.$refs['img' + res.data.data.position][0].$el.offsetTop
-				// document.getElementById(res.data.data.position).scrollIntoView(true)
-				
-			})
+		// 判断是否需要历史定位
+		if(localStorage.manga_history_position == 1){
+			// 有数据定位响应位置，没有不处理
+			const res = await this.$http.post('/browseRecord/queryMaxBrowerRecord',this.browseRecordObj)
+			// console.log(res)
+			if(res.data.data){
+				// 跳转到指定位置
+				this.$nextTick(()=>{
+					// alert('开始定位.......' + this.$refs['img' + res.data.data.position][0].$el.offsetTop)
+					// console.log('开始定位.....')
+					// console.log(document.getElementById(res.data.data.position).offsetTop )
+					// console.log('img' + res.data.data.position)
+					// console.log(this.$refs['img' + res.data.data.position][0].$el)
+					// top.a = this.$refs['img' + res.data.data.position][0]
+					document.documentElement.scrollTop = this.$refs['img' + res.data.data.position][0].$el.offsetTop
+					document.body.scrollTop = this.$refs['img' + res.data.data.position][0].$el.offsetTop
+					// document.getElementById(res.data.data.position).scrollIntoView(true)
+					
+				})
+			}else{
+				scrollTo(0,0) // 没有数据直接定位到0
+			}
 		}else{
-			scrollTo(0,0) // 没有数据直接定位到0
+			this.browseRecordObj.position = 1
+			scrollTo(0,0)
 		}
+		
+
 	},
 	// 保存浏览记录位置
 	async addBrowseRecord(pxh){

@@ -117,6 +117,9 @@ export default{
 						if(data.id == 7){
 							localStorage['slideReturn'] = data.detailConfigValue
 						}
+						if(data.id == 8){
+							localStorage['manga_history_position'] = data.detailConfigValue
+						}
 					}else{
 						this.$msg.fail(res.data.message)
 					}
@@ -136,6 +139,9 @@ export default{
 						}
 						if(data.id == 7){
 							localStorage['slideReturn'] = data.detailConfigValue
+						}
+						if(data.id == 8){
+							localStorage['manga_history_position'] = data.detailConfigValue
 						}
 						this.queryConfigAll()
 					}else {

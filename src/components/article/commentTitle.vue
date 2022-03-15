@@ -25,7 +25,7 @@
 	    :style="{ height: util ? '40%' : '12%','overflow': 'hidden','transition':'all 0.5s ease 0s'}"
 	  >
 		<div class="comment">
-				  <p class="comment-title">
+				  <p class="comment-title" v-if="!hideLength">
 				      <span v-if="!hideLength">评论</span>
 				      <span v-if="!hideLength">({{dataLength}})</span>
 				  		  <span>
@@ -39,9 +39,20 @@
 				  		  <img :src="baseURL + '/common/image?imgId=' + myuser.icon +'&token=' + token" alt="" v-if="myuser"  >
 				  		  <img src="@/assets/default_img.jpg" alt v-else  />
 				      <img src="@/assets/default_img.jpg" alt="" v-else>
-					   <input  v-model="comcontent" ref="Postipt2" type="text"  @mousemove="commentMove()" :placeholder="placeholderText">
-				     <!-- <input  v-model="comcontent" ref="Postipt2" type="text" @input="commentInput" @blur="commentOver" @mousemove="commentMove()" :placeholder="placeholderText"> -->
-				      <button @click="cmmentPublish" style="margin-left:.5rem">发表</button>
+					   <!-- <input  v-model="comcontent" ref="Postipt2" type="text"  @mousemove="commentMove()" :placeholder="placeholderText"> -->
+<!-- 					   <van-field
+						@focus = "focusIpt"
+					     v-model="comcontent"
+					     rows="1"
+					     autosize
+					     label=""
+					     type="textarea"
+					     placeholder="请输入留言"
+					   /> -->
+				     <input  v-model="comcontent" ref="Postipt2" type="text" @input="commentInput"  @focus="commentMove()" :placeholder="placeholderText">
+				      <button @click="cmmentPublish" style="margin-left:.5rem" v-if="util">发表</button>
+					  <!-- <button @click="cmmentPublish" style="margin-left:.5rem"></button> -->
+					  <van-icon name="smile-o"   size="2rem" style="margin-left:.5rem" @click="util = true"  v-if="!util"/>
 				  </div>
 		</div>
 		<!-- 工具栏内容 -->
@@ -106,7 +117,7 @@ export default {
 	  })
     },
 	utilClick(){
-		console.log('触发...')
+		// console.log('触发...')
 		// if(this.sxIcon){
 		// 	// this.closeUtil()
 		// } else {
@@ -119,11 +130,15 @@ export default {
 		this.smile = true
 	},
 	closeUtil(){
-		console.log('guanbi 。。。。。')
+		// console.log('guanbi 。。。。。')
 		this.util = false
 		this.smile = false
 		this.sxIcon = false
 		
+	},
+	commentMove(){
+		// console.log('获取焦点......')
+		this.util = true
 	},
     cmmentPublish() {
         if(!this.myuser && !localStorage.getItem('token')){
@@ -165,18 +180,9 @@ export default {
 		this.comcontent = startContent + content + endContent
 	},
     focusIpt(){
-     this.$refs.Postipt.focus()
+		 // this.util = true
+     // this.$refs.Postipt.focus()
     },
-	// 点击输入框,弹起来
-	commentMove(e){
-		// this.util = true;
-		console.log('点击')
-		this.util = true
-		// this.sxIcon = true
-		// this.sxClick();
-		// alert(1)
-		// 显示图标选择框
-	},
 	commentOver(e){
 		// if(this.tempContent == this.comcontent){
 		// 	this.closeUtil()
@@ -190,8 +196,8 @@ export default {
 		console.log('力开')
 	},
 	commentInput(e){
-		console.log(e.target.value)
-		console.log('shuru....')
+		// console.log(e.target.value)
+		// console.log('shuru....')
 		this.tempContent = e.target.text
 	}
   },
@@ -199,15 +205,22 @@ export default {
         if(localStorage.getItem('token')){
             this.myUserinfo();
         }
+		window.addEventListener('resize', function () {
+			if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+			  window.setTimeout(function () {
+				document.activeElement.scrollIntoViewIfNeeded()
+			  }, 0)
+			}
+		  })
   },
   watch:{
 	  util(cur,bef){
-		  console.log('变更。。。。')
+		  // console.log('变更。。。。')
 		  // console.log(bef)
 		  // console.log(cur)
 		  // 窗口关闭,取消回复状态
 		  if(!cur){
-			  console.log(this)
+			  // console.log(this)
 			  this.$parent.$parent.clearPostStatus()
 		  }
 		  this.$emit('showUtil',cur)

@@ -12,4 +12,5 @@ export const playListDetail = state => state.playListDetail
 export const catch_components =  state => state.catch_components
 export const messageTotalNum =  state => state.messageTotalNum 
 export const messageList =  state => state.messageList 
+export const websocketSendData =  state => state.websocketSendData
 

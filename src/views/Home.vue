@@ -175,7 +175,7 @@ export default {
 	  beforetabActive:0,// 之前选中的底部
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
-	  websocket:null
+	  // websocket:null
 	  // videoStatus:true, // 视频状态,用于子组件刷新
     };
   },
@@ -189,8 +189,8 @@ export default {
   },
   // 跳转其他页面之前
   beforeRouteLeave(to, from ,next){
-	  		console.log(this.curScroll)
-	 console.log(this.tabActive)
+	  		// console.log(this.curScroll)
+	 // console.log(this.tabActive)
 	  // console.log('跳转其他页面.......' + this.curScroll)
 	  // 跳转其他页面的时候记录当前滚动高度
 	  // this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
@@ -229,15 +229,22 @@ export default {
 	// shortvideo
   },
   activated() {
-    if(localStorage.getItem('newCat')) {
-        let newCat = JSON.parse(localStorage.getItem('newCat'))
-        this.category = this.changeCategory(newCat)
-        this.selectArticle();
-    }
+    // if(localStorage.getItem('newCat')) {
+    //     let newCat = JSON.parse(localStorage.getItem('newCat'))
+    //     this.category = this.changeCategory(newCat)
+    //     this.selectArticle();
+    // }
 	// console.log('??????')
-	console.log(this.tabActive)
+	// console.log(this.tabActive)
 	// if(this.tabActive == 0){
 		this.toBeforeScroll(this.tabActive)
+		console.log('显示了呢...')
+		console.log(this.websocket)
+		// 判断websokcet是否连接,没连接进行连接
+		if(!this.websocket){
+			// top.a = this
+			this.createWebSocket()
+		}
 	// }
 	// this.toBeforeScroll(this.tabActive);
 	// this.toBeforeScroll(1);
@@ -264,7 +271,7 @@ export default {
 		  
 	  },
 		toPage(item){
-			console.log(item)
+			// console.log(item)
 			const categoryitem = this.categoryItem();
 			if(categoryitem.CODE_VALUE == 8){
 				 this.$router.push(`/manga/${item.dataId}`)
@@ -289,7 +296,7 @@ export default {
 	       },10);
 	   },
 	  scrolls(e){
-		  console.log(e.target.scrollTop)
+		  // console.log(e.target.scrollTop)
 		  // if(scrollTop > 100){
 			  
 		  // }
@@ -372,7 +379,7 @@ export default {
 		if(this.tabActive == 0 && this.beforetabActive == 0){
 			// scrollTo(0,0)
 			// this.$refs['pageScroll'][0].scrollTop = 0;
-			console.log(this.$refs.backtop)
+			// console.log(this.$refs.backtop)
 			top.a = this.$refs
 			// this.$refs['backtop'].slideTo(0)
 			this.slideTo(0,this.$refs['pageScroll'][this.active],()=>{
@@ -400,7 +407,7 @@ export default {
 		// console.log(res)
 		
       const category1 = data.map((item, index) => {
-        console.log(item)
+        // console.log(item)
         item.list = [];
         item.page = 1;
         item.finished = false;
@@ -531,7 +538,7 @@ export default {
 			// 	}
 				
 			// }
-			console.log(res.data)
+			// console.log(res.data)
 			categoryitem.list.push(...res.data.data.list);
 			categoryitem.loading = false;
 			if (res.data.data.list.length < categoryitem.pagesize) {
@@ -600,7 +607,8 @@ export default {
 		categoryitem.finished = false;
 		this.personParams = params
 		this.selectPerson()
-	}
+	},
+	
   },
   
   watch: {

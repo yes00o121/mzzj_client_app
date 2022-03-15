@@ -1,8 +1,8 @@
 
 <template>
    <!-- <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div"> -->
-	   <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
-  <div class="searchWrap">
+	   <!-- <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}"> -->
+  <div class="searchWrap" style="background:white">
 	   <van-overlay :show="show" @click="overlayClick" />
       <!-- <nav-bar></nav-bar> -->
 	  <van-sticky >
@@ -11,8 +11,9 @@
 	 
       <!-- <div class="detailinfo"> -->
 			<!-- <van-pull-refresh v-model="isLoading" @refresh="onRefresh" style="height:100%"> -->
-
-			  <div :style="'-webkit-overflow-scrolling:touch;overflow:auto;height:'+(parseInt(windowHeight*0.8))+'px'" ref="scrollDiv">
+			<div :style="'overflow:auto;height:'+(parseInt(windowHeight*0.8))+'px'" ref="scrollDiv">
+				<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
+			  <!-- <div :style="'-webkit-overflow-scrolling:touch;overflow:auto;height:'+(parseInt(windowHeight*0.8))+'px'" ref="scrollDiv"> -->
 				  <van-pull-refresh v-model="isLoading" @refresh="onRefresh" >
 			<!-- <div class="detailparent"> -->
 				<div class="van-swipe-cell" style="width: 100%;" v-for="(item,categoryindex) in list"  >
@@ -22,7 +23,6 @@
 					</div>
 						  			<div class="van-swipe-cell__wrapper" style="transform: translate3d(0px, 0px, 0px); transition-duration: 0.6s;">
 						  				<div class="goods-card van-card" >
-						  					<!-- <div class="van-card__header" :style="'height:'+(item.message_category != 'TEXT' ? widthObject.comment : widthObject.text)+'rem'"> -->
 											<div class="van-card__header">
 						  						<a class="van-card__thumb" v-if="model.id == item.source_user_id">
 						  							<div class="van-image" style="width: 100%; height: 100%;">
@@ -50,35 +50,10 @@
 																<van-image ref="workImage"  @load="imgLoad"  :src="baseURL + item.message_photo +'&token=' + token" style="width:100%;" radius ="12" />
 																<img src="@/assets/play.svg" style="position: absolute;right: 0;top:50%;left:25%;">
 															</div>
-															<!-- <div v-if="item.message_category == 'TEXT'"   :style="''+(getisLeftOrRight(item) == 1 ? 'padding-right' : 'padding-left')+':10%'"> -->
 															<div  v-if="item.message_category == 'TEXT'"  >
 																	<div class="van-tag--primary" v-html="item.messageContent" style="position:relative;word-wrap: break-word;padding: .5rem .5rem;border-radius: 12px;color:#fff"></div>
 															</div>
 						  								</div>
-														<!-- <div style="position: absolute; right: 0;bottom: 1.5rem;"> -->
-										<!-- 				<span class="van-tag van-tag--plain van-tag--danger" style="margin-right: 5px;border: 1px solid red;">
-														            标签
-														 </span> -->
-														 <!-- </div> -->
-														<div class="van-card__type2 van-ellipsis">
-															<!-- {{item.messageContent ? item.messageContent : '暂无消息'}} -->
-															<!-- <van-image ref="workImage"  lazy-load :src="baseURL + item.message_photo +'&token=' + token" style="width:100%;width:45px" v-if="item.icon"/> -->
-														</div>
-														<!-- <div class="van-card__type2 van-ellipsis" style="right:0">
-															{{item.lastTime ? item.lastTime : '' | filterTime}}
-														</div> -->
-														<!-- <div class="van-card__num van-ellipsis">
-															<van-icon v-show="item.loadMode == 4" name="play-circle-o" size="1rem" style="top: 0.2rem;"/>
-															<van-icon v-show="item.loadMode != 4" name="eye-o" size="1rem" style="top: 0.2rem;"/>
-														</div> -->
-														<!-- <div class="van-card__chat van-ellipsis"> -->
-															<!-- <van-icon name="chat-o" size="1rem" style="top: 0.2rem;" v-if="item.loadMode == '4'"/> -->
-														<!-- 	<span style="padding-left: 0.2rem;" v-if="item.loadMode == '4'">{{item.commentNum | filterFlowNum}}</span>
-														</div> -->
-						  								<!-- <div class="van-card__desc van-ellipsis">
-						  									{{item.createtime | filterTime}}
-						  								</div>
- -->
 						  							</div>
 						  						</div>
 												<a class="van-card__thumb" v-if="model.id != item.source_user_id">
@@ -97,16 +72,17 @@
 									<!-- <div v-if="categoryindex == list.length - 1" style="height:2rem">...................</div> -->
 						  		</div>
 								   </van-pull-refresh>
+								     </v-touch>
 						  	</div>
 		
       
-	  <comment-title :dataLength="lens" @Postcomment="PostSuccess" ref="commentIpt" :hideLength="true" @showUtil="showUtil" />
+	  <comment-title v-if="$route.params.id != 0 " :dataLength="lens" @Postcomment="PostSuccess" ref="commentIpt" :hideLength="true" @showUtil="showUtil" />
       <!-- </div> -->
 
   <!-- </div> -->
 
   </div>
-  </v-touch>
+
 </template>
 
 <script>
@@ -116,6 +92,7 @@ import cover from './cover'
 import commentTitle from '@/components/article/commentTitle.vue'
 import comment from '@/components/article/comment.vue'
 import Scroll from '@/base/scroll/scroll'
+import {formatTime} from '@/common/js/util.js'
 export default {
 	
     data() {
@@ -183,13 +160,26 @@ export default {
 		]),
 		// 接收消息
 		getWebSocketMessage(data){
+			console.log('3333')
 			// 判断消息是否是当前聊天用户发的,如果是消息追加到当前内容中,不然将消息提示出来
 			if(data.message.sendUserId == this.$route.params.id){
 				// this.list = []
 				// this.pageNum = 1
 				console.log('相同用户.........')
 				// this.getMessage();// 刷新数据
-				this.list.push({
+				// this.list.push({
+				// 	messageContent:data.message.content,
+				// 	message_category:'TEXT',
+				// 	message_source:'USER',
+				// 	message_status:'1',
+				// 	message_type: data.msgType,
+				// 	nickName:data.title,
+				// 	source_user_id:data.message.sendUserId,
+				// 	user_id:data.message.user_id
+				// })
+				let tempData = [{
+					id:Math.random(),
+					icon:data.message.icon,
 					messageContent:data.message.content,
 					message_category:'TEXT',
 					message_source:'USER',
@@ -198,7 +188,8 @@ export default {
 					nickName:data.title,
 					source_user_id:data.message.sendUserId,
 					user_id:data.message.user_id
-				})
+				}]
+				this.list.push(...this.changeCommentData(tempData))
 				// 滚动到最下面
 				this.$nextTick(()=>{
 					 if(this.pageNum == 1){
@@ -299,7 +290,7 @@ export default {
           // this.$router.go(-1)
         },
         onSwipeRight(){
-            // console.log('页面右滑')
+            console.log('页面右滑')
             // this.$router.go(-1)
 			if(localStorage.slideReturn == 1){
 				this.$router.go(-1)
@@ -345,7 +336,8 @@ export default {
 						this.getMessage();
 					}else{
 						console.log('追加数据......')
-						this.list.push({
+						let tempData = [{
+							id:Math.random(),
 							messageContent:res,
 							message_category:'TEXT',
 							message_source:'USER',
@@ -355,8 +347,19 @@ export default {
 							icon: this.curUser.icon,
 							source_user_id:this.curUser.id,
 							user_id: this.model.id
-						})
+						}]
+						this.list.push(...this.changeCommentData(tempData))
 						this.$nextTick(()=>{
+							for(let i =0;i<this.$store.getters.messageList.length;i++){
+								// 更新缓存
+								if(this.model.id == this.$store.getters.messageList[i].user_id){
+								   this.$store.getters.messageList[i].messageContent = res
+								   console.log(this.$store.getters.messageList[i])
+									this.$store.getters.messageList[i].lastTime.time = new Date().getTime()
+								}
+							}
+	
+							// 重新加载缓存
 							 this.$refs.scrollDiv.scrollTop = this.$refs.scrollDiv.scrollHeight
 						})
 					}
@@ -490,8 +493,9 @@ export default {
 			
 			// 修改用户查看状态
 			this.$http.get('/message/updateMessageReadStatus?sourceUserId=' + this.$route.params.id);
-			// 清空消息数量
-			this.SET_MESSAGE_TOTAL_NUM(0)
+			// 重新加载未读数量
+			
+			// this.SET_MESSAGE_TOTAL_NUM(0)
 		 },
 		 changeCommentData(data) {
 		 	  const imgList = this.Highlightlist
@@ -617,8 +621,13 @@ export default {
 			 // })
 		 }
     },
+	// 显示重新加载数据
+	activated(){
+		
+	},
     created() {
-
+		let a = formatTime(new Date().getTime())
+		console.log(a)
 		// if(this.$route.params.loadMode == 6){
 		// 	this.getVideo()
 		// }else{
@@ -637,6 +646,10 @@ export default {
 		 this.getUser();
 		 // 查询用户消息
 		 this.getMessage();
+		 
+		 if(!this.websocket){
+			 this.createWebSocket()
+		 }
 		 // 加载完后跳到最下面的消息位置
 
     },
@@ -662,8 +675,8 @@ export default {
 	// 跳转其他页面之前
 	beforeRouteLeave(to, from ,next){
 		if(from.name == 'messageDetail'){
-			console.log('....@@@@')
-			top.a = this.$refs
+			// console.log('....@@@@')
+			// top.a = this.$refs
 			this.currentScroll = this.$refs.scrollDiv.scrollTop
 			// alert(this.currentScroll)
 		}
@@ -671,40 +684,55 @@ export default {
 	},
     watch:{
 		$route(to,from) {
+
 			// top.a = this.$refs
 			// console.log(to)
 			// 跳转高度
 			if(to.name == 'messageDetail'){
-				// alert(this.currentScroll)
-				this.$nextTick(()=>{
-					// document.documentElement.scrollTop = this.currentScroll
-					// document.body.scrollTop = this.currentScroll
-					this.$refs.scrollDiv.scrollTop = this.currentScroll
-					console.log('跳转之前位置....' + this.currentScroll)
-					this.SET_MESSAGE_TOTAL_NUM(0)
-				})
-			}
-			
-			// id不同刷新
-			if(to.name =='messageDetail' && to.params.id != this.model.id){
-				console.log('数据刷新...')
+				// 切换路由刷新数据
 				this.list = []
 				this.pageNum = 1
 				this.getUser();
 				this.getMessage();
-				// this.$forceUpdate()
-				// scroll(0,0)
-				// this.loadMode = 0
-				// this.person = {}
-				// const categoryitem = this.categoryItem();
-				// categoryitem.list = []
-				// categoryitem.page = 1
-				// categoryitem.finished = false;
-				// categoryitem.loading = true;
-				// this.selectArticle();
-				// this.collectionInit()
+			// 	// alert(this.currentScroll)
+			// 	this.$nextTick(()=>{
+			// 		// document.documentElement.scrollTop = this.currentScroll
+			// 		// document.body.scrollTop = this.currentScroll
+			// 		// this.$refs.scrollDiv.scrollTop = this.currentScroll
+			// 		// console.log('跳转之前位置....' + this.currentScroll)
+			// 		// 刷新缓存数据
+			// 		// this.initMessage()
+			// 	})
 			}
+			
+			// id不同刷新
+			// if(to.name =='messageDetail' && to.params.id != this.model.id){
+			// 	console.log('数据刷新...')
+			// 	this.list = []
+			// 	this.pageNum = 1
+			// 	this.getUser();
+			// 	this.getMessage();
+			// 	// this.$forceUpdate()
+			// 	// scroll(0,0)
+			// 	// this.loadMode = 0
+			// 	// this.person = {}
+			// 	// const categoryitem = this.categoryItem();
+			// 	// categoryitem.list = []
+			// 	// categoryitem.page = 1
+			// 	// categoryitem.finished = false;
+			// 	// categoryitem.loading = true;
+			// 	// this.selectArticle();
+			// 	// this.collectionInit()
+			// }
 		},
+		'$store.state.websocketSendData'(data){
+			console.log('追加数据.........')
+			// 追加数据
+			this.getWebSocketMessage(data)
+			// console.log('优数据推送了..............')
+			// console.log(old)
+			// console.log(new)
+		}
     }
 }
 </script>

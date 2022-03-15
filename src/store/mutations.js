@@ -85,13 +85,8 @@ const mutations = {
 	// console.log('初始化数据')
     state.messageList.push(value)
   },
-  [types.GET_MESSAGE_LIST] (state,key) {
-	for(let i =0;i<state.messageList.length;i++){
-		if(state.messageList[i].user_id == key){
-			return state.messageList[i];
-		}
-	}
-	return null;
+  [types.CLEAR_MESSAGE_LIST] (state,key) {
+	state.messageList = []
   },
   
   GET_CATCHE_COMPONENTS (state, data) {

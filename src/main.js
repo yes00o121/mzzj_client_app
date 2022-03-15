@@ -21,6 +21,7 @@ import VueClipboard from 'vue-clipboard2' // 复制包
 import VCharts from 'v-charts-v2' // 图表
 import { Panel } from 'vant';
 import { Notify } from 'vant'; // 消息组件
+import { mapGetters, mapMutations } from 'vuex' // 缓存
 Vue.use(Notify);
 Vue.use(Panel);
 Vue.use(VCharts)
@@ -105,6 +106,170 @@ Vue.prototype.showPageTool = true// 短视频是否简约莫是
 
 // 全局消息对象
 Vue.prototype.overallMessage = {}
+
+Vue.prototype.websocket = null; // 全局的websocket对象
+
+		// 创建websocket连接
+Vue.prototype.createWebSocket = function(){
+	// 创建之前先获取当前用户信息,加载下用户缓存,避免无法获取用户
+	this.$http.get('/admin/info').then(res=>{
+		
+	// })
+	
+	let _this = this
+	// 建立websocket连接
+	let websocketUrl = this.baseURL.replace('http','ws') + '/websocket?token=' + localStorage.getItem('token')
+	// let websocketUrl = 'ws://192.168.1.113:8095/websocket?token='
+	Vue.prototype.websocket = new WebSocket(websocketUrl);
+	console.log(this.websocket)
+	Vue.prototype.websocket.onclose=function(){//连接关闭监听
+		console.log('websocket连接关闭');
+	}
+	Vue.prototype.websocket.onmessage = (event=>{
+			  //接收消息方法
+			  console.log(event)
+			  console.log('websocket接收消息');
+
+			   let data = JSON.parse(event.data) // 接收消息
+			   // 判断消息类型
+			   if(data.msgType == 'STATISTICS'){
+				   // 统计消息,将消息写入localStorage该类统计实时各类消息情况
+				   console.log('统计消息....')
+				   // 统计消息数量
+				   _this.initMessage(data);
+			   }else if(data.msgType == 'COMMENT'){
+				   // 判断是否在消息页面,在消息页面直接追加数据,否则弹出窗口
+				   if(_this.$route.name == 'messageDetail'){
+					   console.log(_this)
+					   // top.c = this
+					   _this.$store.state.websocketSendData = data
+					   for(let i =0;i<this.$store.getters.messageList.length;i++){
+					   	// 更新缓存
+					   	if(data.message.user_id == this.$store.getters.messageList[i].user_id){
+					   	   this.$store.getters.messageList[i].messageContent = data.message.content
+					   	   console.log(this.$store.getters.messageList[i])
+					   		this.$store.getters.messageList[i].lastTime = data.message.lastTime
+							// 在页面把未读数量改成0
+							this.$store.getters.messageList[i].noReadNum = 0
+					   	}
+					   }
+					 //   for(let i =0;i<_this.$store.getters.messageList.length;i++){
+						// // 将当前推送的消息更新到缓存中
+						//    if(data.message.user_id == _this.$store.getters.messageList[i].user_id){
+						// 	   // if(_this.$store.getters.messageList[i].noReadNum > 99){
+						// 		  //  _this.$store.getters.messageList[i].noReadNum = '99+'
+						// 	   // }else{
+						// 		  //  _this.$store.getters.messageList[i].noReadNum = _this.$store.getters.messageList[i].noReadNum + 1
+						// 		  //  messageTotalNum += 1
+						// 	   // }
+						// 	   _this.$store.getters.messageList[i].messageContent = data.message.messageContent
+						// 		_this.$store.getters.messageList[i].lastTime = data.message.lastTime
+						//    }
+					 //   }
+					   
+					   // 获取到消息页面,推送消息过去
+					   // for(let i = 0;i<_this.$children.length;i++){
+						 //   console.log(_this.$children[i].$route.name)
+						 //   // if(_this.$children[i].name == 'messageDetail'){
+							// if(_this.$children[i].getWebSocketMessage){
+							//    console.log('在消息页面')
+							//    _this.$children[i].getWebSocketMessage(data);
+						 //   }else{
+							//    console.log('不在消息页面')
+						 //   }
+					   // }
+				   }else{
+					   // 更新消息数量
+					   let messageTotalNum = 0
+					   // 消息总数更新
+					   for(let i =0;i<_this.$store.getters.messageList.length;i++){
+						   messageTotalNum = messageTotalNum + (_this.$store.getters.messageList[i].noReadNum ? _this.$store.getters.messageList[i].noReadNum : 0)
+	
+						   if(data.message.user_id == _this.$store.getters.messageList[i].user_id){
+							   // _this.$store.getters.messageList[i].messageContent = data.message.messageContent
+							    // _this.$store.getters.messageList[i].lastTime = data.message.lastTime
+								_this.$store.getters.messageList[i].messageContent = data.message.content
+								console.log(_this.$store.getters.messageList[i])
+								_this.$store.getters.messageList[i].lastTime = data.message.lastTime
+							   if(_this.$store.getters.messageList[i].noReadNum > 99){
+								   _this.$store.getters.messageList[i].noReadNum = '99+'
+							   }else{
+								   // console.log(_this.$store.getters.messageList[i].noReadNum)
+								   _this.$store.getters.messageList[i].noReadNum = _this.$store.getters.messageList[i].noReadNum + 1
+								   // console.log(_this.$store.getters.messageList[i].noReadNum)
+								   messageTotalNum += 1
+							   }
+						   }
+					   }
+					   console.log(_this.$store.getters.messageTotalNum)
+					   if(_this.$store.getters.messageTotalNum != '99+'){
+							_this.$store._mutations.SET_MESSAGE_TOTAL_NUM[0](messageTotalNum)		   
+					   }else{
+						   _this.$store._mutations.SET_MESSAGE_TOTAL_NUM[0]('99+')
+					   }
+					   
+					   // 评论消息,弹出提示窗口
+					   _this.$notify({
+						message: data.title + '\n' + data.message.content,
+						  duration: 2000,
+						  type: 'success'
+					   })
+				   }
+	
+			   }
+			   // 提示消息
+			   if(data.msgType == 'TIPS'){
+				   // 提示消息直接显示title
+				   _this.$notify({
+						message: data.title,
+						  duration: 2000,
+						  type: 'primary'
+				   })
+			   }
+	})
+	//连接响应
+	Vue.prototype.websocket.onopen = function(){
+	  console.log('websocket连接达成');
+	  // 达成的时候将未读的消息记录下来
+		// _this.$notify({
+		// 	message: '<div>1111111</div>薄荷七喜\n你有一条新消息',
+		// 	  duration: 1000,
+		// 	  // color: '#ad0000',
+		// 	  type: 'success'
+		// })
+	}
+	Vue.prototype.websocket.onerror = function(){
+	  console.log('websocket错误');
+	}
+	window.onbeforeunload = ()=>{
+		console.log('被关闭了......')
+	   if(Vue.prototype.websocket != null){
+		   Vue.prototype.websocket.close();
+	   }
+	}
+	})
+}
+
+// 初始化内容
+Vue.prototype.initMessage = function(data){
+	let messageNum = 0;
+	if(data){
+		// top.a = this
+		this.$store._mutations.CLEAR_MESSAGE_LIST[0]();
+		for(let i =0;i<data.message.length;i++){
+			messageNum += data.message[i].noReadNum ? data.message[i].noReadNum : 0
+			// this.overallMessage.messageMap.set(data.message[i].user_id,data.message[i])
+			this.$store._mutations.APPEND_MESSAGE_LIST[0](data.message[i])
+		}
+		// console.log(this.$store.getters.messageList())
+		if(messageNum > 99){
+			messageNum = '99+'
+		}
+		console.log(messageNum + '..............')
+		this.$store._mutations.SET_MESSAGE_TOTAL_NUM[0](messageNum)
+		// console.log(this.overallMessage.messageMap)
+	}
+}
 
 
 // 图标列表
@@ -200,6 +365,18 @@ Vue.prototype.hideloading = function() {
 new Vue({
   store,
   router,
+  // methods:{
+	 //  ...mapMutations([
+	 //  	'SET_MESSAGE_TOTAL_NUM',
+	 //  	'APPEND_MESSAGE_LIST',
+	 //  	'CLEAR_MESSAGE_LIST',
+	  	
+	 //  ]),
+	 //  ...mapGetters([
+	 //  	'messageTotalNum',
+	 //  	'messageList'
+	 //  ]),
+  // },
   render: h => h(App)
 }).$mount('#app')
 // new Vue({

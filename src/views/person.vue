@@ -213,19 +213,12 @@ export default {
   },
   methods: {
 	  onSwipeLeft () {
-	  	// alert('页面右滑')
-	      // console.log('页面左滑')
-	    // this.$router.go(-1)
+
 	  },
 	  onSwipeRight(){
 	  	if(localStorage.slideReturn == 1){
 	  		this.$router.go(-1)
 	  	}
-	      // alert('页面右滑')
-	  	// 跳转其他页面的时候记录高度
-	  	// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
-	  	// alert('漫画高度' + this.curScroll)
-	      // this.$router.go(-1)
 	  },
 	  onConfirm1(e){
 	  		  this.loadMode = e

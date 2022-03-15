@@ -128,6 +128,13 @@ export default {
 			}).then(() => {
 				// console.log('退出')
 				localStorage.clear()
+				// 清空websocket连接
+				if(this.websocket){
+					this.websocket.close();
+					this.websocket = null
+				}
+				
+				// 清除用户缓存数据
 				// 清空页面缓存
 				this.$router.push('/')
 			}).catch(() => {
@@ -172,6 +179,9 @@ export default {
 			// 是否开启置顶按钮
 			const res1 = await this.$http.get('/admin/queryConfig?key=back_top')
 			localStorage.back_top = res.data.data
+			// 是否开启漫画历史定位
+			const res2 = await this.$http.get('/admin/queryConfig?key=manga_history_position')
+			localStorage.manga_history_position = res.data.data
 		},
 		// 加载消息数据
 		async loadMessage(){

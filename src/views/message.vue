@@ -1,11 +1,8 @@
 <template>
+	<v-touch  v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
   <div>
 	  <van-sticky>
 	  	<van-cell  style="z-index:999;width:100%;"  icon="arrow-left" class="van-ellipsis" title="消息"  @click="returnPage">
-	  		<!-- <van-button style="margin-right:1rem" plain type="default" size="mini" @click.stop="collectionClick" :class="{activeColor:collectionActive}">
-	  			<van-icon  name="star-o" size=".5rem" />
-	  			<span>&nbsp;关注</span>
-	  		</van-button> -->
 	  		<van-icon
 	  		    slot="right-icon"
 	  		    name="wap-home-o"
@@ -15,58 +12,18 @@
 	  		  />
 	  	</van-cell>
 	  </van-sticky>
+<!-- 	  <van-sticky :offset-top="windowHeight*0.85" style="position:absolute">
+	  	<van-button type="default"  style="width:100%" @click="userListView = true">用户列表</van-button>
+	  </van-sticky> -->
     <div class="categorytab">
 		<back-top :showHeight="300"></back-top>
       <!-- <van-tabs v-model="active" swipeable sticky animated offset-top=""> -->
         <!-- <van-tab v-for="(item,index) in category" scrollspy :key="index" :title="(item.DICT_NAME == '演员' ? '视频' : item.DICT_NAME)" scrollspy > -->
 			<!-- 嵌套一层div做内容滚动区域, 一定要有确定高度，可以使用高度100%或calc(100vh - ?px) -->
-			
-		<div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'" >
+			<div  :ref="'pageScroll'"  >
+		<!-- <div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'" > -->
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-           <!-- <van-list
-			style="padding-bottom: 50px;"
-              v-model="item.loading"
-              :immediate-check="false"
-              :finished="item.finished"
-              finished-text="我也是有底线的"
-              @load="onLoad"
-            >
-              <div class="detailparent" ref="tab">
-                <cover
-                  class="detailitem"
-                  :detailitem="categoryitem"
-                  v-for="(categoryitem,categoryindex) in item.list"
-                  :key="categoryindex"
-                />
-              </div>
-            </van-list> -->
-<!-- 			<van-list
-			  v-model="item.loading"
-			  :immediate-check="false"
-			  :finished="item.finished"
-			  finished-text="我也是有底线的"
-			  @load="onLoad"
-			  style="padding-bottom: 20%;"
-			> -->
-			<!-- :icon="baseURL + categoryitem.imgUrl" -->
-			 <!-- <div class="detailparent" ref="tab">
-				 <van-swipe-cell style="width:100%">
-				   <van-card
-				   lazy-load
-				   @click="toDetail(categoryitem)"
-				   v-for="(categoryitem,categoryindex) in item.list"
-				   tag="热门"
-					 :price="categoryitem.flowNum"
-					 currency=""
-				     :title="categoryitem.title"
-				     class="goods-card"
-				     :thumb="baseURL + categoryitem.previewImg +'&region=true&token=' + token"
-					 style="border-bottom: 1px solid #ebedf0;"
-					 :desc="categoryitem.createtime | filterTime"
-				   />
-				 </van-swipe-cell>
-			  </div> -->
-			  <div role="feed" class="van-list">
+			  <div role="feed" class="van-list" :style="'height:'+windowHeight+'px;background:white'">
 			  	<div class="detailparent">
 			  		<div class="van-swipe-cell" style="width: 100%;" v-for="(categoryitem,categoryindex) in messageList()" @click="toPage(categoryitem)" :key="categoryindex">
 			  			<div class="van-swipe-cell__wrapper" style="transform: translate3d(0px, 0px, 0px); transition-duration: 0.6s;">
@@ -74,11 +31,6 @@
 			  					<div class="van-card__header">
 			  						<a class="van-card__thumb">
 			  							<div class="van-image" style="width: 100%; height: 100%;">
-			  								<!-- <img class="van-image__img" data-src="http://192.168.1.4:8090/common/image?imgId=6102545b1734cb921086f39f&amp;region=true&amp;token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5YW5nY2hlbiIsImNyZWF0ZWQiOjE2MzE4NDM0MTIwNTYsImV4cCI6MjIzNjY0MzQxMn0.3dTJCHt_n7ZH--Nt23vYHQXPeWaWkbGE97zSqvF-lCrlZvOGys6FQO4x4h4TnorBXutuB_IpZFwU2NCI1IfUXA"
-			  								src="http://192.168.1.4:8090/common/image?imgId=6102545b1734cb921086f39f&amp;region=true&amp;token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5YW5nY2hlbiIsImNyZWF0ZWQiOjE2MzE4NDM0MTIwNTYsImV4cCI6MjIzNjY0MzQxMn0.3dTJCHt_n7ZH--Nt23vYHQXPeWaWkbGE97zSqvF-lCrlZvOGys6FQO4x4h4TnorBXutuB_IpZFwU2NCI1IfUXA"
-			  								lazy="loaded" style="object-fit: cover;"> -->
-											<!-- <van-image ref="workImage" fit="cover" @onload="imgLoad(categoryindex)" lazy-load :src="baseURL + categoryitem.message_photo +'&token=' + token" style="width:100%"/> -->
-											<!-- <image  src="@/assets/mzzj120.png"  style="width:100%" v-if="!categoryitem.icon"/> -->
 											<img src="@/assets/mzzj120.png" style="height:40px;width:40px" alt=""  v-if="categoryitem.source_user_name == '系统通知'">
 											<van-image ref="workImage"  lazy-load :src="baseURL + categoryitem.icon +'&token=' + token" style="width:100%;width:45px" v-if="categoryitem.icon"/>
 											<img src="@/assets/default_img.jpg" style="height:40px;width:40px" alt=""  v-if="categoryitem.source_user_name != '系统通知' && !categoryitem.icon">
@@ -91,15 +43,6 @@
 											<span class="van-tag van-tag--mark van-tag--danger" v-show="categoryindex < 3" style="background:#ee0a24;color:#FEFFFF;border-radius:16px;" v-if="categoryitem.noReadNum">
 												{{categoryitem.noReadNum}}
 											</span>
-											<!-- <span class="van-tag van-tag--mark van-tag--danger" v-show="categoryindex == 1" style="background:#CAD5DE;color:#5F95A9">
-												2
-											</span> -->
-											<!-- <span class="van-tag van-tag--mark van-tag--danger" v-show="categoryindex == 2" style="background:#CAD5DE;color:#5F95A9">
-												3
-											</span> -->
-<!-- 											<span class="van-tag van-tag--mark van-tag--danger" v-show="categoryindex > 2" style="background:#B8C0CC;color:#FFFBFC">
-												{{categoryindex + 1}}
-											</span> -->
 										</div>
 			  							<div>
 											
@@ -117,24 +60,6 @@
 											<div class="van-card__desc van-ellipsis " style="top:2rem">
 												{{categoryitem | filterTime}}
 											</div>
-											<!-- <div class="van-card__type2 van-ellipsis" style="right:0;left:5rem">
-												{{categoryitem.lastTime ? categoryitem.lastTime : '' | filterTime}}
-											</div> -->
-											<!-- <div class="van-card__num van-ellipsis">
-												<van-icon v-show="categoryitem.loadMode == 4" name="play-circle-o" size="1rem" style="top: 0.2rem;"/>
-												<van-icon v-show="categoryitem.loadMode != 4" name="eye-o" size="1rem" style="top: 0.2rem;"/>
-												<span style="padding-left: 0.2rem;">1111 </span>
-											</div>
-											<div class="van-card__chat van-ellipsis">
-												<van-icon name="chat-o" size="1rem" style="top: 0.2rem;" v-if="categoryitem.loadMode == '4'"/>
-												<span style="padding-left: 0.2rem;" v-if="categoryitem.loadMode == '4'">{{categoryitem.commentNum | filterFlowNum}}</span>
-											</div>
-			  								<div class="van-card__desc van-ellipsis">
-			  									{{categoryitem.createtime | filterTime}}
-			  								</div> -->
-											<!-- <div class="van-card__more van-ellipsis">
-												<van-icon name="more-o"  style="top: 0.2rem;"  size="1rem"/>
-												</div> -->
 											
 			  							</div>
 			  							<div class="van-card__bottom">
@@ -170,18 +95,77 @@
         <!-- </van-tab> -->
       <!-- </van-tabs> -->
     </div>
+	<van-tabbar
+	  v-model="tabActive"
+	  active-color="black"
+	  inactive-color="black"
+	>
+	  <van-tabbar-item icon="friends-o"  @click="userListView = true">用户</van-tabbar-item>
+	  
+	 
+	</van-tabbar>
   </div>
+  <van-popup
+  	  style="background: white;
+  				opacity: 1;"
+  	    v-model="userListView"
+  	    position="bottom"
+  	    :style="{ height: '65%' }"
+  		@open="openUserView"
+  	  >
+	  <div style="height:4rem;margin-top:1rem;">
+		  用户
+		  <van-divider />
+	  </div>
+		<div class="detailparent">
+			<div class="van-swipe-cell" style="width: 100%;" v-for="(categoryitem,categoryindex) in userList" @click="toPage(categoryitem)" :key="categoryindex">
+				<div class="van-swipe-cell__wrapper" style="transform: translate3d(0px, 0px, 0px); transition-duration: 0.6s;">
+					<div class="goods-card van-card" style="border-bottom: 1px solid rgb(235, 237, 240);">
+						<div class="van-card__header">
+							<a class="van-card__thumb">
+								<div class="van-image" style="width: 100%; height: 100%;">
+									<van-image ref="workImage"  lazy-load :src="baseURL + '/common/image?imgId=' + categoryitem.icon +'&token=' + token" style="width:100%;width:45px" v-if="categoryitem.icon"/>
+									<img src="@/assets/default_img.jpg" style="height:40px;width:40px" alt=""  v-if="!categoryitem.icon">
+								</div>
+								<div class="van-info"></div>
+							</a>
+							
+							<div class="van-card__content ">
+								<div>
+									
+									<div class="van-card__title van-multi-ellipsis--l2">
+										{{categoryitem.nickName}}
+									</div>
+									<!-- 在线状态 -->
+									<div class="van-card__desc van-ellipsis " style="top:.2rem">
+										
+										<span v-if="categoryitem.active == 1" style="color:green">在线</span>
+										<span v-if="categoryitem.active != 1">离线</span>
+									</div>
+									
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+  </van-popup>
+</v-touch>
 </template>
 
 <script>
 import NavBar from "@/components/common/Navbar.vue";
 import backTop from '@/components/backTop'
 import { mapGetters, mapMutations } from 'vuex'
+import {formatTime} from '@/common/js/util.js'
 export default {
 	data() {
     return {
+	  tabActive:0,// 底部菜单
+	  userList:[],// 用户信息
       category: [],
-	  name:'hot',
+	  userListView:false,// 用户列表显示控制
       // menu:[{id:1,DICT_NAME:'收藏'},{id:2,DICT_NAME:'评论'}],
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
@@ -194,7 +178,8 @@ export default {
 	backTop
   },
   activated() {
-	  console.log('显示了.....')
+	  this.userListView = false
+	  console.log('显示了.....' + this.userListView)
     // if(localStorage.getItem('newCat')) {
     //     let newCat = JSON.parse(localStorage.getItem('newCat'))
     //     this.category = this.changeCategory(newCat)
@@ -212,11 +197,12 @@ export default {
   filters:{
   	filterTime(data) {
 		let val = data.lastTime
-  	  if(val){
-		  console.log(val)
-  	    // return val.split('T')[0]
-		// return val.substring(0,10)
-		return (1900 + val.year) + '-' + (val.month + 1) + '-' + (val.day) + ' ' +  val.hours + ':' + val.minutes
+  	  if(val && val.time){
+		  return formatTime(val.time)
+		//   console.log(val)
+  // 	    // return val.split('T')[0]
+		// // return val.substring(0,10)
+		// return (1900 + val.year) + '-' + (val.month + 1) + '-' + (val.day) + ' ' +  val.hours + ':' + val.minutes
   	  }
   	  return "";
   	},
@@ -241,11 +227,23 @@ export default {
 	}
   },
   methods: {
-	  // ...mapMutations([
-	  // 	'SET_MESSAGE_MAP',
-	  // 	'GET_MESSAGE_MAP',
-	  	
-	  // ]),
+	  // 打开用户列表窗口
+	  async openUserView(){
+		  const res = await this.$http.get('/admin/queryNotCurUserInfo')
+		  console.log(res)
+		  if(res.data.code == 200){
+			  this.userList = res.data.data
+		  }
+	  },
+	  onSwipeLeft () {
+	  
+	  },
+	  onSwipeRight(){
+		  console.log('滑动......')
+	  	if(localStorage.slideReturn == 1){
+	  		this.$router.go(-1)
+	  	}
+	  },
 	  ...mapGetters([
 	  	'messageList'
 	  ]),
@@ -291,6 +289,9 @@ export default {
 		//this.$msg.fail('功能开发中')
 		// 清除查询状态
 		// this.overallMessage.messageMap.get(item.user_id).noReadNum = 0
+		this.userListView = false;
+		console.log('关闭了啊' + this.userListView)
+
 		// 跳转明细页面、携带用户id和页面标识
 		this.$router.push(`/messageDetail/${item.messageSource}/${item.user_id}`)
 		
@@ -392,21 +393,21 @@ export default {
     },
 
   },
-  activated() {
-  		// 页面显示了,去更新各类消息信息
+  // activated() {
+  // 		// 页面显示了,去更新各类消息信息
   		
-      const categoryitem = this.categoryItem();
-  	  console.log(categoryitem)
-	  for(let i =0;i<categoryitem.list.length;i++){
-		  // 更新各类消息数量
-		  // categoryitem.list[i].noReadNum = this.overallMessage.messageMap.get(categoryitem.list[i].user_id).noReadNum
-	  }
-  //     if (!categoryitem.list.length) {
-  //       this.selectArticle();
+  //     const categoryitem = this.categoryItem();
+  // 	  console.log(categoryitem)
+	 //  for(let i =0;i<categoryitem.list.length;i++){
+		//   // 更新各类消息数量
+		//   // categoryitem.list[i].noReadNum = this.overallMessage.messageMap.get(categoryitem.list[i].user_id).noReadNum
+	 //  }
+  // //     if (!categoryitem.list.length) {
+  // //       this.selectArticle();
   		
-  //       // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
-  //     }
-    },
+  // //       // this.$refs.tab.scrollTop = this.$refs.tab.$refs.wrapper.scrollTop;
+  // //     }
+  //   },
   watch: {
 
 	$route(to,from) {
@@ -453,7 +454,9 @@ export default {
 		// // lock-scroll:true,
 	 //  })
 	  
-	  
+	  if(!this.websocket){
+		 this.createWebSocket()
+	  }
       this.selectCategory();
   }
 };
