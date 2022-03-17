@@ -1,18 +1,18 @@
 <template>
-<div @click.capture="closeCommentList($event)">
+<div @click.capture="closeCommentList($event)" style="z-index:9999">
   <div class="back iconfont icon-left" @click="close"></div>
 	  <scroll class="wrap"
 		:style="VideoItemHeightStyle"
 		ref="scroll"
 		:probeType="3"
-		:data="playListDetail"
+		:data="playListMessage"
 		:scrollEnd="true"
 		:momentum="true"
 		:listenScroll="true"
 		@scroll="scroll"
 		@scrollEnd="scrollEnd">
 		<div>
-		  <my-video v-for="(item, index) in playListDetail"
+		  <my-video v-for="(item, index) in playListMessage"
 			ref="videos"
 			:key="item.id"
 			:index="index"
@@ -211,7 +211,7 @@ export default {
 			this.$refs.videos[index].createVideo()
 		}
 		// 将视频前后的两个视频以为的视频都销毁,最多五个视频同时存在
-		let videoLength = this.playListDetail.length// 视频数据
+		let videoLength = this.playListMessage.length// 视频数据
 		let startLength = index - 2; // 开始销毁位置
 		let endLength = index + 2;// 结束销毁位置
 		while(startLength > 0){
@@ -234,11 +234,11 @@ export default {
 	},
     scrollEnd (pos) {
 		// 结束将当前高度设置为0
-		let totalHeight  = -(this.clientHeight * (this.playListDetail.length - 1)) // 总高度
+		let totalHeight  = -(this.clientHeight * (this.playListMessage.length - 1)) // 总高度
 		if(pos.y == totalHeight){
 			// console.log(this)	
 			// console.log('滑到最下面》。。。。。。。。。')
-			this.$parent.$children[0].$children[0].queryData()
+			// this.$parent.$children[0].$children[0].queryData()
 			return;
 		}
 		// 滑到最底下加载新数据
@@ -308,7 +308,7 @@ export default {
     close () {
 		// 返回将视频全部销毁
 		// console.log('视频全部销毁.......')
-		let videoLength = this.playListDetail.length// 视频数据
+		let videoLength = this.playListMessage.length// 视频数据
 		for(let i =0;i<videoLength;i++){
 			if(this.$refs.videos[i].video){
 				this.$refs.videos[i].video.dispose()
@@ -318,7 +318,7 @@ export default {
       this.$emit('close')
     },
     closeCommentList (e) {
-		let videoLength = this.playListDetail.length// 视频数据
+		let videoLength = this.playListMessage.length// 视频数据
 		// 获取高度,以及y轴高度,还有视频数量总高度
 		let clientHeight = this.clientHeight
 		let index = this.currentY / clientHeight
@@ -357,7 +357,7 @@ export default {
       }
     },
     ...mapGetters([
-      'playListDetail'
+      'playListMessage'
     ])
   },
   components: {
@@ -367,7 +367,7 @@ export default {
 	comment
   },
 	created(){
-		console.log(this.playListDetail)
+		console.log(this.playListMessage)
 	}
 }
 </script>

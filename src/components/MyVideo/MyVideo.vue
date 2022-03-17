@@ -99,14 +99,14 @@
     right: 11px;" v-show="showPageTool">{{VideoItem.videoLength | getDateBysecond}}</div>
 	<div style="position:absolute;bottom:48px;width:100%" v-show="showPageTool"> <!-- 当前播放位置 -->
 	  <van-slider style="z-index:200" v-model="videoProcess" :min="0" :max="100" :button-size="1" @drag-start="dragStart" @drag-end="dragEnd" @input="dragInput" @change="dragChange"/></div>
-    <div class="input-bar" v-show="bottomComment & showPageTool" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)">
+    <!-- <div class="input-bar" v-show="bottomComment & showPageTool" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)"> -->
 		
-     <input class="input"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国、敬业、诚信、友善'" type="text">
+     <!-- <input class="input"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国、敬业、诚信、友善'" type="text"> -->
 	 <!-- <input class="input"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国'" type="text"> -->
 	 <!-- <span>.....fdsfdsfdsf</span> -->
       <!-- <span class="iconfont icon-at" ></span> -->
       <!-- <span class="iconfont icon-check"></span> -->
-    </div>
+    <!-- </div> -->
 	<img v-show="!playStatus" class="icon_play"
 	     src="@/assets/play.png"/>
 		
@@ -124,18 +124,73 @@
   <van-row  justify="space-around" style="padding-top:5%">
     <van-col span="6" @click="fullVideo()">
   		<span >
-  					<van-icon name="exchange" size="1.5rem" />
-  					<p style="padding-top:.5rem">全屏</p>
-  				</span>
-  			</van-col>
-    <van-col span="6" @click.stop="showPageToolMethod">
+			<van-icon name="exchange" size="1.5rem" />
+			<p style="padding-top:.5rem">全屏</p>
+		</span>
+	</van-col>
+	<van-col span="6" @click.stop="showPageToolMethod">
   				<span>
     		<van-icon name="orders-o" size="1.5rem" />
     		<p style="padding-top:.5rem" v-if="showPageTool" >简约</p>
   		<p style="padding-top:.5rem" v-if="!showPageTool">正常</p>
+		
   		</span>
     </van-col>
+	<van-col span="6" @click.stop="share">
+		<span>
+			<van-icon name="share-o" size="1.5rem" />
+			<p style="padding-top:.5rem" >分享</p>
+		</span>
+	</van-col>
   </van-row>
+  </van-popup>
+  
+  <!-- 分享弹出窗口 -->
+  <van-popup
+	   round
+	  :overlay-style="{background:'rgba(255,255,255,0)',zIndex:'1'}"
+  	    v-model="userListView"
+  	    position="bottom"
+  		@open="openUserView"
+		:style="{ height: '65%',position: 'absolute'}"
+  	  >
+  	  <div style="height:4rem;margin-top:1rem;">
+  		  用户
+  		  <van-divider />
+  	  </div>
+  		<div class="detailparent" style="z-index:9999">
+  			<div class="van-swipe-cell" style="width: 100%;" v-for="(categoryitem,categoryindex) in userList" @click.stop="shareUser(categoryitem)" :key="categoryindex">
+  				<div class="van-swipe-cell__wrapper" style="transform: translate3d(0px, 0px, 0px); transition-duration: 0.6s;">
+  					<div class="goods-card van-card" style="border-bottom: 1px solid rgb(235, 237, 240);">
+  						<div class="van-card__header">
+  							<a class="van-card__thumb">
+  								<div class="van-image" style="width: 100%; height: 100%;">
+  									<van-image ref="workImage"  lazy-load :src="baseURL + '/common/image?imgId=' + categoryitem.icon +'&token=' + token" style="width:100%;width:45px" v-if="categoryitem.icon"/>
+  									<img src="@/assets/default_img.jpg" style="height:40px;width:40px" alt=""  v-if="!categoryitem.icon">
+  								</div>
+  								<div class="van-info"></div>
+  							</a>
+  							
+  							<div class="van-card__content ">
+  								<div>
+  									
+  									<div class="van-card__title van-multi-ellipsis--l2">
+  										{{categoryitem.nickName}}
+  									</div>
+  									<!-- 在线状态 -->
+  									<div class="van-card__desc van-ellipsis " style="top:.2rem">
+  										
+  										<span v-if="categoryitem.active == 1" style="color:green">在线</span>
+  										<span v-if="categoryitem.active != 1">离线</span>
+  									</div>
+  									
+  								</div>
+  							</div>
+  						</div>
+  					</div>
+  				</div>
+  			</div>
+  		</div>
   </van-popup>
   </div>
   
@@ -207,6 +262,8 @@ export default {
 	  videoMessage: null, // 视频滑动进度消息对象
 	  upOrDown:false, // 是否上下滑动,用于控制左右滑动失效
 	  showFull:false,// 显示全屏按钮
+	  userListView:false,// 用户列表显示控制
+	  userList:[] // 用户数组
     }
   },
   watch:{
@@ -257,6 +314,54 @@ export default {
     ])
   },
   methods: {
+	  async saveMessage(item){
+		  console.log(item)
+		  console.log(this.VideoItem)
+		  const result = await this.$http.post('/message/addMessage',{
+		  	user_id: item.user_id,
+		  	message_category:'VIDEO',
+		  	message_type:'FORWARD',
+			
+			// message_photo:this.VideoItem.previewImg, // 图片
+		  	message_content:'分享[视频]',
+		  	message_source:'USER',
+			business_id: this.VideoItem.id // 视频的id
+		  })
+		  console.log(result)
+	  },
+	  // 分享用户
+	  shareUser(item){
+		  // top.a = this.$dialog
+		  // 修改层级
+		  
+		  this.$dialog.confirm({
+		    title: '提示',
+		    message: '确定分享给' + item.nickName + '吗？'
+		  }).then(() => {
+			 console.log('分享中.....')
+			 // 保存分享消息
+			 this.saveMessage(item)
+		  }).catch(() => {
+		  	// console.log('不退出')
+		  });
+		  // 延迟显示
+		  setTimeout(()=>{
+			  $('.van-dialog').css('z-index','9999')
+		  },100)
+	  },
+	  // 打开用户列表窗口
+	  async openUserView(){
+		  const res = await this.$http.get('/admin/queryNotCurUserInfo')
+		  console.log(res)
+		  if(res.data.code == 200){
+			  this.userList = res.data.data
+		  }
+	  },
+	  // 分享视频
+	  share(){
+		  this.toolShow = false;
+		  this.userListView = true
+	  },
 	  // 全屏
 	  fullVideo(){
 		  this.toolShow = false
@@ -861,5 +966,33 @@ export default {
     color $color-text
     transition color .3s
 	
+/deep/ .van-card__thumb img{
+	border-radius:30px;
+}
+
+/deep/ .van-swipe-cell{
+	height:4rem;
+}
+
+/deep/ .van-card__thumb{
+	position: relative;
+	    flex: none;
+	    width: 40px;
+	    height: 88px;
+	    margin-right: 8px;
+}
+
+/deep/ .van-card__content{
+	height:4rem;
+}
+.detailparent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  .detailitem {
+    margin: 1.389vw 0;
+    width: 45%;
+  }
+}
 
 </style>

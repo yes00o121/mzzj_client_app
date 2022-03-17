@@ -12,9 +12,9 @@ import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
 // const baseURL = 'http://127.0.0.1:8109'
-// const baseURL = 'http://192.168.1.103:8109'
+const baseURL = 'http://192.168.1.105:8109'
 // const baseURL = 'http://121.201.2.228:10824'
-const baseURL = 'http://121.201.2.228:10958'
+// const baseURL = 'http://121.201.2.228:10958'
 Vue.prototype.baseURL = baseURL
 const http = axios.create({
 	baseURL
@@ -40,19 +40,23 @@ http.interceptors.request.use(function (config) {
 http.interceptors.response.use(function (response) {
     return response;
   }, function (error) {
-	  Vue.prototype.$msg.clear()
-     if(!error.response || error.response.status == 401 || error.response.status == 402){
-		 if(error.message.startsWith('timeout')){
-			 // Vue.prototype.$msg.fail('系统维护中...')
-			 Vue.prototype.$msg.fail('加载超时拉...')
-		 }else {
-			 Vue.prototype.$msg.fail('没有权限或系统维护中...')
-			 // Vue.prototype.$msg.fail('加载超时拉...')
-		 }
-     }
-	 if(error.response && error.response.status == 500){
-		 Vue.prototype.$msg.fail('加载失败...')
-	 }
+	   Vue.prototype.$msg.clear()
+	// websocket重连中,不提示错误消息
+	if(!error.response || error.response.status == 401 || error.response.status == 402){
+			 if(error.message.startsWith('timeout')){
+				 // Vue.prototype.$msg.fail('系统维护中...')
+				 Vue.prototype.$msg.fail('加载超时拉...')
+			 }else if(error.message.startsWith('Network Error')){
+				Vue.prototype.$msg.fail('网络连接失败...')
+			 }else{
+				 Vue.prototype.$msg.fail('没有权限或系统维护中...')
+			 }
+	}
+	if(error.response && error.response.status == 500){
+			 Vue.prototype.$msg.fail('加载失败...')
+	}
+	 
+
     return Promise.reject(error);
   });
 

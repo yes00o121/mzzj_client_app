@@ -44,7 +44,7 @@
 			</scroll>
 			<footer v-show="showPageTool">
 			<!--底部操作栏-->
-				<div class="container_bottom" v-show="bottomShow">
+				<!-- <div class="container_bottom" v-show="bottomShow">
 					<div class="bottom_tab" :class="tabIndex==0?'tab_active':''" @click="changeTab(0)">
 						<span class="bottom_tab_span " @click="home">首页</span>
 					</div>
@@ -54,7 +54,7 @@
 					<div class="bottom_tab" :class="tabIndex==2?'tab_active':''" @click="changeTab(2)">
 						<span @click="message('暂未开放')" class="bottom_tab_span">我的</span>
 					</div>
-				</div>
+				</div> -->
 			</footer>
 			</div>
 			<!-- 弹出工具栏 -->

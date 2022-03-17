@@ -4,6 +4,7 @@
 		  			  <!-- <van-notice-bar text="通知内容" left-icon="volume-o" /> -->
 		  <!-- <transition :name="transitionName"> -->
 			<keep-alive v-if="isLoggedIn">
+				
 				<!-- <transition :name="transitionName"> -->
 				<router-view v-if="$route.meta.keepalive && !equipmentCheck" />
 				<!-- </transition> -->
@@ -19,26 +20,6 @@
 						请使用移动设备进行访问
 					</strong>
 			  </div>
-<!-- 			  <div v-show="isShow" :style="'transition: 3s;height:' + height">
-				  <div style="height:4rem;width:96%;background:rgb(241 241 241);z-index:9999;position:absolute;top:0rem;border-radius:20px;margin-left:2%;margin-top:1rem;">
-				  				  <div style="height:1rem;flot:left;width:100%;">
-				  					 <van-image ref="workImage" round="16" lazy-load :src="baseURL +'/common/image?imgId=61b88b894316b402bcbf833f&token=' + token" style="top:.5rem;width:25px;position:absolute;left:0;padding-left:1rem;" />
-				  					<span style="top:.8rem;width:100%;position:absolute;left:0;padding-left:3rem;text-align:left">薄荷七喜</span>
-				  					<span style="top:.8rem;width:100%;position:absolute;right:0;padding-right:3rem;text-align:right">上午10：23</span>
-				  					<div style="top:2.7rem;width:100%;position:absolute;left:0;padding-left:1rem;text-align:left">你有一条</div>
-				  				</div>
-			  </div>
-			  </div> -->
-<!-- 			  <div v-show="isShow" :style="'transition: 3s;height:' + height">
-			  				  <div style="height:4rem;width:96%;background:rgb(241 241 241);z-index:9999;position:absolute;top:0rem;border-radius:20px;margin-left:2%;margin-top:1rem;">
-			  				  				  <div style="height:1rem;flot:left;width:100%;">
-			  				  					 <van-image ref="workImage" round="16" lazy-load :src="baseURL +'/common/image?imgId=61b88b894316b402bcbf833f&token=' + token" style="top:.5rem;width:25px;position:absolute;left:0;padding-left:1rem;" />
-			  				  					<span style="top:.8rem;width:100%;position:absolute;left:0;padding-left:3rem;text-align:left">薄荷七喜</span>
-			  				  					<span style="top:.8rem;width:100%;position:absolute;right:0;padding-right:3rem;text-align:right">上午10：23</span>
-			  				  					<div style="top:2.7rem;width:100%;position:absolute;left:0;padding-left:1rem;text-align:left">你有一条</div>
-			  				  				</div>
-			  </div>
-			  </div> -->
 	  </div>
 </template>
 
@@ -61,7 +42,12 @@ export default{
 		// 判断当前设置,如果是电脑禁止访问
 		if(navigator.appVersion.indexOf('Mobile') == -1){
 			this.equipmentCheck = true
+		}else{
+			if(!this.websocket){
+				this.createWebSocket()
+			}
 		}
+		
 		
 	},
 	mounted(){
@@ -111,25 +97,7 @@ export default{
 			      }
 			
 		    }
-	    // 使用watch 监听$router的变化
-	  //   $route (to, from) {
-			// if(to.path != '/' && to.path != '/home'){
-			// 	// 如果to索引大于from索引,判断为前进状态,反之则为后退状态
-			// 	console.log(to.meta.index)
-			// 	console.log(from.meta.index)
-			// 	if (to.meta.index > from.meta.index){
-			// 	  // 设置动画名称
-			// 	  this.transitionName = 'slide-left';
-			// 	} else{
-			// 		console.log('右边...')
-			// 	  this.transitionName = 'slide-right';
-			// 	}
-			// }else{
-			// 	this.transitionName = ''
-			// }
-		  
-	      
-	  //   }
+
 	  }
 }
 </script>

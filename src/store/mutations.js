@@ -78,6 +78,15 @@ const mutations = {
   [types.CLEAN_PLAYLIST_DETAIL] (state) {
     state.playListDetail = []
   },
+  [types.SET_PLAYLIST_MESSAGE] (state, playListMessage) {
+    state.playListMessage = playListMessage
+  },
+  [types.APPEND_PLAYLIST_MESSAGE] (state, playListMessage) {
+    state.playListMessage = state.playListMessage.concat(playListMessage)
+  },
+  [types.CLEAN_PLAYLIST_MESSAGE] (state) {
+    state.playListMessage = []
+  },
   [types.SET_MESSAGE_TOTAL_NUM] (state,num) {
     state.messageTotalNum = num
   },

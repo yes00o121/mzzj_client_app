@@ -1,84 +1,41 @@
 <template>
   <div class="comment" style="position: fixed;bottom:0;z-index:999;width: 100%;background:white;">
-	  
-<!--      <div v-show="!sxIcon">
-		  <p class="comment-title">
-		      <span>评论</span>
-		      <span>({{dataLength}})</span>
-		  		  <span>
-		  			  <van-icon name="arrow-up" style="right: 1rem;position: fixed;" v-show="!sxIcon" @click="sxClick"/>
-		  			  <van-icon name="arrow-down" style="right: 1rem;position: fixed;" v-show="sxIcon"  @click="sxClick"/>
-		  		  </span>
-		  </p>
-		  <div class="commentMyinfo" >
-		  		  <img :src="baseURL + '/common/image?imgId=' + myuser.icon +'&token=' + token" alt="" v-if="myuser"  >
-		  		  <img src="@/assets/default_img.jpg" alt v-else  />
-		      <img src="@/assets/default_img.jpg" alt="" v-else>
-		      <input  v-model="comcontent" ref="Postipt" type="text" @input="commentInput" @blur="commentOver" @mousemove="commentMove()" :placeholder="placeholderText">
-		      <button @click="cmmentPublish">发表</button>
-		  </div>
-	  </div> -->
-	  <van-popup
+
+<!-- 	  <van-popup
 	    v-model="utilShow"
 		:overlay="false"
 	    position="bottom"
 	    :style="{ height: util ? '40%' : '12%','overflow': 'hidden','transition':'all 0.5s ease 0s'}"
-	  >
+	  > -->
+	  <!-- <div> -->
+		  <div class="van-popup van-popup--bottom" :style="{ height: util ? '40%' : '12%','overflow': 'hidden','transition':'all 0.5s ease 0s','z-index': '2001'}">
 		<div class="comment">
-				  <p class="comment-title" v-if="!hideLength">
-				      <span v-if="!hideLength">评论</span>
-				      <span v-if="!hideLength">({{dataLength}})</span>
-				  		  <span>
-				  			  <van-icon name="arrow-up" style="right: 1rem;position: fixed;" v-show="!util" @click="utilClick"/>
-				  			  <van-icon name="arrow-down" style="right: 1rem;position: fixed;" v-show="util"  @click="utilClick"/>
-				  		  </span>
-				  </p>
-				  <div class="commentMyinfo" >
-				      <!-- <img :src="myuser.user_img" alt="" v-if="myuser"> -->
-					  
-				  		  <img :src="baseURL + '/common/image?imgId=' + myuser.icon +'&token=' + token" alt="" v-if="myuser"  >
-				  		  <img src="@/assets/default_img.jpg" alt v-else  />
-				      <img src="@/assets/default_img.jpg" alt="" v-else>
-					   <!-- <input  v-model="comcontent" ref="Postipt2" type="text"  @mousemove="commentMove()" :placeholder="placeholderText"> -->
-<!-- 					   <van-field
-						@focus = "focusIpt"
-					     v-model="comcontent"
-					     rows="1"
-					     autosize
-					     label=""
-					     type="textarea"
-					     placeholder="请输入留言"
-					   /> -->
-				     <input  v-model="comcontent" ref="Postipt2" type="text" @input="commentInput"  @focus="commentMove()" :placeholder="placeholderText">
-				      <button @click="cmmentPublish" style="margin-left:.5rem" v-if="util">发表</button>
-					  <!-- <button @click="cmmentPublish" style="margin-left:.5rem"></button> -->
-					  <van-icon name="smile-o"   size="2rem" style="margin-left:.5rem" @click="util = true"  v-if="!util"/>
-				  </div>
-		</div>
-		<!-- 工具栏内容 -->
-		<emoticom @selectSmile="selectSmile"></emoticom>
-		<!-- <div style="position: relative;height:9rem;">
-		  <div class="mui-scroll-wrapper" >
-			<div class="mui-scroll">
-				<div>
-				<van-image
-						style="padding:7px"
-						@click="selectSmile(item)"
-						width="2rem"
-						height="2rem"
-						v-for="item in Highlightlist"
-						:src="item.img" rel="external nofollow" 
-					 />
-				</div>
-				</div>
+			  <p class="comment-title" v-if="!hideLength">
+				  <span v-if="!hideLength">评论</span>
+				  <span v-if="!hideLength">({{dataLength}})</span>
+					  <span>
+						  <van-icon name="arrow-up" style="right: 1rem;position: fixed;" v-show="!util" @click="utilClick"/>
+						  <van-icon name="arrow-down" style="right: 1rem;position: fixed;" v-show="util"  @click="utilClick"/>
+					  </span>
+			  </p>
+			  <div class="commentMyinfo" >
+					  <img :src="baseURL + '/common/image?imgId=' + myuser.icon +'&token=' + token" alt="" v-if="myuser"  >
+					  <img src="@/assets/default_img.jpg" alt v-else  />
+				  <img src="@/assets/default_img.jpg" alt="" v-else>
+				 <input  v-model="comcontent" ref="Postipt2" type="text" @input="commentInput"  @focus="commentMove()" :placeholder="placeholderText">
+				  <button @click="cmmentPublish" style="margin-left:.5rem" v-if="util">发表</button>
+				  <van-icon name="smile-o"   size="2rem" style="margin-left:.5rem" @click="util = true"  v-if="!util"/>
+			  </div>
 			</div>
-		</div> -->
-		<!--工具栏-->
-		<div style="float:left">
-			 <van-icon name="smile-o" @click="showSmile"  size="2rem" style="background:#f4f4f4;padding:.5rem"/>
+			<!-- 工具栏内容 -->
+			<emoticom @selectSmile="selectSmile"></emoticom>
+			<!--工具栏-->
+			<div style="float:left">
+				 <van-icon name="smile-o" @click="showSmile"  size="2rem" style="background:#f4f4f4;padding:.5rem"/>
+			</div>
 		</div>
-	  </van-popup>
-	  
+		</div>
+	  <!-- </van-popup> -->
   </div>
 </template>
 
@@ -110,19 +67,11 @@ export default {
   },
   methods: {
     async myUserinfo() {
-      // const res = await this.$http.get("/user/" + localStorage.getItem("id"));
-      // this.myuser = res.data[0];
 	  this.getUser().then(response=>{
 	    this.myuser = response.data.data
 	  })
     },
 	utilClick(){
-		// console.log('触发...')
-		// if(this.sxIcon){
-		// 	// this.closeUtil()
-		// } else {
-		// 	// this.openUtil()
-		// }
 		this.util = !this.util
 	},
 	openUtil(){
@@ -130,14 +79,12 @@ export default {
 		this.smile = true
 	},
 	closeUtil(){
-		// console.log('guanbi 。。。。。')
 		this.util = false
 		this.smile = false
 		this.sxIcon = false
 		
 	},
 	commentMove(){
-		// console.log('获取焦点......')
 		this.util = true
 	},
     cmmentPublish() {
@@ -151,10 +98,6 @@ export default {
     },
 	// 选择表情
 	selectSmile(item){
-		// 地址截取,保留图片名称
-		// console.log(item.img)
-		// const name = item.img.replace('./static/emoticom/','').replace('.png','')
-		// console.log(name)
 		// 表情追加
 		this.appendContent(item);
 	},
@@ -179,25 +122,7 @@ export default {
 		let endContent = this.comcontent.substring(postipt,this.comcontent.length);
 		this.comcontent = startContent + content + endContent
 	},
-    focusIpt(){
-		 // this.util = true
-     // this.$refs.Postipt.focus()
-    },
-	commentOver(e){
-		// if(this.tempContent == this.comcontent){
-		// 	this.closeUtil()
-		// }
-		// console.log(e)
-		
-		// console.log($(e.target))
-		// this.closeUtil()
-		// if()
-		// this.util = false;
-		console.log('力开')
-	},
 	commentInput(e){
-		// console.log(e.target.value)
-		// console.log('shuru....')
 		this.tempContent = e.target.text
 	}
   },
@@ -215,13 +140,11 @@ export default {
   },
   watch:{
 	  util(cur,bef){
-		  // console.log('变更。。。。')
-		  // console.log(bef)
-		  // console.log(cur)
 		  // 窗口关闭,取消回复状态
 		  if(!cur){
-			  // console.log(this)
-			  this.$parent.$parent.clearPostStatus()
+			  if(this.$parent.$parent.clearPostStatus){
+				  			  this.$parent.$parent.clearPostStatus()
+			  }
 		  }
 		  this.$emit('showUtil',cur)
 	  }

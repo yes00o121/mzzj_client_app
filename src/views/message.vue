@@ -180,11 +180,6 @@ export default {
   activated() {
 	  this.userListView = false
 	  console.log('显示了.....' + this.userListView)
-    // if(localStorage.getItem('newCat')) {
-    //     let newCat = JSON.parse(localStorage.getItem('newCat'))
-    //     this.category = this.changeCategory(newCat)
-    //     this.selectArticle();
-    // }
 	// 定位到之前位置
 	this.toBeforeScroll();
   },

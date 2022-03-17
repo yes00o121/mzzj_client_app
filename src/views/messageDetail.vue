@@ -1,21 +1,17 @@
 
 <template>
-   <!-- <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div"> -->
-	   <!-- <v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}"> -->
   <div class="searchWrap" style="background:white">
+	   <div style="play-list">
 	   <van-overlay :show="show" @click="overlayClick" />
       <!-- <nav-bar></nav-bar> -->
 	  <van-sticky >
 	  	<van-cell  style="z-index:999;width: 100%;" class="van-ellipsis" icon="arrow-left" :title="model.nickName"  @click="returnPage"/>
 	  </van-sticky>
-	 
-      <!-- <div class="detailinfo"> -->
-			<!-- <van-pull-refresh v-model="isLoading" @refresh="onRefresh" style="height:100%"> -->
-			<div :style="'overflow:auto;height:'+(parseInt(windowHeight*0.8))+'px'" ref="scrollDiv">
+			<div :style="'-webkit-overflow-scrolling: touch;overflow:auto;height:'+(parseInt(windowHeight*0.8))+'px'" ref="scrollDiv">
+			<!-- <div :style="'-webkit-overflow-scrolling: touch;overflow:auto;height:auto'" ref="scrollDiv"> -->
 				<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
-			  <!-- <div :style="'-webkit-overflow-scrolling:touch;overflow:auto;height:'+(parseInt(windowHeight*0.8))+'px'" ref="scrollDiv"> -->
-				  <van-pull-refresh v-model="isLoading" @refresh="onRefresh" >
-			<!-- <div class="detailparent"> -->
+				  <van-pull-refresh v-model="isLoading" @refresh="onRefresh" ref="refreshRef">
+					  <div style="font-size:12px;color:#969799;margin:1rem 0 1rem 0;" v-if="noData">没有更多了</div>
 				<div class="van-swipe-cell" style="width: 100%;" v-for="(item,categoryindex) in list"  >
 					<!-- 焦流日期 -->
 					<div style="font-size:14px">
@@ -33,22 +29,20 @@
 						  							</div>
 						  							<div class="van-info"></div>
 						  						</a>
-												
 						  						<div class="van-card__content "  >
 													<div class="van-card__tag">
 														<span class="van-tag van-tag--mark van-tag--danger" v-show="categoryindex < 3" style="background:#ee0a24;color:#FEFFFF;border-radius:16px;" v-if="item.noReadNum">
 															{{item.noReadNum}}
 														</span>
-			
 													</div>
-													
 						  							<div>
 														<div style="width:20%;height: 1rem;;" v-if="item.message_category == 'TEXT'"></div>
 														<div :class="getContentPoint(item)"  v-if="item.message_type == 'COMMENT' || item.message_type == 'FORWARD'">
 															
-															<div v-if="item.message_category != 'TEXT'" style="width:10rem">
-																<van-image ref="workImage"  @load="imgLoad"  :src="baseURL + item.message_photo +'&token=' + token" style="width:100%;" radius ="12" />
-																<img src="@/assets/play.svg" style="position: absolute;right: 0;top:50%;left:25%;">
+															<div v-if="item.message_category == 'VIDEO'" :style="(item.source_user_id == model.id ? 'text-align:left' : 'text-align:right')" @click="openVideo(item)">
+																<div v-html="item.messageContent">
+
+																</div>
 															</div>
 															<div  v-if="item.message_category == 'TEXT'"  >
 																	<div class="van-tag--primary" v-html="item.messageContent" style="position:relative;word-wrap: break-word;padding: .5rem .5rem;border-radius: 12px;color:#fff"></div>
@@ -69,7 +63,6 @@
 											
 						  				</div>
 						  			</div>
-									<!-- <div v-if="categoryindex == list.length - 1" style="height:2rem">...................</div> -->
 						  		</div>
 								   </van-pull-refresh>
 								     </v-touch>
@@ -77,33 +70,46 @@
 		
       
 	  <comment-title v-if="$route.params.id != 0 " :dataLength="lens" @Postcomment="PostSuccess" ref="commentIpt" :hideLength="true" @showUtil="showUtil" />
-      <!-- </div> -->
-
-  <!-- </div> -->
 
   </div>
+  
+  <transition name="left">
+    <play-list-message
+      class="play-list"
+      ref="playListMessage"
+      v-show="showPlayList"
+      @close="showPlayList=false;"></play-list-message>
+  </transition>
+  </div>
+
 
 </template>
 
 <script>
+// import Scroll from '@/base/scroll/scroll'
+import Scroll from '@/base/scroll/scroll'
+import PlayListMessage from '@/components/PlayList/PlayListMessage'
 import { mapGetters, mapMutations } from 'vuex'
 import NavBar from '@/components/common/Navbar.vue'
 import cover from './cover'
 import commentTitle from '@/components/article/commentTitle.vue'
 import comment from '@/components/article/comment.vue'
-import Scroll from '@/base/scroll/scroll'
+
 import {formatTime} from '@/common/js/util.js'
 export default {
 	
     data() {
         return {
+			noData:false,// 没有更多数据了
 			name:'messageDetail',
 			show:false, // 遮罩
+			videoList:[], // 视频数组
 			// 每种类型消息高度
 			widthObject:{
 				text: 'auto',
 				comment:15
 			},
+			showPlayList: false,
 			isLoading:false,
 			token: 'Bearer ' + localStorage.token,
             model:{},
@@ -132,7 +138,8 @@ export default {
         cover,
         commentTitle,
         comment,
-		Scroll
+		Scroll,
+		PlayListMessage
     },
 	filters:{
 		filterTime(val) {
@@ -156,8 +163,36 @@ export default {
 	},
     methods:{
 		...mapMutations([
-			'SET_MESSAGE_TOTAL_NUM'
+		  'SET_PLAYLIST_MESSAGE',
+		  'CLEAN_PLAYLIST_MESSAGE',
+		  'APPEND_PLAYLIST_MESSAGE',
+		  'SET_MESSAGE_TOTAL_NUM'
 		]),
+		// 打开视频
+		openVideo(item){
+			// 清除视频缓存,追加当前列表所有视频的数据进来
+			this.videoList = []
+			let index = 0;// 记录点击视频的下标
+			let tempIndex = 0;// 临时下标
+			for(let i =0;i<this.list.length;i++){
+				// console.log(this.list[i])
+				if(this.list[i].message_category == 'VIDEO'){
+					// console.log('追加.....')
+					this.videoList.push(this.list[i])
+					if(item.id == this.list[i].id){
+						index = tempIndex
+					}
+					tempIndex += 1
+				}
+				
+			}
+			console.log('点击的弟' + index + '个视频')
+			// this.videoList = JSON.parse('[{"collectionUser":"是","source_user_id":9,"videoLength":307,"create_time":"下午 15:13","nickName":"轮子","videoType":"m3u8","message_category":"VIDEO","message_type":"FORWARD","nextAddress":"/91_-604663","collection":"否","title":"完整版已上传 反差JK学妹说热就是想炫耀她好看的胸","message_source":"USER","personName":"许木学长","message_status":"1","user_id":1,"personId":4968,"id":1056,"business_id":234371,"messageContent":"<div data-v-22a44f8e=\\"\\" class=\\"van-image\\" style=\\"width: 10rem; height: 20rem; overflow: hidden; border-radius: 12px; object-position: center top;\\">\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t<img src=\\"http://192.168.1.105:8109/common/image?imgId=622849ffc02f6462442c603e&token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJsdW56aSIsImNyZWF0ZWQiOjE2NDczMTc0NDM0NjksImV4cCI6MjI1MjExNzQ0M30.fI-c-mmt51dONEuVfKhyzoJUrp93yPCk2t8JhPQziDMu7_JIRQKwh8mOX74GKI5lGtFaIFg1fKFKYBnNnBYzpw\\"\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\tclass=\\"van-image__img\\" style=\\"object-fit: cover;\\">\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t<img data-v-22a44f8e=\\"\\" src=\\"static/play.svg\\" style=\\"position: absolute; right: 0px; top: 50%; left: 50%;\\">\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t<div data-v-22a44f8e=\\"\\" class=\\"van-ellipsis\\" style=\\"position: absolute; left: 0px; top: 90%; color: white; width: 10rem; font-size: 12px;\\">\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t完整版已上传 反差JK学妹说热就是想炫耀她好看的胸\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t</div>\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t</div>","previewImg":"/common/image?imgId=622849ffc02f6462442c603e","child":[]},{"collectionUser":"是","source_user_id":9,"videoLength":307,"create_time":"下午 15:13","nickName":"轮子","videoType":"m3u8","message_category":"VIDEO","message_type":"FORWARD","nextAddress":"/91_-604663","collection":"否","title":"完整版已上传 反差JK学妹说热就是想炫耀她好看的胸","message_source":"USER","personName":"许木学长","message_status":"1","user_id":1,"personId":4968,"id":1060,"business_id":234371,"messageContent":"<div data-v-22a44f8e=\\"\\" class=\\"van-image\\" style=\\"width: 10rem; height: 20rem; overflow: hidden; border-radius: 12px; object-position: center top;\\">\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t<img src=\\"http://192.168.1.105:8109/common/image?imgId=622849ffc02f6462442c603e&token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJsdW56aSIsImNyZWF0ZWQiOjE2NDczMTc0NDM0NjksImV4cCI6MjI1MjExNzQ0M30.fI-c-mmt51dONEuVfKhyzoJUrp93yPCk2t8JhPQziDMu7_JIRQKwh8mOX74GKI5lGtFaIFg1fKFKYBnNnBYzpw\\"\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\tclass=\\"van-image__img\\" style=\\"object-fit: cover;\\">\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t<img data-v-22a44f8e=\\"\\" src=\\"static/play.svg\\" style=\\"position: absolute; right: 0px; top: 50%; left: 50%;\\">\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t<div data-v-22a44f8e=\\"\\" class=\\"van-ellipsis\\" style=\\"position: absolute; left: 0px; top: 90%; color: white; width: 10rem; font-size: 12px;\\">\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t完整版已上传 反差JK学妹说热就是想炫耀她好看的胸\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t</div>\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t</div>","previewImg":"/common/image?imgId=622849ffc02f6462442c603e","child":[]}]')
+			this.showPlayList = true
+			this.CLEAN_PLAYLIST_MESSAGE()
+			this.SET_PLAYLIST_MESSAGE(this.videoList)
+			this.$refs.playListMessage.scrollToIndex(index)
+		},
 		// 接收消息
 		getWebSocketMessage(data){
 			console.log('3333')
@@ -177,27 +212,24 @@ export default {
 				// 	source_user_id:data.message.sendUserId,
 				// 	user_id:data.message.user_id
 				// })
-				let tempData = [{
+				let tempData = [Object.assign({
 					id:Math.random(),
 					icon:data.message.icon,
 					messageContent:data.message.content,
-					message_category:'TEXT',
+					// message_category:'TEXT',
 					message_source:'USER',
 					message_status:'1',
 					message_type: data.msgType,
 					nickName:data.title,
 					source_user_id:data.message.sendUserId,
 					user_id:data.message.user_id
-				}]
+				},data.message)]
 				this.list.push(...this.changeCommentData(tempData))
 				// 滚动到最下面
 				this.$nextTick(()=>{
 					 if(this.pageNum == 1){
 						 this.$refs.scrollDiv.scrollTop = this.$refs.scrollDiv.scrollHeight
-						 // this.$refs.scrollDiv.scrollTo(0,9999999999)
-					 } else {
-						 // this.$refs.scrollDiv.scrollTo(0,0)
-					 }
+					 } 
 				})
 			}else{
 				this.$notify({
@@ -348,13 +380,14 @@ export default {
 							source_user_id:this.curUser.id,
 							user_id: this.model.id
 						}]
+						
 						this.list.push(...this.changeCommentData(tempData))
 						this.$nextTick(()=>{
 							for(let i =0;i<this.$store.getters.messageList.length;i++){
 								// 更新缓存
 								if(this.model.id == this.$store.getters.messageList[i].user_id){
 								   this.$store.getters.messageList[i].messageContent = res
-								   console.log(this.$store.getters.messageList[i])
+								   // console.log(this.$store.getters.messageList[i])
 									this.$store.getters.messageList[i].lastTime.time = new Date().getTime()
 								}
 							}
@@ -435,67 +468,46 @@ export default {
 
            }
         },
-        //进入页面获取是否收藏
-        async subscritionInit() {
-            // if(localStorage.getItem('token')){
-                // const res = await this.$http.get('/sub_scription/' + localStorage.getItem('id'),{
-                //     params:{
-                //         sub_id:this.model.userid
-                //     }
-                // })
-                // const res = await this.$http.post('/collection/queryCollectionByUseridAndDetailDataId',{
-                //    webInfoDetailDataId:this.$route.params.id
-                // })
-                // if(res.data.data == '0'){
-                //   this.subscritionActive = false;
-                // } else {
-                //   this.subscritionActive = true;
-                // }
-                // console.log(res)
-            // this.subscritionActive = res.data.success
-            // }
-        },
-         play(vdoSrc){
-			 console.log(this.$refs.videoPlayer)
-                         //初始化播放器
-              this.myVideo = this.$video(
-                      this.$refs.videoPlayer,
-                      // this.options,
-                      function onPlayerReady() {}
-                    );
-            this.myVideo.src({
-              src:vdoSrc,
-              type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
-            })
-            this.myVideo.play()
-
-         },
 		 async getMessage(){
+			 let curTop = 0;
+			 // 判断如果不是第一页,记录当前滚动位置,加载完成后定位到当前位置上
+			 if(this.pageNum > 1){
+				 curTop = this.$refs.scrollDiv.scrollHeight
+				 console.log('之前高度' + curTop)
+			 }
 			 const res = await this.$http.post('/message/queryMessage',{
 				 pageNum:this.pageNum,
 				 pageSize:this.pageSize,
 				 sourceUserId:this.$route.params.id,
 				 sortType:'DESC'
 			 })
-			 // console.log(res)
-			 this.list.unshift(...this.changeCommentData(res.data.data.list))
-			 console.log(this.list)
 			  this.isLoading = false
-			  // top.a = this.$refs.scrollDiv;
-			  
-			this.$nextTick(()=>{
-				 if(this.pageNum == 1){
-					this.$refs.scrollDiv.scrollTop = this.$refs.scrollDiv.scrollHeight
-				 } else {
-					 // this.$refs.scrollDiv.scrollTo(0,0)
-				 }
-			})
-			
-			// 修改用户查看状态
-			this.$http.get('/message/updateMessageReadStatus?sourceUserId=' + this.$route.params.id);
-			// 重新加载未读数量
-			
-			// this.SET_MESSAGE_TOTAL_NUM(0)
+			 // 判断如果没有数据显示没有更多了提示
+			 if(res.data.data.list.length > 0){
+				 this.noData = false;
+				 this.list.unshift(...this.changeCommentData(res.data.data.list))
+				 this.$nextTick(()=>{
+				 
+				 	// 判断高度,如果高度比屏幕的80%小，说明数据不够填满屏幕，定位到顶部
+				 	if(this.$refs.refreshRef.$el.scrollHeight < (this.windowHeight * 0.8)){
+				 		this.$refs.scrollDiv.scrollTop = 0
+				 	}else{
+				 		if(this.pageNum == 1){
+				 			this.$refs.scrollDiv.scrollTop = this.$refs.scrollDiv.scrollHeight
+				 		}else{
+				 			 // 加载更多数据定位到滑动的位置,当前高度减去之前高度
+				 			 this.$refs.scrollDiv.scrollTop = this.$refs.scrollDiv.scrollHeight - curTop - 20
+				 		}
+				 	}
+					// 修改用户查看状态
+					this.$http.get('/message/updateMessageReadStatus?sourceUserId=' + this.$route.params.id);
+				 
+				 })
+			 }else{
+				 this.noData = true
+				 // 页数恢复
+				 this.pageNum -= 1
+			 }
 		 },
 		 changeCommentData(data) {
 		 	  const imgList = this.Highlightlist
@@ -508,17 +520,62 @@ export default {
 		 	  let fn = ((temp)=>{
 		 		  let arr1 = [];
 		 		  for (var i = 0; i < data.length; i++) {
-		 		  	if(!data[i].messageContent){
-		 		  		continue;
-		 		  	}
-		 		  	let tempData =  data[i].messageContent
-		 		  	for(let i =0;i<filterImg.length;i++){
-		 		  		if(tempData.indexOf(filterImg[i]) != -1){
-		 		  			tempData = tempData.replace(filterImg[i],"</span><img style='position:inherit;top:5px;-webkit-mask-box-image' width='25px'  height='25px' src='"+ this.Highlightlist[i].img +"'><span>")
-		 		  		}
-		 		  	}
+					  // console.log(data[i])
+					  let tempData =  data[i].messageContent
+					  if(!data[i].messageContent){
+					  	continue;
+					  }
+					// 评论
+					if(data[i].message_type == 'COMMENT'){
+						
+						for(let i =0;i<filterImg.length;i++){
+							if(tempData.indexOf(filterImg[i]) != -1){
+								tempData = tempData.replace(filterImg[i],"</span><img style='position:inherit;top:5px;-webkit-mask-box-image' width='25px'  height='25px' src='"+ this.Highlightlist[i].img +"'><span>")
+							}
+						}
+						
+						
+					}  
+					// 转发
+					if(data[i].message_type == 'FORWARD'){
+						// tempData = `<van-image @load="imgLoad" style="object-position:top;" fit="cover" radius ="12" :src="${this.baseURL}${data[i].previewImg}&token=${this.token}"  v-if="${data[i].previewImg}" width="10rem" height="20rem">
+						// 				<img src="@/assets/play.svg" style="position: absolute;right: 0;top:50%;left:50%;">
+						// 				<div class="van-ellipsis" style="position: absolute;left: 0;top:90%;color:white;width:10rem;font-size:12px;" >
+						// 					${data[i].title}
+						// 				</div>
+						// 			</van-image>
+						// 			<van-image @load="imgLoad"   radius ="12" :src="require('@/assets/bk_black.png')"  v-if="!${data[i].previewImg}" width="10rem" height="20rem">
+						// 				<img src="@/assets/play.svg" style="position: absolute;right: 0;top:50%;left:50%;">
+						// 				<div class="van-ellipsis" style="position: absolute;left: 0;top:90%;color:white;width:10rem;font-size:12px;" >
+						// 					${data[i].title}
+						// 				</div>
+						// 			</van-image>`
+						
+						
+						if(data[i].previewImg){
+							tempData = `<div data-v-22a44f8e="" class="van-image" style="width: 10rem; height: 20rem; overflow: hidden; border-radius: 12px; object-position: center top;">
+											<img src="${this.baseURL}${data[i].previewImg}&token=${this.token}"
+											class="van-image__img" style="object-fit: cover;">
+											<img data-v-22a44f8e="" src="static/play.svg" style="position: absolute; right: 0px; top: 50%; left: 50%;">
+											<div data-v-22a44f8e="" class="van-ellipsis" style="position: absolute; left: 0px; top: 90%; color: white; width: 10rem; font-size: 12px;">
+												${data[i].title}
+											</div>
+										</div>`
+						}else{
+							tempData = `<div data-v-22a44f8e="" class="van-image" style="width: 10rem; height: 20rem; overflow: hidden; border-radius: 12px; object-position: center top;">
+											<img src="static/bk_black.png" class="van-image__img" style="object-fit: cover;">
+											<img data-v-22a44f8e="" src="static/play.svg" style="position: absolute; right: 0px; top: 50%; left: 50%;">
+											<div data-v-22a44f8e="" class="van-ellipsis" style="position: absolute; left: 0px; top: 90%; color: white; width: 10rem; font-size: 12px;">
+												${data[i].title}
+											</div>
+										</div>`
+						}
+						
+					}
+					
+					data[i].messageContent = tempData
 
-		 			data[i].messageContent = tempData
+		 		  	
 		 		  	// console.log(data[i].tempData)
 		 		    if (data[i].parent_id == temp) {
 		 		      arr1.push(data[i]);
@@ -539,42 +596,7 @@ export default {
 		 	}
 		     return fn(null);
 		  },
-		 // slideTo (targetPageY) {
-			//  let div  = this.$refs.scrollDiv
-			//  let totalHeight = div.scrollHeight
-			//  // console.log(div.scrollHeight)
-		 //   // var timer = setInterval(function () {
-		 //   //     var currentY = div.scrollTop;//当前及滑动中任意时刻位置
-			//   //  console.log(currentY)
 
-			//   //  // console.log(currentY)
-		 //   //     var distance = targetPageY < currentY ? targetPageY - currentY : currentY - targetPageY;//剩余距离
-			//   //  			   console.log(distance + '...')
-		 //   //     var speed = Math.ceil(distance/10);//每时刻速度
-			//   //  // console.log(currentY + '...' + maxY)
-		 //   //     if (currentY == distance) {
-		 //   //      clearInterval(timer);
-		 //   //     } else {
-		 // 		// div.scrollTo(0,targetPageY < currentY ? currentY + speed : currentY - speed);
-		 //   //     }
-		 //   //    },10);
-		 //   var timer = setInterval(function () {
-		 //       var currentY = div.scrollTop;//当前及滑动中任意时刻位置
-			//    // console.log(currentY + '..' + div.scrollHeight)
-		 //   // 			   console.log(currentY)
-		   
-		 //   // 			   // console.log(currentY)
-		 //       var distance = targetPageY < currentY ? targetPageY + currentY : currentY - targetPageY;//剩余距离
-		 //   // 			   			   console.log(distance + '...')
-		 //       var speed = Math.ceil(distance/10);//每时刻速度
-			//    console.log(distance + '...' + totalHeight)
-		 //       if (currentY == totalHeight) {
-		 //        clearInterval(timer);
-		 //       } else {
-		 //   		 		div.scrollTo(0,targetPageY < currentY ? currentY + speed : currentY - speed);
-		 //       }
-		 //      },10);
-		 //  },
 		  slideTo (targetPageY) {
 			  let div  = this.$refs.scrollDiv
 		    var timer = setInterval(function () {
@@ -588,6 +610,9 @@ export default {
 					window.scrollTo(0,targetPageY < currentY ? currentY + speed : currentY - speed);
 		        }
 		       },10);
+		   },
+		 scrollEvent(){
+			 console.log('滑动........................')  
 		   },
 		 scrollEnd (pos) {
 			 
@@ -610,15 +635,10 @@ export default {
 		 
 		 },
 		 scrollToBottom(){
-			 // this.$nextTick(()=>{
-			 // 	 if(this.pageNum == 1){
-			 	top.a = this.$refs.scrollDiv
-			 	console.log(this.$refs.scrollDiv.scrollHeight)
+
+			 	// top.a = this.$refs.scrollDiv
+			 	// console.log(this.$refs.scrollDiv.scrollHeight)
 			 		 this.$refs.scrollDiv.scrollTo(0,this.$refs.scrollDiv.scrollHeight + 300)
-			 // 	 } else {
-			 // 		 this.$refs.scrollDiv.scrollTo(0,0)
-			 // 	 }
-			 // })
 		 }
     },
 	// 显示重新加载数据
@@ -626,23 +646,7 @@ export default {
 		
 	},
     created() {
-		let a = formatTime(new Date().getTime())
-		console.log(a)
-		// if(this.$route.params.loadMode == 6){
-		// 	this.getVideo()
-		// }else{
-		// 	this.myVideo = null;
-		// 	  // $('#myVideo').empty()
-		// 	if(this.myVideo){
-		// 	  this.myVideo.destory();
-		// 	}
-		//    this.getVideo()
-		// 	   // this.articleitemData()
 
-		// }
-       
-         // this.commendData()
-         // this.collectionInit()
 		 this.getUser();
 		 // 查询用户消息
 		 this.getMessage();
@@ -651,7 +655,9 @@ export default {
 			 this.createWebSocket()
 		 }
 		 // 加载完后跳到最下面的消息位置
-
+		// setTimeout(()=>{
+		// 	this.openVideo()
+		// },2000)
     },
 	mounted (){
 		console.log('======')
@@ -738,7 +744,67 @@ export default {
 </script>
 
 <style  lang='stylus' scoped>
-	@import '~@/common/stylus/variable'
+@import '~@/common/stylus/variable'
+.search-button
+   line-height 44px
+   text-align center
+   padding 0 10px
+body
+   padding 0
+   border 0
+   font-size 100%
+   font-weight normal
+   vertical-align baseline
+   background #000
+.left-enter-active, .left-leave-active
+  transition all .5s
+.left-enter, .left-leave-to
+  opacity 0
+  transform translateX(100%)
+.searchWrap
+  width 100%
+  /* background black */
+  .play-list
+    position fixed
+    z-index 3000
+    top 0
+    left 0
+    right 0
+    bottom 0
+    background $color-background
+  .tab
+    /* background black */
+    display flex
+    .tab-item
+      flex 1
+      text-align center
+      .tab-link
+        display block
+        padding 12px
+        color $color-desc
+      &.router-link-exact-active
+        .tab-link
+          color $color-white
+          /* border-bottom 2px solid $color-point */
+  .topBar
+    /* background black */
+    display flex
+    .searchBar
+      flex 1
+      /* margin-right 10px */
+    .icon-left
+      color black
+      text-align center
+      width 44px
+      line-height 44px
+  .search-list-wrap
+    background white
+    overflow hidden
+    position absolute
+    top 84px
+    bottom 0
+    width 100%	
+
 .detailparent {
   display: flex;
   flex-wrap: wrap;
@@ -928,4 +994,35 @@ export default {
 	    background-color: none;
 		/* opacity:0; */
 }
+
+.cover{
+	height: 100%;
+	width:100%;
+}
+  
+.icon-delete{
+	position: absolute;
+	right: 5px;
+	top: 5px;
+	font-size:14px;
+	padding: 0 0 10px 10px;
+}
+  
+.desc{
+	position: absolute;
+	left: 5px;
+	bottom: 5px;
+	font-size:14px;
+}
+
+.desc .icon{
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	font-size: 12px;
+	margin-right: 5px;
+	vertical-align: top;
+}
+
+
 </style>
