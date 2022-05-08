@@ -22,6 +22,10 @@ import VCharts from 'v-charts-v2' // 图表
 import { Panel } from 'vant';
 import { Notify } from 'vant'; // 消息组件
 import { mapGetters, mapMutations } from 'vuex' // 缓存
+import BScroll from '@better-scroll/core'
+import ObserveImage from '@better-scroll/observe-image'
+
+BScroll.use(ObserveImage) // 滚动图片高度自动计算器
 Vue.use(Notify);
 Vue.use(Panel);
 Vue.use(VCharts)
@@ -139,7 +143,7 @@ Vue.prototype.createWebSocket = function(){
 						   // 统计消息,将消息写入localStorage该类统计实时各类消息情况
 						   console.log('统计消息....')
 						   // 统计消息数量
-						   _this.initMessage(data);
+						   Vue.prototype.initMessage(data);
 					   }else if(data.msgType == 'TIPS'){
 						   // 提示消息直接显示title
 						   _this.$notify({
@@ -152,47 +156,47 @@ Vue.prototype.createWebSocket = function(){
 						   if(_this.$route.name == 'messageDetail'){
 							   console.log(_this)
 							   // top.c = this
-							   _this.$store.state.websocketSendData = data
-							   for(let i =0;i<this.$store.getters.messageList.length;i++){
+							   store.state.websocketSendData = data
+							   for(let i =0;i<store.getters.messageList.length;i++){
 								// 更新缓存
-								if(data.message.user_id == this.$store.getters.messageList[i].user_id){
-								   this.$store.getters.messageList[i].messageContent = data.message.content
-								   console.log(this.$store.getters.messageList[i])
-									this.$store.getters.messageList[i].lastTime = data.message.lastTime
-									Object.assign(this.$store.getters.messageList[i],data.message)
+								if(data.message.user_id == store.getters.messageList[i].user_id){
+								   store.getters.messageList[i].messageContent = data.message.content
+								   console.log(store.getters.messageList[i])
+									store.getters.messageList[i].lastTime = data.message.lastTime
+									Object.assign(store.getters.messageList[i],data.message)
 									// 在页面把未读数量改成0
-									this.$store.getters.messageList[i].noReadNum = 0
+									store.getters.messageList[i].noReadNum = 0
 								}
 							   }
 						   }else{
 							   // 更新消息数量
 							   let messageTotalNum = 0
 							   // 消息总数更新
-							   for(let i =0;i<_this.$store.getters.messageList.length;i++){
-								   messageTotalNum = messageTotalNum + (_this.$store.getters.messageList[i].noReadNum ? _this.$store.getters.messageList[i].noReadNum : 0)
+							   for(let i =0;i<store.getters.messageList.length;i++){
+								   messageTotalNum = messageTotalNum + (store.getters.messageList[i].noReadNum ? store.getters.messageList[i].noReadNum : 0)
 			
-								   if(data.message.user_id == _this.$store.getters.messageList[i].user_id){
+								   if(data.message.user_id == store.getters.messageList[i].user_id){
 									   // _this.$store.getters.messageList[i].messageContent = data.message.messageContent
 										// _this.$store.getters.messageList[i].lastTime = data.message.lastTime
-										_this.$store.getters.messageList[i].messageContent = data.message.content
-										console.log(_this.$store.getters.messageList[i])
-										_this.$store.getters.messageList[i].lastTime = data.message.lastTime
-										Object.assign(_this.$store.getters.messageList[i],data.message)
-									   if(_this.$store.getters.messageList[i].noReadNum > 99){
-										   _this.$store.getters.messageList[i].noReadNum = '99+'
+										store.getters.messageList[i].messageContent = data.message.content
+										console.log(store.getters.messageList[i])
+										store.getters.messageList[i].lastTime = data.message.lastTime
+										Object.assign(store.getters.messageList[i],data.message)
+									   if(store.getters.messageList[i].noReadNum > 99){
+										   store.getters.messageList[i].noReadNum = '99+'
 									   }else{
 										   // console.log(_this.$store.getters.messageList[i].noReadNum)
-										   _this.$store.getters.messageList[i].noReadNum = _this.$store.getters.messageList[i].noReadNum + 1
+										   store.getters.messageList[i].noReadNum = store.getters.messageList[i].noReadNum + 1
 										   // console.log(_this.$store.getters.messageList[i].noReadNum)
 										   messageTotalNum += 1
 									   }
 								   }
 							   }
-							   console.log(_this.$store.getters.messageTotalNum)
-							   if(_this.$store.getters.messageTotalNum != '99+'){
-									_this.$store._mutations.SET_MESSAGE_TOTAL_NUM[0](messageTotalNum)		   
+							   console.log(store.getters.messageTotalNum)
+							   if(store.getters.messageTotalNum != '99+'){
+									store._mutations.SET_MESSAGE_TOTAL_NUM[0](messageTotalNum)		   
 							   }else{
-								   _this.$store._mutations.SET_MESSAGE_TOTAL_NUM[0]('99+')
+								   store._mutations.SET_MESSAGE_TOTAL_NUM[0]('99+')
 							   }
 							   
 							   // 评论消息,弹出提示窗口
@@ -204,7 +208,7 @@ Vue.prototype.createWebSocket = function(){
 						   }
 			
 					   }
-					   console.log(this.$store.getters.messageList)
+					   console.log(store.getters.messageList)
 					   
 			})
 			//连接响应
@@ -237,23 +241,24 @@ Vue.prototype.createWebSocket = function(){
 
 // 初始化内容
 Vue.prototype.initMessage = function(data){
+	console.log('初始化了》。。。')
 	// 判断用户是否登陆,登陆创建连接
 	if(localStorage.token){
 		let messageNum = 0;
 		if(data){
-			// top.a = this
-			this.$store._mutations.CLEAR_MESSAGE_LIST[0]();
+			top.a = Vue
+			store._mutations.CLEAR_MESSAGE_LIST[0]();
 			for(let i =0;i<data.message.length;i++){
 				messageNum += data.message[i].noReadNum ? data.message[i].noReadNum : 0
 				// this.overallMessage.messageMap.set(data.message[i].user_id,data.message[i])
-				this.$store._mutations.APPEND_MESSAGE_LIST[0](data.message[i])
+				store._mutations.APPEND_MESSAGE_LIST[0](data.message[i])
 			}
 			// console.log(this.$store.getters.messageList())
 			if(messageNum > 99){
 				messageNum = '99+'
 			}
 			console.log(messageNum + '..............')
-			this.$store._mutations.SET_MESSAGE_TOTAL_NUM[0](messageNum)
+			store._mutations.SET_MESSAGE_TOTAL_NUM[0](messageNum)
 		}
 	}
 
@@ -268,7 +273,6 @@ Vue.prototype.reconnect = function(url) {
         //没连接上会一直重连，设置延迟避免请求过多
         setTimeout(function () {
 			console.log('正在重来你.......')
-            // createWebSocket(url);
 			Vue.prototype.createWebSocket();
             Vue.prototype.lockReconnect = false;
         }, 2000);

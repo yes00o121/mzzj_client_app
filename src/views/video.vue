@@ -56,6 +56,8 @@
 					</div>
 				</div> -->
 			</footer>
+			<div v-if="lineInterval" ref="line" style="border:1px solid white;z-index:9999;position: absolute;
+			bottom: 0rem;width: 100%;;"></div>
 			</div>
 			<!-- 弹出工具栏 -->
 			<!-- <van-popup
@@ -81,7 +83,7 @@
 			  </van-col>
 			</van-row>
 			</van-popup> -->
-
+			
 	</div>
 
 
@@ -119,6 +121,8 @@ import MyVideo from '@/components/MyVideo/MyVideo'
         data() {
             let u = navigator.userAgent;
             return {
+				lineNum:0.3,
+				lineInterval:null,
 				showPageTool:this.showPageTool,// 隐藏除视频和工具栏外的所有东西
 				toolShow:false,// 显示工具
 				bottomShow:true, // 是否显示底部菜单
@@ -132,8 +136,8 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				timer: null,
 				currentHeight : 0, // 当前高度
 				pageNum:1, // 第一页
-				// pageSize:5,// 一次五个视频
-				pageSize:10,
+				pageSize:5,// 一次五个视频
+				// pageSize:10,
 				playStatus:true, // 播放状态
                 current: 0,
 				playList:[],
@@ -282,14 +286,23 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 			  let absY = Math.abs(pos.y)
 			  if (absY > this.currentY + clientHeight / 2) {
 			    this.currentY = Math.ceil(absY / clientHeight) * clientHeight
+				
+				let index = this.currentY / clientHeight
+				// 视频未加载完成,不继续执行
+				if(!this.$refs.videos[index]){
+					console.log('视频未加载完成....down')
+					return;
+				}
+				
+				
 			    this.$refs.scroll.scrollTo(0, -this.currentY, 500)
 				// 向下
 				// console.log(this.currentY)
 				this.changeVideo(1)
 			  } else if (absY < this.currentY - clientHeight / 2) {
 			    this.currentY = Math.floor(absY / clientHeight) * clientHeight
-			    this.$refs.scroll.scrollTo(0, -this.currentY, 500)
 				// 向上
+				this.$refs.scroll.scrollTo(0, -this.currentY, 500)
 				// console.log(this.currentY)
 				this.changeVideo(2)
 			  } else {
@@ -310,8 +323,13 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				// 结束将当前高度设置为0
 				let totalHeight  = -(this.clientHeight * (this.playList.length - 1)) // 总高度
 				if(pos.y == totalHeight){
+					console.log(pos.y)
+					console.log(totalHeight)
+					if(this.lineInterval){
+						return;
+					}
 					// console.log(this)
-					// console.log('滑到最下面》。。。。。。。。。')
+					console.log('滑到最下面》。。。。。。。。。')
 					this.pageNum = this.pageNum + 1
 					this.loadData()
 					// this.$parent.$children[0].queryData()
@@ -448,6 +466,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				// 获取高度,以及y轴高度,还有视频数量总高度
 				let clientHeight = this.clientHeight
 				let index = this.currentY / clientHeight
+				
 				// 暂停上个视频
 				if(type == 1){
 					// this.currentHeight = clientHeight * (index + 1)
@@ -607,6 +626,24 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				// 	this.loadData()
 				// }
 			},
+			clearLineTransform(){
+				if(this.lineInterval){
+					console.log('................')
+					clearInterval(this.lineInterval)
+					this.lineInterval = null;
+				}
+			},
+			lineTransform(){
+				this.lineInterval = setInterval(()=>{
+					    // console.log(this.lineNum)
+					    if(this.lineNum >= 1){
+							this.lineNum = 0.3
+						}
+						this.lineNum += 0.1
+						// console.log(this.$refs.line)
+						this.$refs.line.style.transform = 'scale('+this.lineNum+','+this.lineNum+')'
+					},60)
+			},
 			showloading() {
 			    var title = "加载中···";
 			    this.$showLoading({
@@ -637,11 +674,17 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				// console.log(this.videoList[this.current])
 			},
 			async loadData(fun){
-				this.$msg.loading({
-				  message: '加载中...',
-				  forbidClick: true,
-				  loadingType: 'spinner'
-				});
+				console.log('@@@@@@@@@@@@@@@@@@')
+				if(this.pageNum == 1){
+					this.$msg.loading({
+					  message: '加载中...',
+					  forbidClick: true,
+					  loadingType: 'spinner'
+					});
+				} else {
+					this.lineTransform()
+				}
+
 				
 				// this.showloading()
 				const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
@@ -659,6 +702,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 					return;
 				}
 				this.playList = this.playList.concat(res.data.data.list)
+				this.clearLineTransform();
 				this.$msg.clear()
 				// 判断,如果是第一个索引,判断视频是否创建,没创建进行创建
 				this.$nextTick(()=>{

@@ -12,7 +12,7 @@
 			  <van-cell style="background: black;color:white;"  icon="arrow-left" :title="(chapterList[this.$route.params.pxh - 1] ? chapterList[this.$route.params.pxh - 1].title : '')"  @click="toBack"/>
 		</van-popup>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&width=' + width + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"/>
+		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"/>
 				<template v-slot:loading>
 				    <van-loading type="spinner" size="20" />
 				  </template>
@@ -89,23 +89,14 @@
 		  	  >
 			  <van-sticky :offset-top="chapterTopSize">
 				  <div style="font-size:14px;color:black;background:white;height:5%;z-index: 999;">
-					  <!-- <p>全部章节({{chapterList.length}})</p> -->
-					  
 					  <van-row  justify="space-around" style="padding-top:5%">
 						  <van-col span="1"></van-col>
 							<van-col span="6">
 								全部章节({{chapterList.length}})
 							</van-col>
-						<!-- <van-col v-show="mangaMode == 1" span="3" offset="0" style="right:0;position: absolute;top:1rem" @click="changePage('next')">
-							<van-icon name="shrink" size="1.2rem" />
-						</van-col>
-						<van-col v-show="mangaMode == 2" span="3" offset="0" style="right:0;position: absolute;top:1rem" @click="changePage('next')">
-							<van-icon name="expand-o" size="1.2rem" />
-						</van-col> -->
 					  </van-row>
 					<van-divider />
 				  </div>
-			  
 			</van-sticky>
 			 <div class="detailparent" ref="tab" >
 						 <van-swipe-cell style="width:100%;" initial-swipe="20" :key="categoryitem.id" v-for="(categoryitem,categoryindex) in chapterList">
@@ -145,6 +136,7 @@ export default {
 	  screenStatus:'1' ,// 是否横屏1竖屏、2横屏
 	  imgShow: false, // 画质选择
 	  chapter:false, // 章节窗口
+	  qualityRadio:'',
 	  // 清晰度选择栏
 	 //  actions: [ 
 		//   { name: '低',value: '0.2' },
@@ -491,6 +483,7 @@ export default {
 			  }else {
 				  this.actions[i].color = ''
 			  }
+			  
 		}
 	},
 	async initConfig(){

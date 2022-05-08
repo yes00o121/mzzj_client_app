@@ -14,6 +14,7 @@
     "test": "mocha  ./test/index.js"
   },
   "dependencies": {
+    "@easydarwin/easyplayer": "^4.1.4",
     "axios": "^0.19.2",
     "better-scroll": "^2.4.2",
     "core-js": "^3.6.4",

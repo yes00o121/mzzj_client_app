@@ -346,6 +346,7 @@ export default {
 			console.log('....')
 			if(res){
 				
+
 				// return;
 				// 保存评论
 				const result = await this.$http.post('/message/addMessage',{
@@ -363,9 +364,10 @@ export default {
 					// this.list = []
 					// this.pageNum = 1
 					//  将评论的数据追加到内容中
-					
+					// 如果数据是空的,在消息添加成功后,请求刷新所有消息缓存
 					if(this.list.length == 0){
 						this.getMessage();
+						this.websocket.send('init')
 					}else{
 						console.log('追加数据......')
 						let tempData = [{
@@ -651,9 +653,9 @@ export default {
 		 // 查询用户消息
 		 this.getMessage();
 		 
-		 if(!this.websocket){
-			 this.createWebSocket()
-		 }
+		 // if(!this.websocket){
+			//  this.createWebSocket()
+		 // }
 		 // 加载完后跳到最下面的消息位置
 		// setTimeout(()=>{
 		// 	this.openVideo()

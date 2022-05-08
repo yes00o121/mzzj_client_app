@@ -44,7 +44,7 @@
 		  <img src="@/assets/user_8.png" width="40" height="40" v-if="user_photo == 7" @click="toUserVideo(VideoItem)">
 		  <img src="@/assets/user_9.png" width="40" height="40" v-if="user_photo == 8" @click="toUserVideo(VideoItem)">
 		  <img src="@/assets/user_0.png" width="40" height="40" v-if="user_photo == 9" @click="toUserVideo(VideoItem)"> -->
-        <div class="follow" v-if="VideoItem.collectionUser != '是' && VideoItem.personId" @click="collectionPersonClick(VideoItem)">+</div>
+        <div class="follow" v-if="collectionUser != '是' && VideoItem.personId" @click="collectionPersonClick(VideoItem)">+</div>
 		<div class="follow" style="background:#7e5c63" v-if="!VideoItem.personId" >+</div>
       </div>
 	  <!-- 加载状态-->
@@ -98,10 +98,19 @@
 	z-index:9999;
     right: 11px;" v-show="showPageTool">{{VideoItem.videoLength | getDateBysecond}}</div>
 	<div style="position:absolute;bottom:48px;width:100%" v-show="showPageTool"> <!-- 当前播放位置 -->
-	  <van-slider style="z-index:200" v-model="videoProcess" :min="0" :max="100" :button-size="1" @drag-start="dragStart" @drag-end="dragEnd" @input="dragInput" @change="dragChange"/></div>
+	  <van-slider style="z-index:200" v-model="videoProcess" :min="0" :max="100" :button-size="1" @drag-start="dragStart" @drag-end="dragEnd" @input="dragInput" @change="dragChange"/>
+	  </div>
     <!-- <div class="input-bar" v-show="bottomComment & showPageTool" @click.stop="showCommentList(VideoItem.videoId, VideoItem.commentNum)"> -->
-		
-     <!-- <input class="input"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国、敬业、诚信、友善'" type="text"> -->
+	<div  style="text-align: initial;text-align: initial;
+	position: absolute;
+	bottom: 20px;
+	color: white;
+	width:100%;
+	
+	left:10px">
+	<input class="input" style="width:100%;background:none;"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国'" type="text">
+	</div>
+     
 	 <!-- <input class="input"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国'" type="text"> -->
 	 <!-- <span>.....fdsfdsfdsf</span> -->
       <!-- <span class="iconfont icon-at" ></span> -->
@@ -192,6 +201,7 @@
   			</div>
   		</div>
   </van-popup>
+  
   </div>
   
   </v-touch>
@@ -251,6 +261,7 @@ export default {
   	  collStatus:false, // 是否收藏状态,收藏状态显示加载图标
   		token: 'Bearer ' + localStorage.token, // 用户token
       // baseURL,
+	  collectionUser:'否', // 收藏
       like: this.VideoItem.collection == '是',
       likeNum: this.VideoItem.likeNum,
   	  video: null,
@@ -338,7 +349,7 @@ export default {
 		    title: '提示',
 		    message: '确定分享给' + item.nickName + '吗？'
 		  }).then(() => {
-			 console.log('分享中.....')
+			 // console.log('分享中.....')
 			 // 保存分享消息
 			 this.saveMessage(item)
 		  }).catch(() => {
@@ -390,7 +401,7 @@ export default {
 	        // console.log(res)
 	        if(res.data.data == '收藏成功'){
 	            // this.collectionActive = true
-				item.collectionUser = '是'
+				this.collectionUser = '是'
 	        }else{
 	            // this.collectionActive = false
 	            this.$msg.fail(res.data.message)
@@ -398,7 +409,7 @@ export default {
 	      } else {
 	        const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:item.personId,collectionType:'2'})
 	        if(res.data.data == '取消成功'){
-	          item.collectionUser = '否'
+	          this.collectionUser = '否'
 			  // this.collectionActive = false
 	        } else {
 	           this.$msg.fail(res.data.message)
@@ -451,7 +462,6 @@ export default {
 		// this.$msg.clear()
 	  },
 	  panLeft(point){
-		// console.log('左滑' + document.body.scrollHeight)
 		// 如果是上下滑动,不触发
 		if(this.upOrDown){
 		  return;
@@ -481,7 +491,6 @@ export default {
 	  // 开始拖动
 	  panstart(){
 		  // 判断高度,如果是上滚动,不执行
-		  // console.log('开始滑动....' + document.body.scrollHeight)
 		  this.upOrDown = false
 	  },
 	  // 拖动结束
@@ -494,7 +503,6 @@ export default {
 		  }
 		  // 结束时,获取视频时间位置,定位到那个地方
 		  let video = this.getVideo()
-		  console.log(this.videoMessage)
 		  video.currentTime = this.videoMessage ? this.videoMessage.curNum : 0
 		  this.$msg.clear()
 		  this.videoMessage = null;
@@ -515,7 +523,6 @@ export default {
 		  }
 		  this.videoMessage.curNum +=1
 		  this.progressSpeed()
-		  console.log('右滑' + document.body.scrollHeight)  
 		  // let video = this.getVideo()
 		  // // 获取当前视频进度,在进度上减少进度,显示出来
 		  // video.currentTime +=1
@@ -537,8 +544,6 @@ export default {
 	  },
 	  // 创建html标签
 	  getVideoHtml(){
-		  // visibility: hidden;
-		  // console.log('销毁重新创建......')
 		  let html = `<video id="${this.VideoItem.id}"   class="video"
 	  style="width:100%;height:100%;"
 	  poster="${this.baseURL}${this.VideoItem.previewImg}&token=${this.token}"
@@ -551,21 +556,14 @@ export default {
 		  $('#div_' + this.VideoItem.id).prepend(html)
 		  return $('#div_' + this.VideoItem.id + ' video')[0]
 		  // return '#'this.VideoItem.id
-		  // console.log($('#div_' + this.VideoItem.id))
 	  },
-	  createVideo(){
+	  createVideo(index){
 		this.$nextTick(()=>{
-			// console.log('创建视频')
-			// console.log(this.$refs.videoPlayer)
-					// alert('创建视频gaodu' + document.body.clientHeight)
-				  // 判断位置,如果高度和index相同,跳转并且播放该视频
-				  let curIndex = this.$parent.$parent.currentHeight  /  document.body.clientHeight
+				  let curIndex = this.index
 				  if(this.VideoItem.videoType == 'm3u8'){
 					  let _this = this
 				  	  this.video = this.$video(
-				  	            // this.$refs.videoPlayer ,
 								this.getVideoHtml(),
-				  	            // this.options,
 				  	  		  {
 				  	  			  // autoplay: 'muted',//自动播放
 				  	  
@@ -581,23 +579,10 @@ export default {
 									// 视频加载完成
 									this.on('canplaythrough',function(){
 										// 添加手势缩放监听
-										console.log(this)
-										
-										// console.log('视频加载终了.....')
-										// // 获取视频高度,判断是否添加全屏按钮,高度低于视频一半显示全屏按钮
-										// let vHeight = _this.video.videoHeight();
-										// let vWidth = _this.video.videoWidth();
-										// console.log(vHeight)
-										// console.log(_this.windowHeight)
-										// if(_this.windowHeight/ 2 > vHeight){
-										// 	console.log('视频小于............')
-										// 	// 全屏按钮定位在视频高度之下
-										// 	_this.showFull = true
-										// }
+
 									})
 				  	  		  }
 				  	          );
-							  // top.a = this.video
 				  	  let nextAddress = this.VideoItem.nextAddress
 				  	  nextAddress = nextAddress.split('_-')[1]
 				  	  this.video.src({
@@ -605,25 +590,49 @@ export default {
 				  	  		  type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
 				  	  		})
 					 if(curIndex == this.index){
-						 console.log('开始播放视频.......')
-						// this.$parent.$parent.$refs.scroll.scrollTo(0,this.$parent.$parent.currentHeight)
-						 this.video.play()
+						this.video.play()
 						 // 加载收藏和评论数量
-						 this.loadCommentAndCollectionNum();
 						this.stopProcess()
 						this.startProcess();
-						this.recordFlowNum()
-
-						
-						// console.log($('.my-video'))
-						// $('.my-video').each((index,e)=>{alert($(e).height())})
-						 // 延迟0.5秒,等待滚动事件加载完成
-						 // setTimeout(()=>{
-							//  this.$parent.$parent.currentHeight = 0
-						 // },1000)
-		
 					 }
-				    
+				     this.loadCommentAndCollectionNum(); // 加载评论收藏信息
+				  }
+				  if(this.VideoItem.videoType == 'mp4'){
+					  let _this = this
+					  this.video = this.$video(
+					            // this.$refs.videoPlayer ,
+					  								this.getVideoHtml(),
+					            // this.options,
+					  		  {
+					  			  // autoplay: 'muted',//自动播放
+					  
+					  			  loop:true,
+					  			  controls: false,//用户可以与之交互的控件
+					  		  },
+					            function onPlayerReady() {
+					  				this.on("progress",function(){
+					  					this.el_.getElementsByTagName('span')[0].innerText = ''
+					  				})
+					  									// 视频加载完成
+					  									this.on('canplaythrough',function(){
+					  										// 添加手势缩放监听
+					  										console.log(this)
+					  										
+					  									})
+					  		  }
+					          );
+						  this.video.src({
+								  src:this.baseURL + '/video/' + _this.VideoItem.fileDir + '?token=' + this.token,
+								  // type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
+								})
+							if(curIndex == this.index){
+								 this.video.play()
+								 // 加载收藏和评论数量
+								 this.loadCommentAndCollectionNum();
+								this.stopProcess()
+								this.startProcess();
+									
+							}
 				  }
 		})  
 	  },
@@ -647,53 +656,32 @@ export default {
 	  },
 	  // 打开工具栏
 	  openTools(item){
-		  console.log('...............')
 		this.toolShow = true  
-	  },
-	  recordFlowNum(){
-		// this.$http.get('')  
-		this.$http.get('/webInfoVideo/recordFlowNum?id=' + this.VideoItem.id)
 	  },
 	 //  //弹出评论窗口
 	  changeComment() {
 		  // 暂停当前视频
-		  // this.video.pause()
-		  // this.playStatus = false
 		  this.$refs.comment.commentPop = true
 		  this.$refs.comment.videoComment = [];
 		  this.$refs.comment.commentNum = this.collNum;
 		  this.$refs.comment.getComment(this.getVideo())
-		  // this.$parent.$parent.$refs.comment.commentPop = true
-		  // this.$parent.$parent.$refs.comment.videoComment = [];
-		  // this.$parent.$parent.$refs.comment.getComment(this.getVideo())
 	  },
 	  setCommentNum(obj,num){
-		  // console.log('......')
-		  // console.log(num)
-	  		  this.commentNum = num
+			this.commentNum = num
 	  },
 	  //记录播放进度
 	  changeProcess() {
-		  // console.log(this.$refs['videoPlayer'])
-		// console.log('记录播放。。。。')
-		// top.a = this.$refs
 		  let video = this.getVideo()
 		  if(video){
 			  let currentTime = video.currentTime.toFixed(1);
-			  // console.log(currentTime)
 			  let duration = video.duration.toFixed(1);
 			  this.videoProcess = parseInt((currentTime / duration).toFixed(2) * 100)
 		  }
-		  /*else{
-			  this.stopProcess()
-		  }*/
-
 	  },
 	  // 开始计时
 	startProcess(){
 		this.maxVideoProcess = this.getVideo().currentTime // 记录当前视频长度
 		this.videoProcessInterval = setInterval(() => {
-			// video.style.visibility = 'visible'
 			this.changeProcess(this.getVideo())
 		}, 100)
 	},
@@ -719,20 +707,15 @@ export default {
 		if(res.data){
 			this.commentNum = res.data.commentNum
 			this.collNum = res.data.collNum
+			this.collectionUser = res.data.collectionUser
 		}
 
 	},
 	  // 开始拖动,暂停播放
 		dragStart(e){
-			// alert('22222')
 			clearInterval(this.videoProcessInterval)
-			// if(!this.iconPlayShow){
-			// 	this.playvideo()
-			// }
 			this.video.pause()
 			this.playStatus = false
-
-			// console.log('开始拖动')
 		},
 		// 结束拖动
 		dragEnd(e){
@@ -742,10 +725,6 @@ export default {
 		dragInput(value){
 			// console.log(value)
 			clearInterval(this.videoProcessInterval)
-			// if(!this.iconPlayShow){
-			// 	this.playvideo()
-			// }
-			// 
 		},
 		// 进度条变化,且结束时候触发,用于加载当前位置视频
 		dragChange(value){
@@ -753,15 +732,9 @@ export default {
 
 			// let duration = document.querySelectorAll('video')[this.current].duration.toFixed(0);
 			let video = this.getVideo()
-			console.log('拖动结束位置' + value)
+			// console.log('拖动结束位置' + value)
 			this.videoProcess = value
 			video.currentTime = parseInt((video.duration * (value/100)).toFixed(2))
-			// this.playvideo()
-			// video.play()
-			// this.playvideo()
-			// console.log(this.video)
-			// top.a = this.video
-
 			this.video.play()
 			this.playStatus = true
 			this.startProcess()
@@ -806,13 +779,11 @@ export default {
     },
 	playVideo(){
 		// 延迟0.3秒如果clickFlag还是false说明是单击
-		console.log('触发....' + this.$refs.comment.commentPop)
+		// console.log('触发....' + this.$refs.comment.commentPop)
 		// 如果打开了评论窗口,点击失效
 		if(this.$refs.comment.commentPop){
 			return;
 		}
-		// console.log(this.video)
-		// top.a = this.video
 		if(this.playStatus){
 			this.video.pause()
 		}else{

@@ -6,14 +6,14 @@
       @confirm="confirm"
       @cancel="cancel"
       ref="confirm"></confirm> -->
-    <me-tab class="fiexedtop"
+<!--    <me-tab class="fiexedtop"
       :videoNum="videoNum"
       :likeNum="likeNum"
-      v-show="fiexedtopshow"></me-tab>
-    <div class="backbtn-wrap" :class="{showbgcolor: fiexedtopshow}">
+      v-show="fiexedtopshow"></me-tab> -->
+   <div class="backbtn-wrap" :class="{showbgcolor: fiexedtopshow}">
       <span class="backbtn iconfont icon-left" v-show="this.$route.params.id !== 'me'" @click.stop="GoBack"></span>
       <p class="name" :class="{showname: fiexedtopshow}" v-text="userInfo.person_name"></p>
-      <div class="dotbtn iconfont icon-ellipsis" v-show="this.$route.params.id === 'me'" @click="showMenu = !showMenu">
+<!--      <div class="dotbtn iconfont icon-ellipsis" v-show="this.$route.params.id === 'me'" @click="showMenu = !showMenu">
         <transition name="up">
             <div class="more-menu" v-show="showMenu">
               <div class="menu-item" @click="showModifyInfomation = true">
@@ -24,7 +24,7 @@
               </div>
             </div>
         </transition>
-      </div>
+      </div> -->
     </div>
     <div class="background" :style="bgimgStyle" @touchstart.prevent>
       <!-- <img class="bg" src="./1.jpg" alt=""> -->
@@ -58,14 +58,15 @@
 		  <div style="position: absolute;
     top: 0;
     right: 0;
+	left:0;
     color: white;">
 			  <van-button v-if="collStatus == '否'" type="default" size="mini" style="width:6rem;color:white;background: #fc345d;border:#fc345d;border-radius:5px;" @click="collectionPersonClick">+ 关注</van-button>
 			  <van-button v-if="collStatus == '是'" type="default" size="mini" style="width:6rem;color:black;background: white;border:#fc345d;border-radius:5px;" @click="collectionPersonClick">已关注</van-button>
 		  </div>
           <div class="num-wrap">
             <p>{{byLikeNum}}获赞</p>
-            <p @click="GoInterestList">{{followerNum}}关注</p>
-            <p @click="GoFanList">{{fanNum}}粉丝</p>
+            <p @click="GoInterestList">{{followerNum}}粉丝</p>
+            <p @click="GoFanList">{{playNum}}播放量</p>
           </div>
         </div>
        <div class="wrap">
@@ -79,6 +80,7 @@
               @showCommentList="fetchCommentsAndShowList"
               :userInfo="userInfo"
               @chooseVideo="chooseVideo"
+
               @delVideo="delVideo"></router-view>
 			  
           </keep-alive>
@@ -108,7 +110,7 @@
         class="play-list"
         ref="playListDetail"
         v-show="showPlayList"
-        @close="showPlayList=false"></play-list-detail>
+        @close="playClose()"></play-list-detail>
     </transition>
 </div>
 </template>
@@ -163,8 +165,9 @@ export default {
       videoNum: 0,
       byLikeNum: 0,
       followerNum: 0,
+	  playNum:0,
       bgimgHeight: 150,
-	  collStatus:false,// 收藏状态
+	  collStatus:'否',// 收藏状态
       showMenu: false,
       showPlayList: false,
       fiexedtopshow: false,
@@ -184,10 +187,15 @@ export default {
       }
     },
     ...mapGetters([
-      'loginInfo'
+      'loginInfo',
     ])
   },
   methods: {
+	  playClose(){
+		  this.showPlayList=false
+		  // 关闭的时候刷新数量
+		  this.getVideoNum();
+	  },
 	  selectItem (item) {
 	    this.$router.push(`/profile/${item.userId}`)
 	  },
@@ -209,7 +217,7 @@ export default {
       this.userInfo.userAvatar += `?v=${Math.random()}`
     },
     scrollHandler (pos) {
-		console.log('滚动.....')
+		// console.log(pos)
       if (this.showCommentList) {
         this.showCommentList = false
         this.currentCommentVideoId = ''
@@ -225,7 +233,6 @@ export default {
       }
     },
     scrollToEnd () {
-		console.log('------------------------')
       if (this.$route.name === 'profile/likes') {
         let page = this.$refs.routerView.page
         if (page * VIDEO_NUM_PER_REQUEST < this.likeNum) this.$refs.routerView.fetchLikeList()
@@ -233,6 +240,9 @@ export default {
         let page = this.$refs.routerView.page
         if (page * VIDEO_NUM_PER_REQUEST < this.videoNum) this.$refs.routerView.fetchLikeList()
       }
+	  this.$nextTick(()=>{
+		  this.$refs.scroll.refresh()
+	  })
     },
     closeCommentList (e) {
       if (this.showCommentList) {
@@ -242,7 +252,6 @@ export default {
       }
     },
     fetchCommentsAndShowList (videoId, commentNum) {
-		console.log('00000000000000000')
       if (this.currentCommentVideoId !== videoId) {
         this.isEnd = false
         this.page = 1
@@ -392,16 +401,13 @@ export default {
 	  
     },
     async getVideoNum () {
-      // let res = await this.$axios.get(`/api/user/${userId}/VideosNum`)
-      // if (res.data.code === 200) {
-      //   this.videoNum = res.data.data
-      // }
-	  
 	  let res = await this.$http.get(`/person/queryPersonVariousNum?personId=` + this.$route.params.id)
 	  // console.log(res.data.videoTotal)
 	  if (res.status == 200) {
 	    this.videoNum = res.data.videoTotal
 		this.collStatus = res.data.personCollStatus
+		this.followerNum = res.data.collectionNum
+		this.playNum = res.data.playNum
 	  }
     },
 	//收藏人员

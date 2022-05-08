@@ -91,7 +91,7 @@ export default {
 		 this.showPageTool = !this.showPageTool
 	},
     scroll (pos) {
-		console.log(pos.y)
+		// console.log(pos.y)
 	  if(this.currentHeight > 0){
 		  return;
 	  }
@@ -153,12 +153,14 @@ export default {
 	// 	this.$refs.videos[index].video.play()
 	// },
 	changeVideo(type){
+		console.log('-============================')
 		// console.log('切换视频')
 		if(!this.$refs.videos){
 			return;
 		}
 		// 切换视频,所有进度归0
 		if(this.currentY == 0){
+			console.log('创建视频.................')
 			if(this.$refs.videos[1].video){
 				// 暂停上个视频
 				this.$refs.videos[1].video.pause()
@@ -167,9 +169,11 @@ export default {
 				this.$refs.videos[0].playStatus = true
 				// this.$refs.videos[0].video.el().getElementsByTagName('video')[0].currentTime = 0
 				this.$refs.videos[0].video.play()
+				// 加载
+				this.$refs.videos[1].loadCommentAndCollectionNum()
 			}else{
 				// 创建视频
-				this.$refs.videos[0].createVideo()
+				this.$refs.videos[0].createVideo(0)
 			}
 
 			return;
@@ -208,7 +212,7 @@ export default {
 			this.$refs.videos[index].stopProcess()
 			this.$refs.videos[index].startProcess()
 		}else{
-			this.$refs.videos[index].createVideo()
+			this.$refs.videos[index].createVideo(index)
 		}
 		// 将视频前后的两个视频以为的视频都销毁,最多五个视频同时存在
 		let videoLength = this.playListDetail.length// 视频数据
@@ -281,14 +285,12 @@ export default {
 		// 播放视频
 		this.$nextTick(()=>{
 		if(this.$refs.videos){
-			// console.log('开始.....')
-			
 				// alert('屏幕高度' +clientHeight + 'y轴高度'+this.currentY)
 				this.currentHeight = this.currentY 
 				// 判断视频是否存在,不存再创建
 				if(!this.$refs.videos[index].video){
 					this.$refs.scroll.scrollTo(0, -this.currentY)
-					this.$refs.videos[index].createVideo()
+					this.$refs.videos[index].createVideo(index)
 				}else{
 					// 存在直接播放
 					this.$refs.scroll.scrollTo(0, -this.currentY)

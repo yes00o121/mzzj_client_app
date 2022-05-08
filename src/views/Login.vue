@@ -105,7 +105,7 @@ export default {
                 setTimeout(() => {
                     // this.$router.push('/userinfo')
 				// 创建websocket连接
-				this.createWebSocket()
+				// this.createWebSocket()
 					// 登陆成功跳转首页
 					this.$router.push('/home')
                 },1000)

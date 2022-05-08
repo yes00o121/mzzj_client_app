@@ -37,6 +37,7 @@
 		  <van-tabbar-item icon="chat-o" :badge="messageTotalNum ? messageTotalNum : null" @click="pathPush(4)">消息</van-tabbar-item>
 <!-- 		  <van-icon name="chat-o" badge="99+" /> -->
 		  <van-tabbar-item icon="friends-o" v-if="root == 1" @click="pathPush(3)">用户日志</van-tabbar-item>
+		  <van-tabbar-item icon="friends-o" v-if="root == 1" @click="pathPush(5)">临时视频</van-tabbar-item>
 		</van-tabbar>
 	</div>
   </div>
@@ -88,7 +89,9 @@ export default {
 				this.overallMessage.messageTotalNum = 0
 				this.$router.push(`/message`)
 			}
-			
+			if(index == 5){
+				this.$router.push(`/temp`)
+			}
 		 //    const loadMode = `${this.detailitem.loadMode}`;
 			// // 没有loadMode，走人员页面
 			// if(loadMode == 'undefined'){

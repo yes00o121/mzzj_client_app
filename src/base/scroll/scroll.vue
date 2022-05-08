@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrapper">
+ <div ref="wrapper">
     <slot></slot>
   </div>
 </template>
@@ -56,6 +56,7 @@ export default {
         return
       }
       this.scroll = new BScroll(this.$refs.wrapper, {
+		// observeImage: true,
         probeType: this.probeType,
         click: this.click,
         momentum: this.momentum
@@ -111,5 +112,16 @@ export default {
 </script>
 
 <style scoped lang='stylus'>
-
+.observe-image-container
+  text-align center
+  .scroll-wrapper
+    position relative
+    width 300px
+    height 300px
+    margin 20px auto
+    border 3px solid #42b983
+    border-radius 5px
+    overflow hidden
+  .scroll-content
+    font-size 0
 </style>

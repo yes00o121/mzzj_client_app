@@ -1,5 +1,5 @@
 <template>
-  <div class="video" :style="'height:' + (windowHeight/1.2) + 'px'">
+  <div class="video" :style="'height:' + (windowHeight* ((page + 1)/ 2.2)) + 'px'">
     <loading v-if="isLoading"></loading>
    <!-- <div v-if="!isLoading"> -->
     <div >
@@ -95,6 +95,12 @@ export default {
 			  if(res.data.data.total <= this.list.length){
 				  this.isBottom = true
 			  }
+			  this.$nextTick(()=>{
+				  console.log('222222222222222222')
+				  console.log(this)
+				  // top.a = this.$parent
+				  // this.$parent.scroll.refresh()
+			  })
 	},
     ...mapMutations([
       'SET_PLAYLIST_DETAIL',

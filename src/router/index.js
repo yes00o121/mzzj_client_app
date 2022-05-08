@@ -26,6 +26,13 @@ const netresources = ()=>import('@/views/netresources.vue')
 const message = ()=>import('@/views/message.vue')
 const messageDetail = ()=>import('@/views/messageDetail.vue')
 const videoUserInfo = ()=>import('@/components/Profile/Profile.vue')
+const temp = ()=>import('@/views/temp.vue')
+const tempList = ()=>import('@/views/tempList.vue')
+const externalMenu = ()=>import('@/views/externalMenu.vue')
+const externalList = ()=>import('@/views/externalList.vue')
+const mangaHome = ()=>import('@/views/manga.vue')
+const personHome = ()=>import('@/views/personHome.vue')
+const externalPagelList = ()=>import('@/views/externalPagelList.vue')
 
 Vue.use(VueRouter)
   const routes = [
@@ -42,6 +49,68 @@ Vue.use(VueRouter)
        path:'/register',
        component:register
      },
+	 {
+	   path:'/temp',
+	   component:temp,
+	   meta:{
+	   	 			 index:3,
+	   	 			 keepalive:true
+	   }
+	 },
+	 {
+	   name:'externalMenu',
+	   path:'/externalMenu/:id/:name',
+	   component:externalMenu,
+	   meta:{
+			 index:3,
+			 keepalive:true
+	   }
+	 },
+	 {
+	   name:'mangaHome',
+	   path:'/mangaHome',
+	   component:mangaHome,
+	   meta:{
+	 			 index:2,
+	 			 keepalive:true
+	   }
+	 },
+	 {
+	   name:'personHome',
+	   path:'/personHome',
+	   component:personHome,
+	   meta:{
+	 			 index:2,
+	 			 keepalive:true
+	   }
+	 },
+	 {
+	   name:'externalList',
+	   path:'/externalList/:id/:url',
+	   component:externalList,
+	   meta:{
+	 			 index:3,
+	 			 keepalive:true
+	   }
+	 },
+	 {
+	   name:'externalPagelList',
+	   path:'/externalPagelList/:id/:url',
+	   component:externalPagelList,
+	   meta:{
+			 index:2,
+			 keepalive:true
+	   }
+	 },
+	 
+	 {
+	   path:'/tempList',
+	   component:tempList,
+	   meta:{
+	   	 			 index:3,
+	   	 			 keepalive:true
+	   }
+	 },
      {
        path:'/',
        component:login

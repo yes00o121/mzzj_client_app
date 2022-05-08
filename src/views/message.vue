@@ -449,9 +449,9 @@ export default {
 		// // lock-scroll:true,
 	 //  })
 	  
-	  if(!this.websocket){
-		 this.createWebSocket()
-	  }
+	  // if(!this.websocket){
+		 // this.createWebSocket()
+	  // }
       this.selectCategory();
   }
 };

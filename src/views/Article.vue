@@ -11,10 +11,10 @@
          <div class="video" >
               <!-- <video controls="controls" :src="model.content"></video> -->
 			   <!-- style="visibility: hidden;" -->
-              <video v-if="model.loadMode == 4"    ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" controls="controls"></video>
-			  <video v-if="model.loadMode == 6"  ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" :src="baseURL + '/video'+model.videoAddress+'?token=' + token" controls="controls"></video>
+              <video v-if="model.videoType == 'm3u8'"    ref="videoPlayer" id="myVideo" class="video-js vjs-big-play-centered vjs-fluid" controls="controls"></video>
+			  <video v-if="model.videoType == 'mp4'"  ref="videoPlayer"  class="container video-js vjs-big-play-centered vjs-fluid" :src="baseURL + '/video/'+model.fileDir+'?token=' + token" controls="controls"></video>
          </div>
-         <div class="detailinfoText">
+         <div class="detailinfoText" v-if="$route.params.loadMode != 20">
               <div>
                   <!-- <span>{{model.category.title}}</span> -->
                   <span v-show="model.dictName">{{model.dictName}}</span>
@@ -45,9 +45,9 @@
           <div class="detailparent">
           <!-- <cover class="detailitem" v-for="(item,index) in commendList" :key="index"  :detailitem="item"/> -->
       </div>
-      <comment @lengthselect="len => lens = len" ref="commentPulish"  @publishClick="PostChildClick" />
+      <comment @lengthselect="len => lens = len" ref="commentPulish"  @publishClick="PostChildClick" v-if="$route.params.loadMode != 20" />
 
-	  <comment-title :dataLength="lens" @Postcomment="PostSuccess" ref="commentIpt"  />
+	  <comment-title :dataLength="lens" @Postcomment="PostSuccess" ref="commentIpt" v-if="$route.params.loadMode != 20" />
       </div>
 
   </div>
@@ -132,8 +132,31 @@ export default {
 			this.$msg.loading({
 			  message: '加载中...',
 			  forbidClick: true,
+			  duration:0,
 			  loadingType: 'spinner'
 			});
+			if(this.$route.params.loadMode == 20){
+				let id = this.$route.params.id.split('-')[0]
+				let sid = this.$route.params.id.split('-')[1]
+				this.$http.post('/externalHandler/getPageTypeDataDetailDetail',{
+					id:id,
+					sid:sid
+				}).then(res=>{
+					console.log(res)
+					
+					let m3u8 = res.data.m3u8
+					
+					// this.$router.push(`/article/${m3u8}/20`)
+					this.$msg.clear()
+					// let url =  this.$route.params.id
+					this.play(m3u8)
+					return;
+				})
+				
+				return;
+			}
+			
+			
 			if(this.$route.params.loadMode == 4){
 			// const res = await this.$http.get('/webInfoDetailData/queryDetailDataByTypeId?id=' + this.$route.params.id)
 			const res = await this.$http.post("/webInfoDetailData/queryDetailDataByTypeId", {
@@ -146,15 +169,16 @@ export default {
 			})
 			console.log(res)
 			this.model = res.data.data.list[0]
-
-			
+			if(this.model.videoType == 'm3u8'){
 				this.model.vid = this.model.nextAddress.split('_-')[1]
 				this.model.playUrl = this.baseURL + '/webInfoVideo/' + this.model.vid + '/' + this.model.vid + '?token=' + this.token
+				// this.model.playUrl = 'https://t16.cdn2020.com:12340/video/m3u8/2022/02/26/f69a40b0/index.m3u8'
 				console.log(this.model.playUrl)
 				this.$nextTick(()=>{
-					this.$msg.clear()
 					this.play(this.model.playUrl);
 				})
+			}
+				this.$msg.clear()
 			}
 			
 			if(this.$route.params.loadMode == 6){
@@ -370,7 +394,7 @@ export default {
 			this.getVideo()
 			 this.collectionInit()
 		}
-		if(this.$route.params.loadMode == 4){
+		if(this.$route.params.loadMode == 4 || this.$route.params.loadMode == 20){
 			console.log('.....')
 			this.myVideo = null;
 			  // $('#myVideo').empty()

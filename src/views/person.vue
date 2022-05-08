@@ -156,6 +156,7 @@ export default {
       category: [],
       // menu:[{id:1,DICT_NAME:'作品'},{id:2,DICT_NAME:'评论'}],
       active: 0,
+	  loadStatus:false,// 加载状态
 	  currentScroll:0,// 滚动高度
       isLoading: false,   //是否处于下拉刷新状态
 	  option1: [
@@ -307,6 +308,8 @@ export default {
     },
 	// 加载数据
 	async loadData(){
+		
+		// 开始查询让点击事件失效，不然会分页冲突
 		// console.log('-------')
 		const categoryitem = this.categoryItem();
 		if(categoryitem.DICT_NAME == '作品'){
@@ -318,6 +321,7 @@ export default {
 		  })
 		  if(res.data.data.list == 0){
 		    categoryitem.finished = true;
+			this.loadStatus = false
 		    return
 		  }
 		for(let i =0;i<res.data.data.list.length;i++){
@@ -330,6 +334,7 @@ export default {
 		  if (res.data.data.list.length < categoryitem.pagesize) {
 		    categoryitem.finished = true;
 		  }
+		  this.loadStatus = false
 		}
 	},
     onRefresh() {       //下拉刷新
@@ -344,8 +349,10 @@ export default {
                 }, 500);
             },
     onLoad() {
+		this.loadStatus = true
       const categoryitem = this.categoryItem();
 	  if(categoryitem.list.length == 0){
+		  this.loadStatus = false
 		  categoryitem.finished = true
 	  }
       setTimeout(() => {
@@ -382,6 +389,10 @@ export default {
 		this.$msg.clear()
 	},
 	pathPush(item){
+		if(this.loadStatus){
+			return;
+		}
+		
 		// 判断是否播放视频页面,不是打开明细,不然直接打开视频页面
 		if(item.works_video_status == 1){
 			this.$router.push(`/article/${item.id}/6`)
@@ -444,6 +455,8 @@ p{
       img {
         height: 23.611vw;
         width: 23.611vw;
+		object-fit: cover;
+		object-position: top;
         border-radius: 50%;
       }
     }

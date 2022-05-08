@@ -485,6 +485,8 @@ export default {
     .user_img {
       margin-right: 5.556vw;
       img {
+		  object-fit: cover;
+		  object-position: top;
         height: 23.611vw;
         width: 23.611vw;
         border-radius: 50%;

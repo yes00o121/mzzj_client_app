@@ -44,6 +44,7 @@ export default{
 			this.equipmentCheck = true
 		}else{
 			if(!this.websocket){
+				console.log('===============================')
 				this.createWebSocket()
 			}
 		}

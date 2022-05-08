@@ -15,8 +15,8 @@
           <img style="border-radius:50%" src="@/assets/default_img.jpg" alt="" @click="$router.push('/userinfo')"  v-else> -->
 		  <!-- <img style="border-radius:50%" :src="imgUrl" alt=""  v-if="imgUrl"> -->
 		  <!-- <img style="border-radius:50%" src="@/assets/default_img.jpg" alt=""   v-else> -->
-		  <van-icon name="search" size="1.5rem" @click="$router.push('/magnet')"/>
-		  <van-icon name="video-o" size="1.5rem" @click="$router.push('/video')"/>
+		  <!-- <van-icon name="search" size="1.5rem" @click="$router.push('/magnet')"/> -->
+		  <!-- <van-icon name="video-o" size="1.5rem" @click="$router.push('/video')"/> -->
           <!-- <div>下载App</div> -->
       </div>
   </div>
