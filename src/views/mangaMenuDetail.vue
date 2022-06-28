@@ -534,26 +534,26 @@ export default {
 	  this.browseRecordObj.startTime = new Date().getTime() // 进入时间
 	  this.browseRecordObj.pxh = this.$route.params.pxh// 章节
 	  window.addEventListener('scroll', (e)=>{
-		  this.$nextTick(()=>{
-				  let curHeight = document.documentElement.scrollTop||document.body.scrollTop// 当前高度
-				  let curTotal = 0;// 当前位置
-		  		  let total = $('.van-pull-refresh').height();
-		  		  // console.log('总高度' + total)
-				  // 标签数组
-				  let imgs = $('.van-pull-refresh .van-image')
-				  // 遍历获取个个高度
-				  for(var i =0;i<imgs.length;i++){
-					  let img = imgs[i]
-					  curTotal += img.scrollHeight
-					  // 如果当前图片累计位置大于当前位置，说明滚动这个图片上了
-					  if(curTotal > curHeight){
-						  // console.log(i+1)
-						  // 修改浏览记录id
-						  this.browseRecordObj.position = (i + 1)
-						  break;
-					  }
-				  }
-		  })
+		  // this.$nextTick(()=>{
+				//   let curHeight = document.documentElement.scrollTop||document.body.scrollTop// 当前高度
+				//   let curTotal = 0;// 当前位置
+		  // 		  let total = $('.van-pull-refresh').height();
+		  // 		  // console.log('总高度' + total)
+				//   // 标签数组
+				//   let imgs = $('.van-pull-refresh .van-image')
+				//   // 遍历获取个个高度
+				//   for(var i =0;i<imgs.length;i++){
+				// 	  let img = imgs[i]
+				// 	  curTotal += img.scrollHeight
+				// 	  // 如果当前图片累计位置大于当前位置，说明滚动这个图片上了
+				// 	  if(curTotal > curHeight){
+				// 		  // console.log(i+1)
+				// 		  // 修改浏览记录id
+				// 		  this.browseRecordObj.position = (i + 1)
+				// 		  break;
+				// 	  }
+				//   }
+		  // })
 		 //  console.log(e)
 		 //  console.log('当前滚动位置' + e)
 	  // 	// if(this.$route.name == 'mangaDetail' && (document.documentElement.scrollTop||document.body.scrollTop) > 100){

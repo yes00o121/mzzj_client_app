@@ -12,7 +12,7 @@
 					      <van-loading type="spinner" size="20" />
 					    </template>
 			   </van-image>
-			    <img src="../../public/static/bk_black.png" :style="'width:100%;height:217px;object-fit:top;object-fit:cover;min-height:57.778vw;'"  v-if="!detailitem.previewImg && detailitem.loadMode == 2"/>
+			    <img src="../../public/static/bk_black.png" :style="'width:100%;height:217px;object-fit:top;object-fit:cover;min-height:57.778vw;'"  v-if="!detailitem.previewImg"/>
 			   <!-- <img class="com-image" v-if="detailitem.person_nationality && detailitem.person_nationality == '日本'" src="@/assets/taiwan.jpg" alt="" > -->
 			   <!-- <img class="com-image" v-if="detailitem。person_nationality && detailitem。person_nationality == '日本'" src="@/assets/taiwan.jpg" alt="" > -->
 			   <!-- <img class="com-image" v-if="detailitem.person_nationality && detailitem.person_nationality == '中国香港'" src="@/assets/taiwan.jpg" alt="" > -->

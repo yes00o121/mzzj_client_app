@@ -1,7 +1,7 @@
 <template>
   <div class="home" >
 	<van-sticky>
-		<van-cell  style="z-index:999;width:100%;"  icon="arrow-left" class="van-ellipsis" title="漫画"  @click="returnPage">
+		<van-cell  style="z-index:999;width:100%;"  icon="arrow-left" class="van-ellipsis" title=""  @click="returnPage">
 			<van-icon
 			    slot="right-icon"
 			    name="wap-home-o"
@@ -29,12 +29,21 @@
               @load="onLoad"
             >
               <div class="detailparent" ref="tab" v-show="item.CODE_VALUE != 2">	
-                <cover
+			  <!-- {{item.list}} -->
+                <!-- <cover
                   class="detailitem"
                   :detailitem="categoryitem"
                   v-for="(categoryitem,categoryindex) in item.list"
                   
-                />
+                /> -->
+	<!-- 			<van-list
+				  v-model="loading"
+				  :error.sync="error"
+				  error-text="请求失败，点击重新加载"
+				  @load="onLoad"
+				> -->
+				  <van-cell v-for="it in item.list" :key="it.nextUrl" :title="it.title" />
+				<!-- </van-list> -->
               </div>
             </van-list>
           </van-pull-refresh>
@@ -56,6 +65,8 @@ export default {
 		token: 'Bearer ' + localStorage.token,
 	  curScroll:{},
       category: [],
+	  error: false,
+	  loading: false,
 	  tabActive:0,// 底部菜单
 	  beforetabActive:0,// 之前选中的底部
       active: 0,
@@ -148,7 +159,7 @@ export default {
     },
     async selectCategory() {
 	  const res = [{
-		  DICT_NAME:'漫画',
+		  DICT_NAME:'',
 		  CODE_MODE_TYPE:2
 	  }]
       this.category = this.changeCategory(res);
@@ -209,7 +220,9 @@ export default {
     async selectArticle() {
       const categoryitem = this.categoryItem();
 		this.$http.post('/externalHandler/getPageTypeData',{
-			id:this.$route.params.id
+			id:this.$route.params.id,
+			pageNum: categoryitem.page,
+			pageSize: categoryitem.pagesize
 		}).then(res=>{
 			console.log(res)
 			// this.list =res.data

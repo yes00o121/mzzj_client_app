@@ -137,7 +137,7 @@ export default{
 											  // top.a = this.video
 				this.video.src({
 						  // src:this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress + '?token=' + this.token,
-						  src:'http://192.168.1.5:9000/api/torrent/serve/' +this.infoHash + this.videoItem.path,
+						  src:'http://192.168.1.130:9000/api/torrent/serve/' +this.infoHash + this.videoItem.path,
 						  // type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
 						})
 				this.video.play()
@@ -162,7 +162,7 @@ export default{
 			}).catch(() => {
 				
 			});
-			this.$http.get('http://192.168.1.5:9000/api/torrent/info?torrentId=' + item.magnet).then(res=>{
+			this.$http.get('http://192.168.1.130:9000/api/torrent/info?torrentId=' + item.magnet).then(res=>{
 				console.log(res)
 				if(this.analysisStatus){
 					if(res.data.files.length == 0){

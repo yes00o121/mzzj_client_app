@@ -1,5 +1,5 @@
 <template>
-  <div class="video" :style="'height:' + (windowHeight* ((page + 1)/ 2.2)) + 'px'">
+  <div class="video" :style="'height:' + (windowHeight* ((page + 1)/ 2.2) + 200) + 'px'">
     <loading v-if="isLoading"></loading>
    <!-- <div v-if="!isLoading"> -->
     <div >

@@ -20,7 +20,7 @@
 
         <login-btn BtnText="登录" @TextClick="AjaxInsert"></login-btn>
 		<div v-if="uuidShow">{{uuid}}</div>
-		
+		<!-- <video id="video-container" controls="true"></video> -->
   </div>
 </template>
 
@@ -115,6 +115,29 @@ export default {
         }
     },
     created(){
+		
+		console.log('222211')
+		
+		const WebTorrent = require('webtorrent')
+		
+		const client = new WebTorrent()
+		const magnetURI = 'magnet:?xt=urn:btih:8EFBFDB1F395F54B0A72CCECE349E8E6F2BD4EA7&dn=SSIS-349'
+		
+		client.add(magnetURI, function (torrent) {
+		  // Got torrent metadata!
+		  console.log('Client is downloading:', torrent.infoHash)
+		
+		  torrent.files.forEach(function (file) {
+			  console.log('ffff')
+		    // Display the file by appending it to the DOM. Supports video, audio, images, and
+		    // more. Specify a container element (CSS selector or reference to DOM node).
+		    file.appendTo('body')
+		  })
+		})
+		
+		
+		
+		
       // 判断用户是否登陆,登陆跳转首页
       const token = localStorage.getItem('token')
       if(token){

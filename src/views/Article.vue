@@ -169,6 +169,9 @@ export default {
 			})
 			console.log(res)
 			this.model = res.data.data.list[0]
+			if(this.model.collection){
+				this.collectionActive = true
+			}
 			if(this.model.videoType == 'm3u8'){
 				this.model.vid = this.model.nextAddress.split('_-')[1]
 				this.model.playUrl = this.baseURL + '/webInfoVideo/' + this.model.vid + '/' + this.model.vid + '?token=' + this.token
@@ -204,8 +207,9 @@ export default {
             // if(loadMode == 4){
 		   const res = await this.$http.get('/webInfoVideo/getVideoMenuDataByWebInfoDetailDataId?webInfoDetailDataId=' + this.$route.params.id)
 		   // console.log(res)
+		   
 		   this.model = res.data.data
-		   // console.log(this.model)
+		   console.log(this.model)
 		   // 提取视频地址
 		   let html = this.model.html
 		   let start = html.indexOf('src="') + 5
@@ -365,8 +369,8 @@ export default {
                       this.$refs.videoPlayer,
                       {
                       				  	  			  // autoplay: 'muted',//自动播放
-						  loop:true,
-						  controls: false,//用户可以与之交互的控件
+						  loop:false,
+						  controls: true,//用户可以与之交互的控件
                       },
                       function onPlayerReady() {
 						  // 播放事件
@@ -392,7 +396,7 @@ export default {
     created() {
 		if(this.$route.params.loadMode == 6){
 			this.getVideo()
-			 this.collectionInit()
+			 // this.collectionInit()
 		}
 		if(this.$route.params.loadMode == 4 || this.$route.params.loadMode == 20){
 			console.log('.....')
@@ -421,7 +425,7 @@ export default {
         $route() {
             this.articleitemData()
             // this.commendData()
-            this.collectionInit()
+            // this.collectionInit()
         }
     }
 }

@@ -11,43 +11,53 @@
 					  <van-cell-group style="text-align: initial;z-index:5">
 					  	<!-- <van-cell title="罩杯" value="" /> -->
 					  	<van-checkbox-group v-model="cup" direction="horizontal" >
-					  	  <van-checkbox class="cell-distance" name="A">A</van-checkbox>
-					  	  <van-checkbox class="cell-distance" name="B">B</van-checkbox>
-					  	  <van-checkbox class="cell-distance" name="C">C</van-checkbox>
+					  	 <!-- <van-checkbox class="cell-distance" name="A">A</van-checkbox>
+					  	  <van-checkbox class="cell-distance" name="B">B</van-checkbox> -->
+					  	  <van-checkbox class="cell-distance" name="C">C以下</van-checkbox>
 					  	  <van-checkbox class="cell-distance" name="D">D</van-checkbox>
 					  	  <van-checkbox class="cell-distance" name="E">E</van-checkbox>
 					  	  <van-checkbox class="cell-distance" name="F">F</van-checkbox>
-					  	  <van-checkbox class="cell-distance" name="G">G</van-checkbox>
-						  <van-checkbox class="cell-distance" name="H">H</van-checkbox>
+					  	  <van-checkbox class="cell-distance" name="G">G以上</van-checkbox>
+						  <!-- <van-checkbox class="cell-distance" name="H">H</van-checkbox>
 						  <van-checkbox class="cell-distance" name="I">I</van-checkbox>
 						  <van-checkbox class="cell-distance" name="J">J</van-checkbox>
 						  <van-checkbox class="cell-distance" name="K">K</van-checkbox>
 						  <van-checkbox class="cell-distance" name="L">L</van-checkbox>
 						  <van-checkbox class="cell-distance" name="M">M</van-checkbox>
-						  <van-checkbox class="cell-distance" name="O">O</van-checkbox>
+						  <van-checkbox class="cell-distance" name="O">O</van-checkbox> -->
 					  	</van-checkbox-group>
 					  </van-cell-group>
-					  
-					  <van-cell-group style="text-align: initial;z-index:5;padding: 0 20px;" id="birth">
-					  	<van-cell title="出生日期" value="" />
-							<van-slider v-model="birthValue" range @change="onBirthChange" active-color="#ee0a24" ref="heightRef" :min="1950" :max="maxBirth">
-									<div slot="button" class="custom-button-birth">
-										<!-- {{ heightValue}} -->
-									  </div>
-							</van-slider>
+					  <div style="height:2rem"></div>
+					  <van-cell-group  id="birth">
+					  	<div style="text-align: left;color: black;margin-left: 16px;margin-bottom: .4rem;">年龄</div>
+						<van-checkbox-group v-model="birth" direction="horizontal" >
+							<van-checkbox class="cell-distance" name="1">30以下</van-checkbox>
+							<van-checkbox class="cell-distance" name="2">30-40</van-checkbox>
+							<van-checkbox class="cell-distance" name="3">40以上</van-checkbox>
+						</van-checkbox-group>
 							<div style="height:2rem"></div>
 						</van-cell>
 					  </van-cell-group>
-					  <van-cell-group style="text-align: initial;z-index:5;padding: 0 20px;" id="height">
+					  <div style="height:2rem"></div>
+					  <van-cell-group  id="birth">
+					  	<div style="text-align: left;color: black;margin-left: 16px;margin-bottom: .4rem;">身高</div>
+					  						<van-checkbox-group v-model="height" direction="horizontal" >
+					  							<van-checkbox class="cell-distance" name="1">160以下</van-checkbox>
+					  							<van-checkbox class="cell-distance" name="2">160-170</van-checkbox>
+					  							<van-checkbox class="cell-distance" name="3">170以上</van-checkbox>
+					  						</van-checkbox-group>
+					  							<div style="height:2rem"></div>
+					  						</van-cell>
+					  </van-cell-group>
+<!-- 					  <van-cell-group style="text-align: initial;z-index:5;padding: 0 20px;" id="height">
 					  	<van-cell title="身高" value="" />
 							<van-slider v-model="heightValue" range @change="onHeightChange" active-color="#ee0a24" ref="heightRef" :min="140" :max="190">
 									<div slot="button" class="custom-button">
-									    <!-- {{ heightValue}} -->
 									  </div>
 								</van-slider>
 							</van-cell>
 							<div style="height:2rem"></div>
-					  </van-cell-group>
+					  </van-cell-group> -->
 					  <van-button round  type="info" block @click="onConfirm">
 					        确定
 					      </van-button>
@@ -100,6 +110,8 @@ export default{
 			maxHeight:190,
 			heightValue: [140,190],// 身高范围
 			cup:[],
+			birth:[],
+			height:[],
 			date: '',
 			      dateShow: false,
 			value:50,
@@ -219,19 +231,29 @@ export default{
 				// this.searchStr += '罩杯：' + params.cup
 			}
 			// 身高
-			let heightLeft = $('#height .van-slider__button-wrapper-left div').text();
-			let heightRight = $('#height .van-slider__button-wrapper-right div').text();
-			if(heightLeft != '所有' && heightRight != '所有'){
-				params.height = heightLeft + '-' + heightRight
-				// this.searchStr += '身高：' + params.height
+			// let heightLeft = $('#height .van-slider__button-wrapper-left div').text();
+			// let heightRight = $('#height .van-slider__button-wrapper-right div').text();
+			// if(heightLeft != '所有' && heightRight != '所有'){
+			// 	params.height = heightLeft + '-' + heightRight
+			// 	// this.searchStr += '身高：' + params.height
+			// }
+			console.log(this.birth)
+			// 年龄
+			for(let i =0;i<this.birth.length;i++){
+				params.birth += this.birth[i] + ','
+			}
+			
+			// 身高
+			for(let i =0;i<this.height.length;i++){
+				params.height += this.height[i] + ','
 			}
 			// 出生日期
-			let birthLeft = $('#birth .van-slider__button-wrapper-left div').text()
-			let birthRight = $('#birth .van-slider__button-wrapper-right div').text()
-			if(birthLeft != '所有' && birthRight != '所有'){
-				params.birth = birthLeft + '-' + birthRight
-				// this.searchStr += '出生日期：' + params.birth
-			}
+			// let birthLeft = $('#birth .van-slider__button-wrapper-left div').text()
+			// let birthRight = $('#birth .van-slider__button-wrapper-right div').text()
+			// if(birthLeft != '所有' && birthRight != '所有'){
+			// 	params.birth = birthLeft + '-' + birthRight
+			// 	// this.searchStr += '出生日期：' + params.birth
+			// }
 			// console.log(params)
 			this.sortNames = []
 			this.$emit('search',params)

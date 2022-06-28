@@ -1,7 +1,7 @@
 <template>
 	<div >
  <v-touch v-on:panup="panup" v-on:panstart="panstart" v-on:panend="panend" v-on:panleft="panLeft" v-on:panright="panRight"  v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" style="touch-action: pan-y!important;" :swipe-options="{direction: 'horizontal'}">
-  <div style="position:relative;">
+  <div style="position:relative;background-color: black;">
 	  <!-- 隐藏模式下的工具栏图标 -->
 	  <van-icon name="ellipsis" size="24" color="white" style="position: absolute;
 	      top: 0rem;z-index:9999;padding:1rem;
@@ -151,6 +151,12 @@
 			<p style="padding-top:.5rem" >分享</p>
 		</span>
 	</van-col>
+	<van-col span="6" @click.stop="update">
+		<span>
+			<van-icon name="replay" size="1.5rem" />
+			<p style="padding-top:.5rem" >刷新</p>
+		</span>
+	</van-col>
   </van-row>
   </van-popup>
   
@@ -234,9 +240,30 @@ export default {
 		type:Boolean
 	}
   },
+  activated(){
+	// console.log('显示了.....' + this.index)  
+	// console.log(this.curScrollVideo)
+	// 找到相同视频
+	if(this.curScrollVideo.index == this.index){
+		// 判断是否有关注标识,有切换关注状态
+		if(this.curScrollVideo.collStatus){
+			this.collectionUser = this.curScrollVideo.collStatus
+		}
+		// 判断视频状态，是否播放视频
+		// console.log(this.playStatus)
+		if(this.playStatus){
+			this.video.play()
+		}else{
+			this.video.pause()
+		}
+		
+	}
+	
+	
+  },
   beforeDestroy: function () {
 	  if(this.video){
-		        this.video.dispose();
+			this.video.dispose();
 	  }
 
   
@@ -325,6 +352,9 @@ export default {
     ])
   },
   methods: {
+	  update(){
+		location.reload()
+	  },
 	  async saveMessage(item){
 		  console.log(item)
 		  console.log(this.VideoItem)
@@ -386,6 +416,9 @@ export default {
 				this.$emit('showPageToolMethod',this.showPageTool)
 			},
 	  toUserVideo(item){
+		  // 跳转前记录当前视频信息
+		  this.curScrollVideo.index = this.index
+		  
 		this.$router.push('/videoUserInfo/' + item.personId + '/SEX/video')
 	  },
 	 // 收藏人员

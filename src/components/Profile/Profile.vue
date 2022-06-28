@@ -1,4 +1,5 @@
 <template>
+	<v-touch v-on:swipeleft="onSwipeLeft" v-on:swiperight="onSwipeRight"  tag="div" :style="'touch-action: pan-y!important;width:100%;height:'+windowHeight+'px'" :swipe-options="{direction: 'horizontal'}">
 	<div>
 <div class="profile">
     <!-- <tip ref="tip"></tip> -->
@@ -113,6 +114,7 @@
         @close="playClose()"></play-list-detail>
     </transition>
 </div>
+</v-touch>
 </template>
 
 <script>
@@ -130,6 +132,7 @@ const VIDEO_NUM_PER_REQUEST = 10
 export default {
   created () {
 	  $('#app').css('background','#161622')
+	  this.curScrollVideo.collStatus = null // 重置收藏状态
 	// 查询人员数据
 	  this.loadPerson();
 	  // 设置用户页面
@@ -191,6 +194,21 @@ export default {
     ])
   },
   methods: {
+	  onSwipeLeft () {
+	  	// alert('页面右滑')
+	      // console.log('页面左滑')
+	    // this.$router.go(-1)
+	  },
+	  onSwipeRight(){
+	  	if(localStorage.slideReturn == 1){
+	  		// this.$router.go(-1)
+	  	}
+	      // alert('页面右滑')
+	  	// 跳转其他页面的时候记录高度
+	  	// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
+	  	// alert('漫画高度' + this.curScroll)
+	      // this.$router.go(-1)
+	  },
 	  playClose(){
 		  this.showPlayList=false
 		  // 关闭的时候刷新数量
@@ -293,11 +311,11 @@ export default {
 			$('.profile').css('visibility','hidden')
 		},500)
 		// alert(10)
-		console.log(index)
-		console.log(this.commentList)
+		// console.log(index)
+		// console.log(this.commentList)
 		// this.CLEAN_PLAYLIST_DETAIL()
 		// this.SET_PLAYLIST_DETAIL(this.commentList)
-		console.log(this.$refs.playListDetail)
+		// console.log(this.$refs.playListDetail)
       this.showPlayList = true
       this.$refs.playListDetail.scrollToIndex(index)
 	  
@@ -420,6 +438,7 @@ export default {
 	       if(res.data.data == '收藏成功'){
 	           // this.collectionActive = true
 					this.collStatus = '是'
+					this.curScrollVideo.collStatus = this.collStatus
 	       }else{
 	           // this.collectionActive = false
 	           this.$msg.fail(res.data.message)
@@ -428,6 +447,7 @@ export default {
 	       const res = await this.$http.post('/collection/deleteCollection/',{webInfoDetailDataId:this.$route.params.id,collectionType:'2'})
 	       if(res.data.data == '取消成功'){
 			 this.collStatus = '否'
+			 this.curScrollVideo.collStatus = this.collStatus
 				  // this.collectionActive = false
 	       } else {
 	          this.$msg.fail(res.data.message)

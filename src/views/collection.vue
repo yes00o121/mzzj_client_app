@@ -3,6 +3,7 @@
 		<!-- <van-sticky >
 			<van-cell  style="z-index:99999;"  icon="arrow-left" :title="manga.title"  @click="returnPage"/>
 		</van-sticky> -->
+	<div  v-show="!showPlayList">
 		<van-sticky >
 			<van-cell  style="z-index:999;"  icon="arrow-left" title="我的收藏"  @click="returnPage">
 				<van-icon
@@ -81,7 +82,7 @@
 			>
 			  <div role="feed" class="van-list">
 			  	<div class="detailparent">
-			  		<div class="van-swipe-cell" style="width: 100%;" v-for="(categoryitem,categoryindex) in item.list" @click="toPage(categoryitem)">
+			  		<div class="van-swipe-cell" style="width: 100%;" v-for="(categoryitem,categoryindex) in item.list" @click="toPage(categoryitem,categoryindex)">
 			  			<div class="van-swipe-cell__wrapper" style="transform: translate3d(0px, 0px, 0px); transition-duration: 0.6s;">
 			  				<div class="goods-card van-card" style="border-bottom: 1px solid rgb(235, 237, 240);">
 			  					<div class="van-card__header">
@@ -110,7 +111,6 @@
 			  						<div class="van-card__content">
 										
 			  							<div>
-											
 			  								<div class="van-card__title van-multi-ellipsis--l2">
 			  									{{categoryitem.title}}
 			  								</div>
@@ -155,11 +155,24 @@
 		</van-tab>
       </van-tabs>
     </div>
+	
+	
   </div>
+  </div>
+  <!-- <transition name="left">
+    <play-list-message
+      class="play-list"
+      ref="playListMessage"
+      v-show="showPlayList"
+	  @loadData="loaData"
+      @close="showPlayList=false;"></play-list-message>
+  </transition> -->
 </v-touch>
 </template>
 
 <script>
+import PlayListMessage from '@/components/PlayList/PlayListMessage'
+import { mapGetters, mapMutations } from 'vuex'
 import NavBar from "@/components/common/Navbar.vue";
 import cover from "@/views/cover";
 import backTop from '@/components/backTop'
@@ -180,6 +193,7 @@ export default {
 		// { text: '作品', value: 3 }
 	  ],
 	  // value1: 0,
+	  showPlayList:false,
 	  loadMode:0,
 	  curScroll:{}
     };
@@ -187,7 +201,8 @@ export default {
   components: {
     NavBar,
     cover,
-	backTop
+	backTop,
+	PlayListMessage
   },
   activated() {
 
@@ -228,6 +243,15 @@ export default {
    next();
   },
   methods: {
+	  ...mapMutations([
+	    'SET_PLAYLIST_MESSAGE',
+	    'CLEAN_PLAYLIST_MESSAGE',
+	    'APPEND_PLAYLIST_MESSAGE',
+	    'SET_MESSAGE_TOTAL_NUM'
+	  ]),
+	  loaData(){
+		console.log('到最后了》。。。。')  
+	  },
 	  returnPage(){
 	  	// this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 	  	// alert('漫画高度' + this.curScroll)
@@ -339,10 +363,18 @@ export default {
 
     },
 	// 页面跳转
-	toPage(detailitem){
+	toPage(detailitem,index){
 		console.log(detailitem)
+		console.log('下标' + index)
 		// 视频页面
 		if(detailitem.loadMode == 4){
+			// const categoryitem = this.categoryItem();
+			// console.log(this.categoryItem())
+			// this.showPlayList = true
+			// // this.CLEAN_PLAYLIST_MESSAGE()
+			// this.SET_PLAYLIST_MESSAGE(this.categoryItem().list)
+			// this.$refs.playListMessage.scrollToIndex(index)
+			
 		  if(this.$route.path != `/article/${detailitem.id}/${detailitem.loadMode}`) {
 		      this.$router.push(`/article/${detailitem.id}/${detailitem.loadMode}`)
 		  }

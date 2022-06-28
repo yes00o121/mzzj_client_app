@@ -173,6 +173,7 @@ export default {
 				this.$refs.videos[1].loadCommentAndCollectionNum()
 			}else{
 				// 创建视频
+				this.$refs.videos[0].playStatus = true
 				this.$refs.videos[0].createVideo(0)
 			}
 
@@ -290,6 +291,7 @@ export default {
 				// 判断视频是否存在,不存再创建
 				if(!this.$refs.videos[index].video){
 					this.$refs.scroll.scrollTo(0, -this.currentY)
+					this.$refs.videos[index].playStatus = true
 					this.$refs.videos[index].createVideo(index)
 				}else{
 					// 存在直接播放

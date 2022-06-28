@@ -11,8 +11,8 @@ if(this.activeIndicator <= 0){
 import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
-const baseURL = 'http://127.0.0.1:8114'
-// const baseURL = 'http://192.168.1.4:8114'
+// const baseURL = 'http://127.0.0.1:8114'
+const baseURL = 'http://192.168.1.107:8114'
 // const baseURL = 'http://121.201.2.228:10824'
 // const baseURL = 'http://121.201.2.228:10958'
 Vue.prototype.baseURL = baseURL
@@ -47,7 +47,7 @@ http.interceptors.response.use(function (response) {
 				 // Vue.prototype.$msg.fail('系统维护中...')
 				 Vue.prototype.$msg.fail('加载超时拉...')
 			 }else if(error.message.startsWith('Network Error')){
-				Vue.prototype.$msg.fail('网络连接失败...')
+				// Vue.prototype.$msg.fail('网络连接失败...')
 			 }else{
 				 Vue.prototype.$msg.fail('没有权限或系统维护中...')
 			 }

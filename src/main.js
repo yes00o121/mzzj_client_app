@@ -25,6 +25,7 @@ import { mapGetters, mapMutations } from 'vuex' // 缓存
 import BScroll from '@better-scroll/core'
 import ObserveImage from '@better-scroll/observe-image'
 
+
 BScroll.use(ObserveImage) // 滚动图片高度自动计算器
 Vue.use(Notify);
 Vue.use(Panel);
@@ -71,6 +72,8 @@ Vue.use(VueTouch, {name: 'v-touch'})
 
 //plus.screen.lockOrientation('portrait-primary'); //锁死屏幕方向为竖屏
 // plus.screen.lockOrientation( 'landscape-primary');
+// 当前滚动的视频数据,用于做页面切换后的视频控制
+Vue.prototype.curScrollVideo = {}
 
 
  //监听获取设备uuid
@@ -369,6 +372,8 @@ Vue.prototype.showloading = function() {
 Vue.prototype.hideloading = function() {
 	this.$cancelLoading();
   }
+
+
 
 new Vue({
   store,

@@ -177,6 +177,7 @@ export default {
 				this.$refs.videos[0].video.play()
 			}else{
 				// 创建视频
+				this.$refs.videos[0].playStatus = true
 				this.$refs.videos[0].createVideo(0)
 			}
 
@@ -216,6 +217,7 @@ export default {
 			this.$refs.videos[index].stopProcess()
 			this.$refs.videos[index].startProcess()
 		}else{
+			this.$refs.videos[index].playStatus = true
 			this.$refs.videos[index].createVideo(index)
 		}
 		// 将视频前后的两个视频以为的视频都销毁,最多五个视频同时存在
