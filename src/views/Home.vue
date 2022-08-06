@@ -91,6 +91,11 @@ export default{
 				id:5,
 				img:'static/cili.png',
 				url:'/magnet'
+			},{
+				name:'美女写真',
+				id:5,
+				img:'static/xiuren.png',
+				url:'/xiezhen'
 			}/*,{
 				name:'小说',
 				id:6,

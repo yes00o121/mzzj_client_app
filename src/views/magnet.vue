@@ -8,7 +8,7 @@
 			  v-model="value"
 			  show-action
 			  placeholder="请输入搜索关键词"
-			  @click="onSearch"
+			  @click=""
 			>
 			<div slot="action" @click="onSearch">搜索</div>
 			</van-search>
@@ -17,15 +17,18 @@
 					<!-- <van-cell title="磁力" value="" /> -->
 				</van-cell-group>
 				<van-cell :title="item.torrentName" v-for="(item,index) in magnetList" :key="index" v-clipboard:copy="item.magnet" v-clipboard:success="onCopy" v-clipboard:error="onError">
-					<div style="margin-left: 2rem;float: left;">
+					<div>
 						{{item.size}}
 					</div>
 				  <!-- 使用 right-icon 插槽来自定义右侧图标 -->
-				   <van-button type="default" size="mini" @click.stop="analysis(item)">解析</van-button>
+				   <!-- <van-button type="default" size="mini" @click.stop="analysis(item)">解析</van-button> -->
 				</van-cell>
 			</div>
-			<div v-if="magnetList.length == 0 ">
+			<div v-if="magnetList.length == 0 && !search">
 				搜索内容未找到
+			</div>
+			<div v-if="search && magnetList.length == 0">
+				正在查询中...
 			</div>
 		</div>
 		<div style="z-index:9999;height:100%;width:100%;;" v-show="analysisData.length > 0 && !showVideo">
@@ -66,6 +69,7 @@ export default{
 			showVideo:false,
 			infoHash:'',// 链接hash
 			analysisData:[],// 解析数据
+			search:false,// 查询状态
 			analysisStatus:false // 解析状态
 		}
 	},
@@ -193,9 +197,11 @@ export default{
 		},
 		onSearch(){
 			if(this.value){
-				this.search = false
+				this.magnetList = []
+				this.search = true
 				this.$http.get("/magnet/queryMagnet?name=" + this.value).then(res=>{
 					this.magnetList = res.data
+					this.search = false
 				})
 			}
 		}

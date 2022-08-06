@@ -32,6 +32,7 @@ const externalMenu = ()=>import('@/views/externalMenu.vue')
 const externalList = ()=>import('@/views/externalList.vue')
 const mangaHome = ()=>import('@/views/manga.vue')
 const personHome = ()=>import('@/views/personHome.vue')
+const xiezhen = ()=>import('@/views/xiezhen.vue')
 const externalPagelList = ()=>import('@/views/externalPagelList.vue')
 
 Vue.use(VueRouter)
@@ -154,6 +155,15 @@ Vue.use(VueRouter)
 	   path:'/message',
 	   name:'message',
 	   component:message,
+	   meta:{
+	 	index:3,
+	     keepalive:true
+	   }
+	 },
+	 {
+	   path:'/xiezhen',
+	   name:'xiezhen',
+	   component:xiezhen,
 	   meta:{
 	 	index:3,
 	     keepalive:true

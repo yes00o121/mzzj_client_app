@@ -1,27 +1,44 @@
 <template>
-  <div>
-      <login-top Text="登录漫宅之家">
-            <!-- <div slot="right" style="font-size:3.611vw" @click="$router.push('/register')">用户注册</div> -->
-      </login-top>
+	<div>
+	  <div v-if="powerPassword">
+		  <login-top Text="登录漫宅之家">
+				<!-- <div slot="right" style="font-size:3.611vw" @click="$router.push('/register')">用户注册</div> -->
+		  </login-top>
 
-        <login-text label="账号"
-        placeholder="请输入账号"
-         @contentWatch="res => model.username = res"
-         style="margin:4.167vw 0"
-         >
-        </login-text>
+			<login-text label="账号"
+			placeholder="请输入账号"
+			 @contentWatch="res => model.username = res"
+			 style="margin:4.167vw 0"
+			 >
+			</login-text>
 
-       <!-- <login-text label="密码"
-            placeholder="请输入密码"
-            type="password"
-            @contentWatch="res => model.password = res"
-        >
-        </login-text> -->
+		   <!-- <login-text label="密码"
+				placeholder="请输入密码"
+				type="password"
+				@contentWatch="res => model.password = res"
+			>
+			</login-text> -->
 
-        <login-btn BtnText="登录" @TextClick="AjaxInsert"></login-btn>
-		<div v-if="uuidShow">{{uuid}}</div>
-		<!-- <video id="video-container" controls="true"></video> -->
+			<login-btn BtnText="登录" @TextClick="AjaxInsert"></login-btn>
+			<div v-if="uuidShow">{{uuid}}</div>
+			<!-- <video id="video-container" controls="true"></video> -->
+	  </div>
+	  <div v-if="!powerPassword">
+		  <login-top Text="请输入开机密码">
+						
+		  </login-top>
+			<div >
+				<login-text label="密码"
+				placeholder="请输入开机密码"
+				 @contentWatch="res => powerObj.kjmm = res"
+				 style="margin:4.167vw 0"
+				 >
+				</login-text>
+				<login-btn BtnText="开机" @TextClick="openSystem"></login-btn>
+			</div>
+		</div>
   </div>
+
 </template>
 
 <script>
@@ -34,7 +51,9 @@ export default {
         return {
 			uuid:localStorage.uuid,
 			uuidShow:false,
-            model:{}
+            model:{},
+			powerObj:{},
+			powerPassword:false,
         }
     },
     components:{
@@ -53,6 +72,41 @@ export default {
 			'messageTotalNum',
 			'messageList'
 		]),
+		openSystem(){
+			if(this.powerObj.kjmm){
+				let _this = this
+				// 请求,如果返回错误404说明连接正常
+				let url = ''
+				if(this.powerObj.kjmm == 'test'){
+					url = 'http://192.168.31.196:8115'
+				}else{
+					url = 'http://'+ _this.powerObj.kjmm +'.cpolar.cn'
+				}
+				$.ajax({
+					url:url,
+					success:function(res){
+
+					},error:function(res){
+						if(res.status == 404){
+							_this.powerPassword = true
+							localStorage.setItem('address',url)
+						}else{
+							_this.$msg.fail('密码错误,请重新输入!')
+						}
+					}
+				})
+			}else{
+				_this.$msg.fail('请输入开机密码!')
+			}
+			// if(localStorage.getItem('address')){
+			// 	this.powerPassword = true
+			// 	let url = "http://4a10afaf.cpolar.cn";
+			// 	console.log('222')
+			// }else{
+				
+			// }
+			
+		},
 		// 初始化消息数据
 		initMessage(data){
 			// console.log(data)
@@ -115,34 +169,43 @@ export default {
         }
     },
     created(){
+		// 判断是否输入开机密码
+		if(localStorage.getItem('address') == null){
+			this.powerPassword = false
+		}else{
+			this.powerPassword = true
+		}
+		if(this.powerPassword){
+			// 判断用户是否登陆,登陆跳转首页
+			const token = localStorage.getItem('token')
+			if(token){
+			  this.$router.push('/home')
+			}
+		}
 		
 		console.log('222211')
 		
-		const WebTorrent = require('webtorrent')
+		// const WebTorrent = require('webtorrent')
 		
-		const client = new WebTorrent()
-		const magnetURI = 'magnet:?xt=urn:btih:8EFBFDB1F395F54B0A72CCECE349E8E6F2BD4EA7&dn=SSIS-349'
+		// const client = new WebTorrent()
+		// const magnetURI = 'magnet:?xt=urn:btih:8EFBFDB1F395F54B0A72CCECE349E8E6F2BD4EA7&dn=SSIS-349'
 		
-		client.add(magnetURI, function (torrent) {
-		  // Got torrent metadata!
-		  console.log('Client is downloading:', torrent.infoHash)
+		// client.add(magnetURI, function (torrent) {
+		//   // Got torrent metadata!
+		//   console.log('Client is downloading:', torrent.infoHash)
 		
-		  torrent.files.forEach(function (file) {
-			  console.log('ffff')
-		    // Display the file by appending it to the DOM. Supports video, audio, images, and
-		    // more. Specify a container element (CSS selector or reference to DOM node).
-		    file.appendTo('body')
-		  })
-		})
-		
-		
+		//   torrent.files.forEach(function (file) {
+		// 	  console.log('ffff')
+		//     // Display the file by appending it to the DOM. Supports video, audio, images, and
+		//     // more. Specify a container element (CSS selector or reference to DOM node).
+		//     file.appendTo('body')
+		//   })
+		// })
 		
 		
-      // 判断用户是否登陆,登陆跳转首页
-      const token = localStorage.getItem('token')
-      if(token){
-        this.$router.push('/home')
-      }
+		
+		
+
     }
 }
 </script>

@@ -12,7 +12,7 @@ import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
 // const baseURL = 'http://127.0.0.1:8114'
-const baseURL = 'http://192.168.1.107:8114'
+const baseURL = localStorage.getItem('address')
 // const baseURL = 'http://121.201.2.228:10824'
 // const baseURL = 'http://121.201.2.228:10958'
 Vue.prototype.baseURL = baseURL
