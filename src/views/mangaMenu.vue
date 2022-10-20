@@ -27,7 +27,7 @@
 		 > -->
 		 <van-image
 		   fit="contain"
-		   :src="baseURL + manga.previewImg + '&random=1&token=' + token" rel="external nofollow" 
+		   :src="baseURL + '/file/getfilestream/'+manga.previewImg + '?random=1&token=' + token" rel="external nofollow" 
 		   style="width:100%;"
 		 >
 		 <template v-slot:error>加载失败</template>
@@ -63,7 +63,7 @@
 				   v-for="(categoryitem,categoryindex) in item.list"
 				     :title="categoryitem.title"
 				     class="goods-card"
-				     :thumb="baseURL + categoryitem.imgUrl +'&region=true&token=' + token"
+				     :thumb="baseURL + '/file/getfilestream/' + categoryitem.imgUrl +'?region=true&token=' + token"
 					 style="border-bottom: 1px solid #ebedf0;"
 					 :desc="categoryitem.createtime | filterTime"
 				   />
@@ -123,7 +123,11 @@ export default {
   filters:{
   	filterTime(val) {
   	  if(val){
-  	    return val.split('T')[0]
+  	  		var date = new Date(val);
+  	  		var year = date.getYear() + 1900
+  	  		var month = date.getMonth() + 1
+  	  		var day = date.getDate();
+  	  		return year + '-' + month + '-' + day
   	  }
   	  return "";
   	},
@@ -184,6 +188,7 @@ export default {
 	  // scroll(0,0)
       // 查询漫画基础信息
       const res = await this.$http.post('/webInfoDetailData/queryDetailDataByTypeId',{
+		loadMode:'2',
         id:this.$route.params.id
       })
       // console.log(res.data)

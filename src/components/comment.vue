@@ -14,7 +14,7 @@
 							<li class="comment_li" v-for="(item,index) in videoComment" :key="index"
 								@click="replayUser(item,index,-1)">
 								<div class="comment_author_left">
-									<img :src="baseURL + '/common/image?imgId=' +item.avatar +'&token=' + token">
+									<img :src="baseURL + '/file/getfilestream/' +item.avatar +'?token=' + token">
 								</div>
 								<div class="comment_author_right">
 									<div class="comment_author_top">

@@ -46,6 +46,7 @@ import LoginTop from '@/components/common/LoginTop.vue'
 import LoginText from '@/components/common/LoginText.vue'
 import LoginBtn from '@/components/common/LoginBtn.vue'
 import { mapGetters, mapMutations } from 'vuex'
+import md5 from 'js-md5';
 export default {
     data() {
         return {
@@ -53,7 +54,7 @@ export default {
 			uuidShow:false,
             model:{},
 			powerObj:{},
-			powerPassword:false,
+			powerPassword:true,
         }
     },
     components:{
@@ -76,25 +77,36 @@ export default {
 			if(this.powerObj.kjmm){
 				let _this = this
 				// 请求,如果返回错误404说明连接正常
-				let url = ''
-				if(this.powerObj.kjmm == 'test'){
-					url = 'http://192.168.31.196:8115'
-				}else{
-					url = 'http://'+ _this.powerObj.kjmm +'.cpolar.cn'
-				}
-				$.ajax({
-					url:url,
-					success:function(res){
-
-					},error:function(res){
-						if(res.status == 404){
-							_this.powerPassword = true
-							localStorage.setItem('address',url)
-						}else{
-							_this.$msg.fail('密码错误,请重新输入!')
-						}
+				// let url = ''
+				// if(this.powerObj.kjmm == 'test'){
+				// 	url = 'http://192.168.31.196:8115'
+				// }else{
+				// 	url = 'http://'+ _this.powerObj.kjmm +'.cpolar.cn'
+				// }
+				this.$http.post('/mzzjcontroller/login/verificationSystemPassword',{
+					kjmm: md5(this.powerObj.kjmm)
+				},{timeout:this.httpTimeout}).then(res=>{
+					console.log(res)
+					if(res.data.code == 200){
+						_this.powerPassword = true
+						// localStorage.setItem('address',url)
+					}else{
+						_this.$msg.fail(res.data.message)
 					}
 				})
+				// $.ajax({
+				// 	url:url,
+				// 	success:function(res){
+
+				// 	},error:function(res){
+				// 		if(res.status == 404){
+				// 			_this.powerPassword = true
+				// 			localStorage.setItem('address',url)
+				// 		}else{
+				// 			_this.$msg.fail('密码错误,请重新输入!')
+				// 		}
+				// 	}
+				// })
 			}else{
 				_this.$msg.fail('请输入开机密码!')
 			}
@@ -146,7 +158,7 @@ export default {
 				  duration:0
 				});
 				// return;
-                const res =  await this.$http.post('/admin/login',this.model,{timeout:this.httpTimeout})
+                const res =  await this.$http.post('/login/loginverification',this.model,{timeout:this.httpTimeout})
 				// this.$msg.clear()
                 if(res.data.code == 404 || res.data.code == 401){
 					this.$msg.fail(res.data.message)
@@ -170,18 +182,18 @@ export default {
     },
     created(){
 		// 判断是否输入开机密码
-		if(localStorage.getItem('address') == null){
-			this.powerPassword = false
-		}else{
-			this.powerPassword = true
-		}
-		if(this.powerPassword){
-			// 判断用户是否登陆,登陆跳转首页
-			const token = localStorage.getItem('token')
-			if(token){
-			  this.$router.push('/home')
-			}
-		}
+		// if(localStorage.getItem('address') == null){
+		// 	this.powerPassword = false
+		// }else{
+		// 	this.powerPassword = true
+		// }
+		// if(this.powerPassword){
+		// 	// 判断用户是否登陆,登陆跳转首页
+		// 	const token = localStorage.getItem('token')
+		// 	if(token){
+		// 	  this.$router.push('/home')
+		// 	}
+		// }
 		
 		console.log('222211')
 		

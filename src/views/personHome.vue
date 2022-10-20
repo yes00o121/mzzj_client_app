@@ -194,9 +194,9 @@ export default {
 		},this.personParams))
 		for(let i =0;i<res.data.data.list.length;i++){
 			res.data.data.list[i].flowNum = res.data.data.list[i].person_flow_num
-			if(res.data.data.list[i].person_label == 'avperformer_avfemale'){
-				res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
-			}
+			// if(res.data.data.list[i].person_label == 'avperformer_avfemale'){
+			// 	res.data.data.list[i].previewImg = encodeURI('/video/person/' + res.data.data.list[i].person_nationality + '/' + res.data.data.list[i].person_name +'/head.jpg') + '?token=' + this.token
+			// }
 			res.data.data.list[i].title = res.data.data.list[i].person_name
 			res.data.data.list[i].descript = ''
 		}

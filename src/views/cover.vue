@@ -4,7 +4,7 @@
           <div class="imgparent">
                <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
 			   <!-- <van-image lazy-load :src="baseURL +   detailitem.previewImg + '&width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:57.778vw;"> -->
-			   <van-image lazy-load :src="baseURL +   detailitem.previewImg + '&token=' + token" :style="'min-height:57.778vw;width:100%;height:'+(detailitem.loadMode == 2 ? '100%' : '57.778vw')+';object-fit:top;object-fit:cover;'" v-if="detailitem.previewImg">
+			   <van-image lazy-load :src="baseURL + '/file/getfilestream/' + detailitem.previewImg + '?token=' + token" :style="'min-height:57.778vw;width:100%;height:'+(detailitem.loadMode == 2 ? '100%' : '57.778vw')+';object-fit:top;object-fit:cover;'" v-if="detailitem.previewImg">
 					  <template v-slot:error>
 						 加载失败
 					  </template>
@@ -58,7 +58,7 @@ created(){
 },
     methods:{
         pathPush() {
-			// console.log(this.detailitem)
+			console.log(this.detailitem)
             const loadMode = `${this.detailitem.loadMode}`;
 			// 没有loadMode，走人员页面
 			if(loadMode == 'undefined'){

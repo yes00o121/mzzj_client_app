@@ -20,7 +20,7 @@
 	<div class="userdetail">
 	  <div>
 	    <div class="user_img">
-	      <img :src="baseURL + person.person_head" alt="" v-if="person.person_head"  > 
+	      <img :src="baseURL + '/file/getfilestream/' + person.wjid " alt="" v-if="person.person_head"  > 
 	      <img src="@/assets/nowprinting.gif" alt v-else  />
 	    </div>
 	    <div class="user_edit van-multi-ellipsis--l2" >
@@ -102,7 +102,7 @@
 				    <div class="detailItem" >
 				        <div class="imgparent">
 				             <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
-							   <van-image fit="cover" lazy-load style="height:200px" :src="baseURL +   categoryitem.previewImg + '?token=' + token">
+							   <van-image fit="cover" lazy-load style="height:200px" :src="baseURL +   '/file/getfilestream/' + categoryitem.wjid + '?token=' + token">
 								   <template v-slot:error >
 									   <!-- <img src="@/assets/bk_black.png"   class="avatar" > -->
 									   <div >
@@ -319,6 +319,7 @@ export default {
 		    pageSize: categoryitem.pagesize,
 			loadMode:this.loadMode
 		  })
+		  console.log(res)
 		  if(res.data.data.list == 0){
 		    categoryitem.finished = true;
 			this.loadStatus = false
@@ -326,7 +327,7 @@ export default {
 		  }
 		for(let i =0;i<res.data.data.list.length;i++){
 			res.data.data.list[i].flowNum = res.data.data.list[i].works_flow_num
-			res.data.data.list[i].previewImg = '/video/person/' + encodeURI(this.person.person_nationality) + '/' + encodeURI(this.person.person_name) + '/' + res.data.data.list[i].works_number + '/' + 'cover.jpg'
+			// res.data.data.list[i].previewImg = '/video/person/' + encodeURI(this.person.person_nationality) + '/' + encodeURI(this.person.person_name) + '/' + res.data.data.list[i].works_number + '/' + 'cover.jpg'
 			res.data.data.list[i].title = res.data.data.list[i].works_name
 		}
 		  categoryitem.list.push(...res.data.data.list);

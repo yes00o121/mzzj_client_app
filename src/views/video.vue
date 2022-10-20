@@ -167,9 +167,9 @@ import MyVideo from '@/components/MyVideo/MyVideo'
             }
         },
 		created(){
-			
-			this.loadData()
-
+			this.$nextTick(()=>{
+				this.loadData()
+			})
 		},
 		components:{
 			comment,
@@ -673,7 +673,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				this.videoList[this.current].collNum = res.data.collectionNum
 				// console.log(this.videoList[this.current])
 			},
-			async loadData(fun){
+			async loadData(){
 				console.log('@@@@@@@@@@@@@@@@@@')
 				if(this.pageNum == 1){
 					this.$msg.loading({

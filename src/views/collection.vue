@@ -92,9 +92,9 @@
 			  								src="http://192.168.1.4:8090/common/image?imgId=6102545b1734cb921086f39f&amp;region=true&amp;token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5YW5nY2hlbiIsImNyZWF0ZWQiOjE2MzE4NDM0MTIwNTYsImV4cCI6MjIzNjY0MzQxMn0.3dTJCHt_n7ZH--Nt23vYHQXPeWaWkbGE97zSqvF-lCrlZvOGys6FQO4x4h4TnorBXutuB_IpZFwU2NCI1IfUXA"
 			  								lazy="loaded" style="object-fit: cover;"> -->
 											<div v-if="categoryitem.previewImg">
-												<van-image ref="workImage" v-if="categoryitem.loadMode <= 5" fit="cover" @load="imgLoad(categoryindex)" lazy-load :src="baseURL + categoryitem.previewImg +'&region=true&token=' + token" style="width:100%"/>
-												<van-image v-if="categoryitem.loadMode == 6" fit="cover"  lazy-load :src="baseURL + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
-												<van-image v-if="categoryitem.loadMode == 7" fit="cover"  lazy-load :src="baseURL + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
+												<van-image ref="workImage" v-if="categoryitem.loadMode <= 5" fit="cover" @load="imgLoad(categoryindex)" lazy-load :src="baseURL + '/file/getfilestream/' +  categoryitem.previewImg +'?region=true&token=' + token" style="width:100%"/>
+												<van-image v-if="categoryitem.loadMode == 6" fit="cover"  lazy-load :src="baseURL + '/file/getfilestream/' + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
+												<van-image v-if="categoryitem.loadMode == 7" fit="cover"  lazy-load :src="baseURL + '/file/getfilestream/' + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
 											</div>
 											<img src="@/assets/nowprinting.gif" alt v-else  />
 											
@@ -129,7 +129,7 @@
 												<span style="padding-left: 0.2rem;">{{categoryitem.commentNum | filterFlowNum}}</span>
 											</div> -->
 			  								<div class="van-card__desc van-ellipsis">
-			  									{{categoryitem.collectionTime || categoryitem.systemCreateTime | filterTime}}
+			  									{{categoryitem.collectionTime || categoryitem.systemCreateTimes | filterTime}}
 			  								</div>
 			  							</div>
 			  							<div class="van-card__bottom">
@@ -210,8 +210,11 @@ export default {
   filters:{
   	filterTime(val) {
   	  if(val){
-  	    // return val.split('T')[0]
-  		return val.substring(0,10)
+		var date = new Date(val);
+		var year = date.getYear() + 1900
+		var month = date.getMonth() + 1
+		var day = date.getDate();
+		return year + '-' + month + '-' + day
   	  }
   	  return "";
   	},

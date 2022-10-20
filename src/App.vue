@@ -39,16 +39,17 @@ export default{
 		}
 	},
 	created(){
-		console.log(navigator.appVersion.indexOf('Mobile'))
-		// 判断当前设置,如果是电脑禁止访问
-		if(navigator.appVersion.indexOf('Mobile') == -1){
-			this.equipmentCheck = true
-		}else{
-			if(!this.websocket){
-				console.log('===============================')
-				this.createWebSocket()
-			}
-		}
+		// this.equipmentCheck = true
+		// console.log(navigator.appVersion.indexOf('Mobile'))
+		// // 判断当前设置,如果是电脑禁止访问
+		// if(navigator.appVersion.indexOf('Mobile') == -1){
+		// 	this.equipmentCheck = true
+		// }else{
+		// 	if(!this.websocket){
+		// 		console.log('===============================')
+		// 		this.createWebSocket()
+		// 	}
+		// }
 		
 		
 	},

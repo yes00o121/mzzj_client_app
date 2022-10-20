@@ -263,9 +263,9 @@ export default {
 		return val ? val : '暂无数据'
 	}  ,
 	filterTime(val) {
-	  if(val){
-	    return val.split('T')[0]
-	  }
+	  // if(val){
+	  //   return val.split('T')[0]
+	  // }
 	  return "";
 	},
   },

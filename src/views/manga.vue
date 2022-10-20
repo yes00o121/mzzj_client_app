@@ -28,7 +28,7 @@
 				    height="15rem"
 				    fit="cover"
 					style="object-position: top;"
-				    :src="baseURL +   image.previewImg + '&token=' + token" rel="external nofollow" 
+				    :src="baseURL +  '/file/getfilestream/' +  image.previewImg + '?token=' + token" rel="external nofollow" 
 					@click="toPage(image)"
 				  >
 				  </van-image>
@@ -83,10 +83,14 @@ export default {
   },
   filters:{
 	  filterTime(val) {
-	    if(val){
-	      return val.split('T')[0]
-	    }
-	    return "";
+	   if(val){
+	   		var date = new Date(val);
+	   		var year = date.getYear() + 1900
+	   		var month = date.getMonth() + 1
+	   		var day = date.getDate();
+	   		return year + '-' + month + '-' + day
+	   }
+	   return "";
 	  }
   },
   // 跳转其他页面之前

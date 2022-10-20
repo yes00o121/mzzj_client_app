@@ -11,10 +11,14 @@ if(this.activeIndicator <= 0){
 import axios from 'axios'
 import router from './src/router'
 import Vue from 'vue'
-// const baseURL = 'http://127.0.0.1:8114'
-const baseURL = localStorage.getItem('address')
+// const baseURL = 'http://172.20.10.9:8080/mzzj_manage/mzzjcontroller'
+const baseURL = 'http://192.168.31.193:8080/mzzj_manage/mzzjcontroller'
+// const baseURL = 'http://localhost:8080/mzzj_manage/mzzjcontroller'
+// const baseURL = 'https://8de2-125-105-83-114.ap.ngrok.io/mzzj_manage/mzzjcontroller'
+// const baseURL = localStorage.getItem('address')
 // const baseURL = 'http://121.201.2.228:10824'
 // const baseURL = 'http://121.201.2.228:10958'
+// const baseURL = 'http://127.0.0.1:8114'
 Vue.prototype.baseURL = baseURL
 const http = axios.create({
 	baseURL
@@ -30,8 +34,9 @@ http.interceptors.request.use(function (config) {
     if(localStorage.getItem('token')){
         config.headers.Authorization = 'Bearer ' + localStorage.getItem('token')
     } 
-	config.headers['yctest'] = 'yctest__' // 测试时使用的密钥
+	// config.headers['yctest'] = 'yctest__' // 测试时使用的密钥
     // config.headers['uuid'] = localStorage.uuid//获取设备的uuid进行传输
+	config.headers['uuid'] = '78DC5E3B-3952-4CE9-8224-69C78D03103C';
     return config;
   }, function (error) {
     return Promise.reject(error);

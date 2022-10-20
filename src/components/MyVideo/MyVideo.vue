@@ -180,7 +180,7 @@
   						<div class="van-card__header">
   							<a class="van-card__thumb">
   								<div class="van-image" style="width: 100%; height: 100%;">
-  									<van-image ref="workImage"  lazy-load :src="baseURL + '/common/image?imgId=' + categoryitem.icon +'&token=' + token" style="width:100%;width:45px" v-if="categoryitem.icon"/>
+  									<van-image ref="workImage"  lazy-load :src="baseURL + '/common/image?imgId=' + categoryitem.icon +'?token=' + token" style="width:100%;width:45px" v-if="categoryitem.icon"/>
   									<img src="@/assets/default_img.jpg" style="height:40px;width:40px" alt=""  v-if="!categoryitem.icon">
   								</div>
   								<div class="van-info"></div>
@@ -576,22 +576,38 @@ export default {
 	  	return '';
 	  },
 	  // 创建html标签
+	  // getVideoHtml(){
+		 //  let html = `<video id="${this.VideoItem.id}"   class="video"
+	  // style="width:100%;height:100%;"
+	  // poster="${this.baseURL}${this.VideoItem.previewImg}?token=${this.token}"
+	  // webkit-playsinline="true" x5-video-player-type="h5-page"
+	  // x5-playsinline  x-webkit-airplay="allow"
+	  // x5-video-player-fullscreen="true" playsinline="true" preload="auto"
+	  // controls="false" videoType="${this.VideoItem.videoType}"   playUrl="${this.VideoItem.url}"
+	  // object-fit="fill"
+	  // ></video>`;
+		 //  $('#div_' + this.VideoItem.id).prepend(html)
+		 //  return $('#div_' + this.VideoItem.id + ' video')[0]
+		 //  // return '#'this.VideoItem.id
+	  // },
 	  getVideoHtml(){
-		  let html = `<video id="${this.VideoItem.id}"   class="video"
+	  		  let html = `<video id="${this.VideoItem.id}"   class="video"
 	  style="width:100%;height:100%;"
-	  poster="${this.baseURL}${this.VideoItem.previewImg}&token=${this.token}"
+	  poster="${this.baseURL}/file/getfilestream/${this.VideoItem.previewImg}"
 	  webkit-playsinline="true" x5-video-player-type="h5-page"
 	  x5-playsinline  x-webkit-airplay="allow"
 	  x5-video-player-fullscreen="true" playsinline="true" preload="auto"
 	  controls="false" videoType="${this.VideoItem.videoType}"   playUrl="${this.VideoItem.url}"
 	  object-fit="fill"
 	  ></video>`;
-		  $('#div_' + this.VideoItem.id).prepend(html)
-		  return $('#div_' + this.VideoItem.id + ' video')[0]
-		  // return '#'this.VideoItem.id
+	  		  $('#div_' + this.VideoItem.id).prepend(html)
+	  		  return $('#div_' + this.VideoItem.id + ' video')[0]
+	  		  // return '#'this.VideoItem.id
 	  },
 	  createVideo(index){
+// var overrideNative = false;		  
 		this.$nextTick(()=>{
+			try{
 				  let curIndex = this.index
 				  if(this.VideoItem.videoType == 'm3u8'){
 					  let _this = this
@@ -602,6 +618,14 @@ export default {
 				  	  
 				  	  			  loop:true,
 				  	  			  controls: false,//用户可以与之交互的控件
+								  // html5: {
+								  //     hls: {
+								  //       overrideNative: overrideNative
+								  //     },
+								  //     nativeVideoTracks: !overrideNative,
+								  //     nativeAudioTracks: !overrideNative,
+								  //     nativeTextTracks: !overrideNative
+								  //   }
 				  	  		  },
 				  	            function onPlayerReady() {
 				  	  				this.on("progress",function(){
@@ -614,12 +638,19 @@ export default {
 										// 添加手势缩放监听
 
 									})
+									this.on("error", function(e){
+											// alert(JSON.stringify(e))
+									    });
 				  	  		  }
 				  	          );
+							  console.log('...')
 				  	  let nextAddress = this.VideoItem.nextAddress
 				  	  nextAddress = nextAddress.split('_-')[1]
+					  // alert(this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress)
 				  	  this.video.src({
 				  	  		  src:this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress + '?token=' + this.token,
+							  // src:this.baseURL + '/417890/417890',
+							  // src:this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress,
 				  	  		  type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
 				  	  		})
 					 if(curIndex == this.index){
@@ -667,7 +698,11 @@ export default {
 									
 							}
 				  }
+				  }catch(e){
+				  	// alert(e)
+				  }
 		})  
+		
 	  },
 	  // 全屏
 	  screen () {

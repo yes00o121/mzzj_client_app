@@ -24,7 +24,7 @@
 		<div style="justify-content: space-around;flex-wrap: wrap;display: flex;padding: 0px 1rem;">
 			<div>{{work.works_name}}</div>
 			<!-- <div> -->
-				<van-image fit="cover" :src="baseURL + work.conver + '?token=' + token" style="width:100%;height:70.778vw;margin-top:1rem" @click="bigImagePreview">
+				<van-image v-if="work.wjid" fit="cover" :src="baseURL + '/file/getfilestream/' + work.wjid + '?token=' + token" style="width:100%;height:70.778vw;margin-top:1rem" @click="bigImagePreview">
 					<template v-slot:error>加载失败</template>
 							<template v-slot:loading>
 							    <van-loading type="spinner" size="20" />
@@ -43,11 +43,11 @@
 			  <van-cell title="制作商" :value="work.works_production" v-if="work.works_production" @click="toSearch(work.works_production)"/>
 			  <van-cell title="系列" :value="work.works_series" v-if="work.works_series" @click="toSearch(work.works_series)"/>
 			  <!-- <van-cell title="类别" :value="work.works_category" v-if="work.works_category"/> -->
-			  <van-cell title="类别" v-if="work.works_category_arr">
-				  <span v-for="item in work.works_category_arr">
-					   <van-tag plain  type="primary" @click="toSearch(item + '_PLACEHOLDER_')">{{item}}</van-tag>
-					   <span style="padding:.5rem"></span>
-				  </span>
+			  <van-cell title="类别" v-if="series.length > 0" size="large">
+					  <span v-for="item in series">
+						   <van-tag plain  type="primary" @click="toSearch(item + '_PLACEHOLDER_')">{{item.typeName}}</van-tag>
+						   <span style="padding:.5rem"></span>
+					  </span>
 				 
 				  </van-cell>
 			</van-cell-group>
@@ -60,12 +60,12 @@
 			<div style="flex-wrap: wrap;display: flex;">
 				<div v-for="(item,index) in participates" :key = "index" style="width:30%;padding: .3rem;" @click="pathPush(item)">
 					<div>
-						<van-image v-if="item.personNationality"  lazy-load :src="baseURL +   item.personNationality + '?token=' + token" class="participates-photo" >
+						<van-image v-if="item.wjid"  lazy-load :src="baseURL +  '/file/getfilestream/' + item.wjid + '?token=' + token" class="participates-photo" >
 							<template v-slot:error>
 								<img  src="@/assets/nowprinting.gif" class="participates-photo">
 							</template>
 						</van-image>
-						<img v-if="!item.personNationality" src="@/assets/nowprinting.gif" class="participates-photo">
+						<img v-if="!item.wjid" src="@/assets/nowprinting.gif" class="participates-photo">
 						<div class="text">{{item.person_name}}</div>
 					</div>
 				</div>
@@ -78,7 +78,7 @@
 			<div style="flex-wrap: wrap;display: flex;" >
 				<div v-for="(item,index) in workImages" :key = "index" style="width:45%;padding: .3rem;">
 					<div>
-						<van-image ref="workImage" style="width:100%;" @load="imgLoad(index)" rel="external nofollow"  fit="cover" lazy-load :src="baseURL +  item.content + '?token=' + token" class="participates-photo" @click="imagePreview(item)" >
+						<van-image v-if="item" ref="workImage" style="width:100%;" @load="imgLoad(index)" rel="external nofollow"  fit="cover" lazy-load :src="baseURL + '/file/getfilestream/' + item.wjid + '?token=' + token" class="participates-photo" @click="imagePreview(item)" >
 							<template v-slot:error>加载失败</template>
 									<template v-slot:loading>
 									    <van-loading type="spinner" size="20" />
@@ -137,6 +137,7 @@ import { ImagePreview } from 'vant';
 export default{
 	data(){
 		return {
+			series:[],// 系列
 			work:{},
 			participates:[], // 出演人员
 			workImages:[],// 预览图片
@@ -165,6 +166,8 @@ export default{
 				this.magnetList = []
 				// 作品数据
 				this.initPersonWorkData()
+				// 作系列
+				this.initPersonWorkSeries()
 				// 演员数据
 				this.initPersonWorkParticipate()
 				// 预览图数据
@@ -189,6 +192,11 @@ export default{
 		}
 	},
 	methods:{
+		async initPersonWorkSeries(){
+			const res = await this.$http.post('/person/queryPersonWorksSeries',{workId:this.$route.params.id})
+			this.series = res.data.data
+			console.log(res)
+		},
 		getVideoHtml(){
 				  // visibility: hidden;
 				  // console.log('销毁重新创建......')
@@ -368,7 +376,7 @@ export default{
 			// console.log(item)
 			ImagePreview({
 				images: this.imagePreviews,
-				startPosition:item.works_content_number -1 
+				startPosition:item.pxh -1 
 			})
 		},
 		bigImagePreview(){
@@ -396,15 +404,7 @@ export default{
 			
 			res.data.data.list[0].conver = '/video/person/' + encodeURI(res.data.data.list[0].person_nationality) + '/' + encodeURI(res.data.data.list[0].person_name) + '/' + res.data.data.list[0].works_number + '/bigCover.jpg'
 			this.work = res.data.data.list[0]
-			// 判断是否有类型,有进行分割
-			if(this.work.works_category){
-				this.work.works_category_arr = this.work.works_category.split('#PLACEHOLDER#');
-				// for(let i =0;i<this.work.works_category.length;i++){
-					
-				// }
-				// #PLACEHOLDER#
-			}
-			this.converPreviews.push(this.baseURL +  this.work.conver+ '?token=' + this.token)
+			this.converPreviews.push(this.baseURL +  '/file/getfilestream/' + this.work.wjid+ '?token=' + this.token)
 			this.$msg.clear()
 			// 磁力数据
 			this.initMagnet();
@@ -430,10 +430,15 @@ export default{
 			this.$http.post("/person/queryPersonWorkDetail", {
 			  workId: this.$route.params.id
 			}).then(res=>{
-				this.workImages = res.data.data
-				for(let i =0;i<this.workImages.length;i++){
-					this.imagePreviews.push(this.baseURL + this.workImages[i].content + '?token=' + this.token)
+				console.log(res)
+				this.workImages = res.data.data.minImg
+				for(let i =0;i<res.data.data.maxImg.length;i++){
+					if(res.data.data.maxImg[i]){
+						this.imagePreviews.push(this.baseURL + '/file/getfilestream/' + res.data.data.maxImg[i].wjid + '?token=' + this.token)
+					}
+					
 				}
+				console.log(this.imagePreviews)
 			})
 			
 		},
@@ -449,6 +454,8 @@ export default{
 		this.initPersonWorkData()
 		// 演员数据
 		this.initPersonWorkParticipate()
+		// 作系列
+		this.initPersonWorkSeries()
 		// 预览图数据
 		this.initPersonWorkImage();
 		

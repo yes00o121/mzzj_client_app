@@ -12,7 +12,7 @@
 			  <van-cell style="background: black;color:white;"  icon="arrow-left" :title="(chapterList[this.$route.params.pxh - 1] ? chapterList[this.$route.params.pxh - 1].title : '')"  @click="toBack"/>
 		</van-popup>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + item.imgUrl + '&token=' + token" v-for="item in mangaList" @click="showpopUp()"/>
+		     <van-image lazy-load :ref="'img' + item.pxh" :id="item.pxh" :src="baseURL + '/file/getfilestream/' + item.imgUrl + '?token=' + token" v-for="item in mangaList" @click="showpopUp()"/>
 				<template v-slot:loading>
 				    <van-loading type="spinner" size="20" />
 				  </template>
@@ -106,7 +106,7 @@
 						   
 							 :title="categoryitem.title"
 							 class="goods-card"
-							 :thumb="baseURL + categoryitem.imgUrl +'&region=true&token=' + token"
+							 :thumb="baseURL + '/file/getfilestream/' +  categoryitem.imgUrl +'?region=true&token=' + token"
 							 :style="$route.params.pxh == categoryitem.pxh ? 'color:rgb(7, 193, 96);border-bottom: 1px solid #ebedf0;' : ';border-bottom: 1px solid #ebedf0;'"
 							 :desc="categoryitem.createtime | filterTime"
 						   />
@@ -171,7 +171,11 @@ export default {
   filters:{
   	filterTime(val) {
   	  if(val){
-  	    return val.split('T')[0]
+  	  		var date = new Date(val);
+  	  		var year = date.getYear() + 1900
+  	  		var month = date.getMonth() + 1
+  	  		var day = date.getDate();
+  	  		return year + '-' + month + '-' + day
   	  }
   	  return "";
   	},

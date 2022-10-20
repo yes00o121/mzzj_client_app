@@ -35,4 +35,49 @@
     </noscript>
     <div id="app"></div>
   </body>
+  <script>
+	  
+	  this.video = this.$video(
+	  								this.getVideoHtml(),
+	  		  {
+	  			  // autoplay: 'muted',//自动播放
+	  
+	  			  loop:true,
+	  			  controls: false,//用户可以与之交互的控件
+	  								  html5: {
+	  								      hls: {
+	  								        overrideNative: overrideNative
+	  								      },
+	  								      nativeVideoTracks: !overrideNative,
+	  								      nativeAudioTracks: !overrideNative,
+	  								      nativeTextTracks: !overrideNative
+	  								    }
+	  		  },
+	            function onPlayerReady() {
+	  				this.on("progress",function(){
+	  					// 5
+	  					// console.log("正在请求数据 ");
+	  					this.el_.getElementsByTagName('span')[0].innerText = ''
+	  				})
+	  									// 视频加载完成
+	  									this.on('canplaythrough',function(){
+	  										// 添加手势缩放监听
+	  
+	  									})
+	  									this.on("error", function(e){
+	  											// alert(JSON.stringify(e))
+	  									    });
+	  		  }
+	          );
+	  							  console.log('...')
+	  let nextAddress = this.VideoItem.nextAddress
+	  nextAddress = nextAddress.split('_-')[1]
+	  // alert(this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress)
+	  this.video.src({
+	  		  // src:this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress + '?token=' + this.token,
+	  							  src:this.baseURL + '/417890/417890',
+	  							  // src:this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress,
+	  		  type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
+	  		})
+  </script>
 </html>
