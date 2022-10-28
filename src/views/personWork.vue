@@ -24,7 +24,7 @@
 		<div style="justify-content: space-around;flex-wrap: wrap;display: flex;padding: 0px 1rem;">
 			<div>{{work.works_name}}</div>
 			<!-- <div> -->
-				<van-image v-if="work.wjid" fit="cover" :src="baseURL + '/file/getfilestream/' + work.wjid + '?token=' + token" style="width:100%;height:70.778vw;margin-top:1rem" @click="bigImagePreview">
+				<van-image v-if="work.id" fit="cover" :src="baseURL + '/file/getfilestreamNvyouWork/' + work.id + '?token=' + token" style="width:100%;height:70.778vw;margin-top:1rem" @click="bigImagePreview">
 					<template v-slot:error>加载失败</template>
 							<template v-slot:loading>
 							    <van-loading type="spinner" size="20" />

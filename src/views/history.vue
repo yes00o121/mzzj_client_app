@@ -90,9 +90,12 @@
 			  								<!-- <img class="van-image__img" data-src="http://192.168.1.4:8090/common/image?imgId=6102545b1734cb921086f39f&amp;region=true&amp;token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5YW5nY2hlbiIsImNyZWF0ZWQiOjE2MzE4NDM0MTIwNTYsImV4cCI6MjIzNjY0MzQxMn0.3dTJCHt_n7ZH--Nt23vYHQXPeWaWkbGE97zSqvF-lCrlZvOGys6FQO4x4h4TnorBXutuB_IpZFwU2NCI1IfUXA"
 			  								src="http://192.168.1.4:8090/common/image?imgId=6102545b1734cb921086f39f&amp;region=true&amp;token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5YW5nY2hlbiIsImNyZWF0ZWQiOjE2MzE4NDM0MTIwNTYsImV4cCI6MjIzNjY0MzQxMn0.3dTJCHt_n7ZH--Nt23vYHQXPeWaWkbGE97zSqvF-lCrlZvOGys6FQO4x4h4TnorBXutuB_IpZFwU2NCI1IfUXA"
 			  								lazy="loaded" style="object-fit: cover;"> -->
-											<van-image ref="workImage" v-if="categoryitem.loadMode <= 5" fit="cover" @load="imgLoad(categoryindex)" lazy-load :src="baseURL + categoryitem.previewImg +'&region=true&token=' + token" style="width:100%"/>
-											<van-image v-if="categoryitem.loadMode == 6" fit="cover"  lazy-load :src="baseURL + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
-											<van-image v-if="categoryitem.loadMode == 7" fit="cover"  lazy-load :src="baseURL + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
+											<!-- {{baseURL + '/file/getfilestreamManga/' + categoryitem.id +'?token=' + token}}.... -->
+											<van-image ref="workImage" v-if="categoryitem.loadMode == 2" fit="cover" lazy-load :src="baseURL + '/file/getfilestreamManga/' + categoryitem.webInfoDetailDataId +'?token=' + token" style="width:100%"/>
+											<van-image ref="workImage" v-if="categoryitem.loadMode == 4" fit="cover" lazy-load :src="baseURL + '/file/getfilestreamVideo/' + categoryitem.webInfoDetailDataId +'?token=' + token" style="width:100%"/>
+											<van-image ref="workImage" v-if="categoryitem.loadMode == 7" fit="cover" lazy-load :src="baseURL + '/file/getfilestreamNvyouWork/' + categoryitem.webInfoDetailDataId +'?token=' + token" style="width:100%"/>
+											<!-- <van-image v-if="categoryitem.loadMode == 6" fit="cover"  lazy-load :src="baseURL + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
+											<van-image v-if="categoryitem.loadMode == 7" fit="cover"  lazy-load :src="baseURL + categoryitem.previewImg +'?token=' + token" style="width:100%;"/> -->
 											
 			  							</div>
 			  							<!-- <div class="van-card__tag">
@@ -201,11 +204,14 @@ export default {
   },
   filters:{
   	filterTime(val) {
-  	  if(val){
-  	    // return val.split('T')[0]
-  		return val.substring(0,10)
-  	  }
-  	  return "";
+		if(val){
+				var date = new Date(val);
+				var year = date.getYear() + 1900
+				var month = date.getMonth() + 1
+				var day = date.getDate();
+				return year + '-' + month + '-' + day
+		}
+		return "";
   	},
   	filterFlowNum(val){
   		val = val + ''
@@ -368,17 +374,17 @@ export default {
 		console.log(detailitem)
 		// 视频页面
 		if(detailitem.loadMode == 4){
-		  if(this.$route.path != `/article/${detailitem.id}/${detailitem.loadMode}`) {
-		      this.$router.push(`/article/${detailitem.id}/${detailitem.loadMode}`)
+		  if(this.$route.path != `/article/${detailitem.ljid}/${detailitem.loadMode}`) {
+		      this.$router.push(`/article/${detailitem.ljid}/${detailitem.loadMode}`)
 		  }
 		}
 		// 漫画页面
-		if(detailitem.loadMode == 2){
-			this.$router.push(`/manga/${detailitem.id}`)
-		}
+		// if(detailitem.loadMode == 2){
+		// 	this.$router.push(`/manga/${detailitem.ljid}`)
+		// }
 		// 漫画明细页面
-		if(detailitem.loadMode == 5){
-		    this.$router.push(`/mangaDetail/${detailitem.id}/${detailitem.pxh}`)
+		if(detailitem.loadMode == 2){
+		    this.$router.push(`/mangaDetail/${detailitem.webInfoDetailDataId}/${detailitem.pxh}`)
 		}
 		//  人员
 		if(detailitem.loadMode == 6){
@@ -386,7 +392,7 @@ export default {
 		}
 		// 作品
 		if(detailitem.loadMode == 7){
-		    this.$router.push(`/personWork/${detailitem.id}`)
+		    this.$router.push(`/personWork/${detailitem.ljid}`)
 		}
 	},
     onRefresh() {       //下拉刷新

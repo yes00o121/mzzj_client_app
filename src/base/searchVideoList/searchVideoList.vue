@@ -8,7 +8,7 @@
   <!-- <tip ref="tip"></tip> -->
   <ul class="container">
     <li class="search-item" v-for="(item, index) in searches" :key="index" @click="chooseVideo(index)" style="padding: 1px 1px" v-if="item.videoType">
-		<van-image class="videoCover" fit="cover" :style="VideoItemHeightStyle" lazy-load :src="baseURL + '/file/getfilestream/' +item.previewImg + '?token=' + token" />
+		<van-image class="videoCover" fit="cover" :style="VideoItemHeightStyle" lazy-load :src="baseURL + '/file/getfilestreamVideo/' +item.id + '?token=' + token" />
       <!-- <img class="videoCover" :style="VideoItemHeightStyle" :src="baseURL + item.previewImg + '&token=' + token"> -->
 	  <!-- <img class="videoCover" :style="VideoItemHeightStyle" src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01805e562458e832f87557016c4773.jpg&refer=http%3A%2F%2Fimg.zcool.cn&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1636869801&t=dea4162a93386984fea02a4f83e99ce7"> -->
       <div class="bottom" style="width: 100%;text-align: initial;">

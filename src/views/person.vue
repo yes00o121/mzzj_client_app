@@ -20,8 +20,8 @@
 	<div class="userdetail">
 	  <div>
 	    <div class="user_img">
-	      <img :src="baseURL + '/file/getfilestream/' + person.wjid " alt="" v-if="person.person_head"  > 
-	      <img src="@/assets/nowprinting.gif" alt v-else  />
+	      <img :src="baseURL + '/file/getfilestreamNvyou/' + person.id " alt="" v-if="person.person_head"  > 
+	      <!-- <img src="@/assets/nowprinting.gif" alt v-else  /> -->
 	    </div>
 	    <div class="user_edit van-multi-ellipsis--l2" >
 	      <div >
@@ -102,7 +102,7 @@
 				    <div class="detailItem" >
 				        <div class="imgparent">
 				             <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
-							   <van-image fit="cover" lazy-load style="height:200px" :src="baseURL +   '/file/getfilestream/' + categoryitem.wjid + '?token=' + token">
+							   <van-image fit="cover" lazy-load style="height:200px" :src="baseURL +   '/file/getfilestreamNvyouMinWork/' + categoryitem.id + '?token=' + token">
 								   <template v-slot:error >
 									   <!-- <img src="@/assets/bk_black.png"   class="avatar" > -->
 									   <div >

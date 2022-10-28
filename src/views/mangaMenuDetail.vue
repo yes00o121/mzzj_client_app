@@ -492,7 +492,7 @@ export default {
 	},
 	async initConfig(){
 		// 用户配置信息
-		const res2 = await this.$http.get('/admin/queryConfig?key=manga_tpqxd')
+		const res2 = await this.$http.get('/config/queryConfig?key=manga_tpqxd')
 		// 获取画质配置信息
 		const res = await this.$http.post('/config/queryConfigDetail',{
 			configKey:'manga_tpqxd'

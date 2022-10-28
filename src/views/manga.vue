@@ -46,6 +46,7 @@
             >
               <div class="detailparent" ref="tab" v-show="item.CODE_VALUE != 2">	
                 <cover
+				  :type="2"
                   class="detailitem"
                   :detailitem="categoryitem"
                   v-for="(categoryitem,categoryindex) in item.list"

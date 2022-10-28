@@ -27,7 +27,7 @@
 		 > -->
 		 <van-image
 		   fit="contain"
-		   :src="baseURL + '/file/getfilestream/'+manga.previewImg + '?random=1&token=' + token" rel="external nofollow" 
+		   :src="baseURL + '/file/getfilestreamManga/'+manga.id + '?random=1&token=' + token" rel="external nofollow" 
 		   style="width:100%;"
 		 >
 		 <template v-slot:error>加载失败</template>
@@ -63,7 +63,7 @@
 				   v-for="(categoryitem,categoryindex) in item.list"
 				     :title="categoryitem.title"
 				     class="goods-card"
-				     :thumb="baseURL + '/file/getfilestream/' + categoryitem.imgUrl +'?region=true&token=' + token"
+				     :thumb="baseURL + '/file/getfilestreamManga/' + categoryitem.imgUrl +'?region=true&token=' + token"
 					 style="border-bottom: 1px solid #ebedf0;"
 					 :desc="categoryitem.createtime | filterTime"
 				   />

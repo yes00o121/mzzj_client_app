@@ -18,8 +18,8 @@
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy  >
 			<div slot="title">
 				  <div>
-					<van-icon name="photo-o" v-if="item.CODE_VALUE != '9'" size="1rem" />
-					<van-icon name="user-o" v-if="item.CODE_VALUE == '9'" size="1rem"/>
+					<van-icon name="photo-o" v-if="item.CODE_VALUE != '6'" size="1rem" />
+					<van-icon name="user-o" v-if="item.CODE_VALUE == '6'" size="1rem"/>
 					  {{item.DICT_NAME}}
 				  </div>
 			</div>
@@ -27,7 +27,7 @@
 			<div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'" @scroll="scrolls">
 				<back-top :showHeight="100"></back-top>
 			<van-sticky>
-				<person-search-tool :show = "categoryItem().CODE_VALUE == '9'" @search = "personSearch"></person-search-tool>
+				<person-search-tool :show = "categoryItem().CODE_VALUE == '6'" @search = "personSearch"></person-search-tool>
 			</van-sticky>
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh" >
             <van-list 
@@ -39,6 +39,7 @@
             >
               <div class="detailparent" ref="tab" v-show="item.CODE_VALUE != 2">	
                 <cover
+				  :type="item.CODE_VALUE"
                   class="detailitem"
                   :detailitem="categoryitem"
                   v-for="(categoryitem,categoryindex) in item.list"
@@ -155,7 +156,7 @@ export default {
     async selectCategory() {
 	  const res = [{
 	  		  DICT_NAME:'演员',
-	  		  CODE_VALUE:9
+	  		  CODE_VALUE:6
 	  },{
 	  		  DICT_NAME:'作品',
 	  		  CODE_VALUE:7
@@ -211,7 +212,7 @@ export default {
     async selectArticle() {
       const categoryitem = this.categoryItem();
 		// 如果categoryitem.CODE_VALUE等于9,但是查询女优数据
-		if(categoryitem.CODE_VALUE == 9){
+		if(categoryitem.CODE_VALUE == 6){
 			this.selectPerson(this.personParams)
 			return;
 		}else if(categoryitem.CODE_VALUE == 7){

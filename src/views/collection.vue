@@ -91,12 +91,12 @@
 			  								<!-- <img class="van-image__img" data-src="http://192.168.1.4:8090/common/image?imgId=6102545b1734cb921086f39f&amp;region=true&amp;token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5YW5nY2hlbiIsImNyZWF0ZWQiOjE2MzE4NDM0MTIwNTYsImV4cCI6MjIzNjY0MzQxMn0.3dTJCHt_n7ZH--Nt23vYHQXPeWaWkbGE97zSqvF-lCrlZvOGys6FQO4x4h4TnorBXutuB_IpZFwU2NCI1IfUXA"
 			  								src="http://192.168.1.4:8090/common/image?imgId=6102545b1734cb921086f39f&amp;region=true&amp;token=Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5YW5nY2hlbiIsImNyZWF0ZWQiOjE2MzE4NDM0MTIwNTYsImV4cCI6MjIzNjY0MzQxMn0.3dTJCHt_n7ZH--Nt23vYHQXPeWaWkbGE97zSqvF-lCrlZvOGys6FQO4x4h4TnorBXutuB_IpZFwU2NCI1IfUXA"
 			  								lazy="loaded" style="object-fit: cover;"> -->
-											<div v-if="categoryitem.previewImg">
-												<van-image ref="workImage" v-if="categoryitem.loadMode <= 5" fit="cover" @load="imgLoad(categoryindex)" lazy-load :src="baseURL + '/file/getfilestream/' +  categoryitem.previewImg +'?region=true&token=' + token" style="width:100%"/>
-												<van-image v-if="categoryitem.loadMode == 6" fit="cover"  lazy-load :src="baseURL + '/file/getfilestream/' + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
-												<van-image v-if="categoryitem.loadMode == 7" fit="cover"  lazy-load :src="baseURL + '/file/getfilestream/' + categoryitem.previewImg +'?token=' + token" style="width:100%;"/>
+											<div>
+												<van-image ref="workImage" v-if="categoryitem.loadMode == 2" fit="cover"  lazy-load :src="baseURL + '/file/getfilestreamManga/' +  categoryitem.ljid +'?token=' + token" style="width:100%"/>
+												<van-image ref="workImage" v-if="categoryitem.loadMode == 4" fit="cover"  lazy-load :src="baseURL + '/file/getfilestreamVideo/' +  categoryitem.ljid +'?token=' + token" style="width:100%"/>
+												<van-image v-if="categoryitem.loadMode == 6" fit="cover"  lazy-load :src="baseURL + '/file/getfilestreamNvyou/' + categoryitem.ljid +'?token=' + token" style="width:100%;"/>
+												<van-image v-if="categoryitem.loadMode == 7" fit="cover"  lazy-load :src="baseURL + '/file/getfilestreamNvyouWork/' + categoryitem.ljid +'?token=' + token" style="width:100%;"/>
 											</div>
-											<img src="@/assets/nowprinting.gif" alt v-else  />
 											
 			  							</div>
 			  							<!-- <div class="van-card__tag">
@@ -129,7 +129,7 @@
 												<span style="padding-left: 0.2rem;">{{categoryitem.commentNum | filterFlowNum}}</span>
 											</div> -->
 			  								<div class="van-card__desc van-ellipsis">
-			  									{{categoryitem.collectionTime || categoryitem.systemCreateTimes | filterTime}}
+			  									{{categoryitem.collectionTime | filterTime}}
 			  								</div>
 			  							</div>
 			  							<div class="van-card__bottom">
@@ -378,13 +378,13 @@ export default {
 			// this.SET_PLAYLIST_MESSAGE(this.categoryItem().list)
 			// this.$refs.playListMessage.scrollToIndex(index)
 			
-		  if(this.$route.path != `/article/${detailitem.id}/${detailitem.loadMode}`) {
-		      this.$router.push(`/article/${detailitem.id}/${detailitem.loadMode}`)
-		  }
+		  // if(this.$route.path != `/article/${detailitem.id}/${detailitem.loadMode}`) {
+		      this.$router.push(`/article/${detailitem.ljid}/${detailitem.loadMode}`)
+		  // }
 		}
 		// 漫画页面
 		if(detailitem.loadMode == 2){
-			this.$router.push(`/manga/${detailitem.id}`)
+			this.$router.push(`/manga/${detailitem.ljid}`)
 		}
 		// 漫画明细页面
 		if(detailitem.loadMode == 5){
@@ -394,16 +394,16 @@ export default {
 		if(detailitem.loadMode == 6){
 			// 判断是91的还是女优,跳转不同页面
 			if(detailitem.personLabel == 'avperformer_avfemale'){
-				this.$router.push(`/person/${detailitem.id}/SEX`)
+				this.$router.push(`/person/${detailitem.ljid}/SEX`)
 			}
 			if(detailitem.personLabel == 'avperformer_91'){
-				this.$router.push('/videoUserInfo/' + detailitem.id + '/SEX/video')
+				this.$router.push('/videoUserInfo/' + detailitem.ljid + '/SEX/video')
 			}
 		    
 		}
 		// 作品
 		if(detailitem.loadMode == 7){
-		    this.$router.push(`/personWork/${detailitem.id}`)
+		    this.$router.push(`/personWork/${detailitem.ljid}`)
 		}
 	},
     onRefresh() {       //下拉刷新

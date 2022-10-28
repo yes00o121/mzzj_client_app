@@ -27,29 +27,6 @@
 			<van-dropdown-menu>
 			  <van-dropdown-item :value="value1" :options="option1" @change="onConfirm1" />
 			  <van-dropdown-item :value="value2" :options="option2" @change="onConfirm2" />
-			  <!-- <van-dropdown-item id="item" title="测试">
-			    <van-cell title="hhh">
-			      <van-switch
-			        slot="right-icon"
-			        size="24px"
-			        style="height: 26px"
-			        :checked="switch1"
-			        bind:change="onSwitch1Change"
-			      />
-			    </van-cell> -->
-			   <!-- <van-cell title="{{ switchTitle2 }}">
-			      <van-switch
-			        slot="right-icon"
-			        size="24px"
-			        style="height: 26px"
-			        checked="{{ switch2 }}"
-			        bind:change="onSwitch2Change"
-			      />
-			    </van-cell> -->
-			  <!--  <van-button type="info" block bind:click="onConfirm">
-			      确定
-			    </van-button>
-			  </van-dropdown-item> -->
 			</van-dropdown-menu>
 		</div>
 	</van-sticky>
@@ -87,8 +64,8 @@
 							  <div>
 								<div class="user_img">
 									<!-- <img :src="baseURL + categoryitem.photo + '?token=' + token" alt="" v-if="categoryitem.photo1"  > -->
-								  <img :src="baseURL + categoryitem.photo + '?token=' + token" alt="" v-if="categoryitem.photo"  >
-								  <img src="@/assets/nowprinting.gif" alt v-else  />
+								  <img :src="baseURL + categoryitem.photo + '?token=' + token" alt="" v-if="categoryitem.id"  >
+<!-- 								  <img src="@/assets/nowprinting.gif" alt v-else  /> -->
 								</div>
 								<div style="font-size:.9rem" v-html="categoryitem.title"></div>
 							  </div>
@@ -107,7 +84,7 @@
 						 <div style="flex-wrap: wrap;display: flex;width:100%">
 							 <div style="font-size:14px;text-align: left;width:60%;margin-top: 0.4rem;" class="van-multi-ellipsis" v-html="categoryitem.title"></div>
 							<div style="width:35%;padding: .3rem;">
-								<van-image v-if="categoryitem.photo"  style="width:100%;height:25.778vw;" rel="external nofollow"  fit="contain" lazy-load :src="baseURL +  categoryitem.photo + (categoryitem.photo.indexOf('?') != -1 ? '&' : '?') + 'token=' + token" class="participates-photo"  >
+								<van-image v-if="categoryitem.photo"  style="width:100%;height:25.778vw;" rel="external nofollow"  fit="contain" lazy-load :src="baseURL +  categoryitem.photo + '?token=' + token" class="participates-photo"  >
 									<template v-slot:error>加载失败</template>
 											<template v-slot:loading>
 											    <van-loading type="spinner" size="20" />
@@ -121,10 +98,10 @@
 							</div> -->
 						 </div>
 						 <div style="float: left;position: absolute;bottom: 2rem;">
-							 <van-tag type="primary">{{categoryitem.typeName}}</van-tag>
+							 <van-tag type="primary">{{categoryitem.typename}}</van-tag>
 						 </div>
 						 <div style="float: left;position: absolute;bottom: 2.1rem;margin-left:3rem;font-size:12px;color:#8f8f94;">
-							 {{categoryitem.flowNum}}浏览
+							 {{categoryitem.flownum}}浏览
 							 <!-- <van-tag type="primary">{{categoryitem.typeName}}</van-tag> -->
 						 </div>
 						 <div style="float: left;position: absolute;bottom: 2.1rem;font-size:12px;color:#8f8f94;margin-left:6rem">
@@ -270,6 +247,23 @@ export default {
 	},
   },
   methods: {
+	  labelClean(id,sfpj){
+		  var url = ''
+		  // 拼接路径
+		  if(sfpj){
+			  if(id.indexOf('video_') != - 1){
+				  url = '/file/getfilestreamVideo/'
+			  }
+			  if(id.indexOf('manga_') != - 1){
+				  url = '/file/getfilestreamManga/'
+			  }
+			  if(id.indexOf('works_') != - 1){
+				  url = '/file/getfilestreamNvyouWork/'
+			  }
+		  }
+		  id = id.replace('person_','').replace('works_','').replace('manga_','').replace('video_','')
+		  return url ? url + id : id;
+	  },
 	  onConfirm1(e) {
 		  this.value1 = e
 		  if(e == 0){
@@ -293,7 +287,7 @@ export default {
 			  this.sortWay = ''
 		  }
 		  if(e == 1){
-			  this.sort = 'flowNum'
+			  this.sort = 'flownum'
 			  this.sortWay = 'DESC'
 		  }
 		  if(e == 2){
@@ -322,31 +316,32 @@ export default {
 		 console.log('chage...') 
 	  },
 	toPage(detailitem){
-		console.log(detailitem)
-		let id = ''
-		if(detailitem.mklx == 'works'){
-			id = detailitem.id.replace('works_','')
-			this.$router.push(`/personWork/${id}`)
-		}
-		if(detailitem.mklx == 'person'){
-			id = detailitem.id.replace('person_','')
-			// 判断是91还是女优
-			if(detailitem.label == 'avperformer_avfemale'){
-				this.$router.push(`/person/${id}/SEX`)
-			}
-			if(detailitem.label == 'avperformer_91'){
-				this.$router.push(`/videoUserInfo/${id}/SEX/video`)
-			}
+		this.$router.push(`${detailitem.linkurl}`)
+		// console.log(detailitem)
+		// let id = ''
+		// if(detailitem.mklx == 'works'){
+		// 	id = detailitem.id.replace('works_','')
+		// 	this.$router.push(`/personWork/${id}`)
+		// }
+		// if(detailitem.mklx == 'person'){
+		// 	id = detailitem.id.replace('person_','')
+		// 	// 判断是91还是女优
+		// 	if(detailitem.label == 'avperformer_avfemale'){
+		// 		this.$router.push(`/person/${id}/SEX`)
+		// 	}
+		// 	if(detailitem.label == 'avperformer_91'){
+		// 		this.$router.push(`/videoUserInfo/${id}/SEX/video`)
+		// 	}
 
-		}
-		if(detailitem.mklx == 'manga'){
-			id = detailitem.id.replace('manga_','')
-			 this.$router.push(`/manga/${id}`)
-		}
-		if(detailitem.mklx == 'video'){
-			id = detailitem.id.replace('video_','')
-			this.$router.push(`/article/${id}/4`)
-		}
+		// }
+		// if(detailitem.mklx == 'manga'){
+		// 	id = detailitem.id.replace('manga_','')
+		// 	 this.$router.push(`/manga/${id}`)
+		// }
+		// if(detailitem.mklx == 'video'){
+		// 	id = detailitem.id.replace('video_','')
+		// 	this.$router.push(`/article/${id}/4`)
+		// }
 		
 	},
 	returnPage(){

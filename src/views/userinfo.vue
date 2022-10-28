@@ -225,7 +225,7 @@ export default {
     created() {
         // this.userData()
 		this.getUser()
-		this.getUserConfig()
+		// this.getUserConfig()
 		this.loadMessage();
 		// top.a = this
     },

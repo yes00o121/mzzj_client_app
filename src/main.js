@@ -101,6 +101,7 @@ Vue.prototype.getUser = async  function(){
   return null;
 }
 
+
 Vue.prototype.httpTimeout = 5000; // http接口超时时长
 
 Vue.prototype.windowHeight = screen.height // 获取用户屏幕高度

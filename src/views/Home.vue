@@ -4,17 +4,20 @@
 		<nav-bar></nav-bar>
 		<!-- 菜单列表 -->
 		<div v-show="tabActive == 0">
+			<div v-if="menu.nbMenu && menu.nbMenu.length > 0">
 			<h2 >内部系统</h2>
 			<van-grid square style="border:none;">
 			  <van-grid-item
 			    @click="toPage(value)"
-			    v-for="value in menuList"
-			    :key="value.id"
-			    :icon="value.img"
-			    :text="value.name"
+			    v-for="value in menu.nbMenu"
+			    :key="value.XH"
+			    :icon="baseURL + '/file/getfilestream/' + value.WJID"
+			    :text="value.CDMC"
 				style="border:none;"
 			  />
 			</van-grid>
+			</div>
+			<div v-if="menu.wbMenu && menu.wbMenu.length > 0">
 			<h2 >外部系统</h2>
 			<van-grid square style="border:none;">
 			  <van-grid-item
@@ -26,6 +29,7 @@
 				style="border:none;"
 			  />
 			</van-grid>
+			</div>
 		</div>
 		<!-- 底部菜单 -->
 		<div>
@@ -58,15 +62,21 @@ import userinfo from './userinfo'
 import hot from './hot'
 export default{
 	created(){
-		this.$http.get('/externalHandler/getAll').then(res=>{
+		// 获取菜单
+		this.$http.get('/config/getMenu').then(res=>{
 			console.log(res)
-			this.externalMenuList = res.data
+			this.menu = res.data.data
 		})
+		// this.$http.get('/externalHandler/getAll').then(res=>{
+		// 	console.log(res)
+		// 	this.externalMenuList = res.data
+		// })
 	},
 	data(){
 		return {
 			dynamicNum:null,
 			tabActive:0,
+			menu:{},// 菜单
 			menuList:[{
 				name:'漫画',
 				id:2,
@@ -132,7 +142,8 @@ export default{
 			// })
 		},
 		toPage(item){
-			this.$router.push(item.url)
+			console.log(item.CDLJ)
+			this.$router.push(item.CDLJ)
 		},
 		home(){
 			this.beforetabActive = this.tabActive

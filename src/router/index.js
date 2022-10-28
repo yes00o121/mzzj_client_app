@@ -372,18 +372,29 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to,from,next) => {
-  if(!localStorage.getItem('token')&&to.meta.istoken == true){
-    router.push('/')
-    Vue.prototype.$msg.fail('请重新登录')
-    return
-  }
-  if (from.meta.keepAlive) {
-      const $content = document.querySelector('.content'); // 列表的外层容器
-      const scrollTop = $content ? $content.scrollTop : 0;
-      console.log('scrollTop', scrollTop)
-      from.meta.scrollTop = scrollTop;
-    }
-  next()
+	console.log('222222222222222')
+	console.log(to)
+	if(to.path == '/'){
+		next()
+	}else{
+		if(!localStorage.getItem('token')){
+		  router.push('/')
+		  Vue.prototype.$msg.fail('请重新登录')
+			next({
+				path: '/'
+			})
+		}else{
+			next()
+		}
+		// if (from.meta.keepAlive) {
+		//     const $content = document.querySelector('.content'); // 列表的外层容器
+		//     const scrollTop = $content ? $content.scrollTop : 0;
+		//     console.log('scrollTop', scrollTop)
+		//     from.meta.scrollTop = scrollTop;
+		//   }
+		// next()
+	}
+
 })
 
 export default router

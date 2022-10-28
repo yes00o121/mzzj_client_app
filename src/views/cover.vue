@@ -4,7 +4,7 @@
           <div class="imgparent">
                <!-- <img :src="baseURL + detailitem.previewImg"  alt="" style="width:100%;height:47.778vw;"> -->
 			   <!-- <van-image lazy-load :src="baseURL +   detailitem.previewImg + '&width='+width+'&height=' + height + '&token=' + token" style="width:100%;height:57.778vw;"> -->
-			   <van-image lazy-load :src="baseURL + '/file/getfilestream/' + detailitem.previewImg + '?token=' + token" :style="'min-height:57.778vw;width:100%;height:'+(detailitem.loadMode == 2 ? '100%' : '57.778vw')+';object-fit:top;object-fit:cover;'" v-if="detailitem.previewImg">
+			   <van-image lazy-load :src="baseURL + path + detailitem.id + '?token=' + token" :style="'min-height:57.778vw;width:100%;height:'+(detailitem.loadMode == 2 ? '100%' : '57.778vw')+';object-fit:top;object-fit:cover;'" v-if="detailitem.id">
 					  <template v-slot:error>
 						 加载失败
 					  </template>
@@ -12,7 +12,6 @@
 					      <van-loading type="spinner" size="20" />
 					    </template>
 			   </van-image>
-			    <img src="../../public/static/bk_black.png" :style="'width:100%;height:217px;object-fit:top;object-fit:cover;min-height:57.778vw;'"  v-if="!detailitem.previewImg"/>
 			   <!-- <img class="com-image" v-if="detailitem.person_nationality && detailitem.person_nationality == '日本'" src="@/assets/taiwan.jpg" alt="" > -->
 			   <!-- <img class="com-image" v-if="detailitem。person_nationality && detailitem。person_nationality == '日本'" src="@/assets/taiwan.jpg" alt="" > -->
 			   <!-- <img class="com-image" v-if="detailitem.person_nationality && detailitem.person_nationality == '中国香港'" src="@/assets/taiwan.jpg" alt="" > -->
@@ -37,10 +36,11 @@ export default {
       return {
 		  width : '',
 		  height:'',
-		  token: 'Bearer ' + localStorage.token
+		  token: 'Bearer ' + localStorage.token,
+		  path : ''
       }
     },
-    props:['detailitem'],
+    props:['detailitem','type'],
     activated() {
 		
 　　　　//保持滚动到的位置
@@ -48,6 +48,15 @@ export default {
 　　　},
 created(){
 	this.$nextTick(()=>{
+		if(this.type == 2){
+			this.path = '/file/getfilestreamManga/'
+		}
+		if(this.type == 6){
+			this.path = '/file/getfilestreamNvyou/'
+		}
+		if(this.type == 7){
+			this.path = '/file/getfilestreamNvyouMinWork/'
+		}
 		let war = this.$refs.wrapper
 		// console.log(this.$refs.wrapper.clientHeight)
 		if(war){
