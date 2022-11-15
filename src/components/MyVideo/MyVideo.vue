@@ -33,7 +33,7 @@
           @click="chooseUser"> -->
 		  <!-- <img :src="`${baseURL}/common/image?imgId=61b88b894316b402bcbf833f&token=${token}`" alt="" width="40" height="40"
 		    > -->
-		  <img src="@/assets/user_1.png" width="40" height="40"  @click="toUserVideo(VideoItem)" v-if="VideoItem.personId" >
+		  <img :src="baseURL + '/file/getfilestreamNvyou/' + VideoItem.personId" width="40" height="40"  @click="toUserVideo(VideoItem)" v-if="VideoItem.personId">
 		  <img src="@/assets/user_1.png" width="40" height="40" v-if="!VideoItem.personId" >
 		  <!-- <img src="@/assets/user_2.png" width="40" height="40" v-if="user_photo == 1" @click="toUserVideo(VideoItem)">
 		  <img src="@/assets/user_3.png" width="40" height="40" v-if="user_photo == 2" @click="toUserVideo(VideoItem)">
@@ -318,6 +318,9 @@ export default {
   filters:{
 		// 根据秒获取时间
 		getDateBysecond(second){
+			if(!second){
+				return '';
+			}
 			if(second < 60){
 				return '00:' + (second <= 9 ? '0' + second: second);
 			}
@@ -326,7 +329,9 @@ export default {
 			if(minute < 60){
 				return (minute <= 9 ? '0' + minute : minute) + ':' + (s <= 9 ? '0' + s : s);
 			}
-			return '';
+			let hour = parseInt(minute/60)
+			minute = minute - (hour * 60)
+			return (hour <= 9 ?'0'+hour : hour) + ':' + (minute <= 9 ? '0' + minute : minute) + ':' + (s <= 9 ? '0' + s : s);
 		}
 	},
   components:{comment},
@@ -562,9 +567,9 @@ export default {
 	  },
 	  // 根据秒获取时间
 	  getDateBysecond(second){
-		  if(second <= 0){
-			   return '00:00'
-		  }
+	  	if(!second){
+	  		return '';
+	  	}
 	  	if(second < 60){
 	  		return '00:' + (second <= 9 ? '0' + second: second);
 	  	}
@@ -573,7 +578,9 @@ export default {
 	  	if(minute < 60){
 	  		return (minute <= 9 ? '0' + minute : minute) + ':' + (s <= 9 ? '0' + s : s);
 	  	}
-	  	return '';
+	  	let hour = parseInt(minute/60)
+	  	minute = minute - (hour * 60)
+	  	return (hour <= 9 ?'0'+hour : hour) + ':' + (minute <= 9 ? '0' + minute : minute) + ':' + (s <= 9 ? '0' + s : s);
 	  },
 	  // 创建html标签
 	  // getVideoHtml(){
@@ -644,11 +651,13 @@ export default {
 				  	  		  }
 				  	          );
 							  console.log('...')
-				  	  let nextAddress = this.VideoItem.nextAddress
-				  	  nextAddress = nextAddress.split('_-')[1]
+				  	  // let nextAddress = this.VideoItem.nextAddress
+				  	  // nextAddress = nextAddress.split('_-')[1]
 					  // alert(this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress)
 				  	  this.video.src({
-				  	  		  src:this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress + '?token=' + this.token,
+				  	  		  // src:this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress + '?token=' + this.token,
+							  src:this.baseURL + '/webInfoVideo/' + this.VideoItem.id + '/' + this.VideoItem.id + '?token=' + this.token,
+							  // src: this.baseURL + '/webInfoVideo/1667825348959025755648/1667825348959025755648?token=' + this.token,
 							  // src:this.baseURL + '/417890/417890',
 							  // src:this.baseURL + '/webInfoVideo/' + nextAddress + '/' + nextAddress,
 				  	  		  type: 'application/x-mpegURL' //在重新添加视频源的时候需要给新的type的值
@@ -775,6 +784,7 @@ export default {
 		if(res.data){
 			this.commentNum = res.data.commentNum
 			this.collNum = res.data.collNum
+			this.like = res.data.collection == '是' ? true : false
 			this.collectionUser = res.data.collectionUser
 		}
 

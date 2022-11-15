@@ -404,7 +404,7 @@ export default{
 			
 			res.data.data.list[0].conver = '/video/person/' + encodeURI(res.data.data.list[0].person_nationality) + '/' + encodeURI(res.data.data.list[0].person_name) + '/' + res.data.data.list[0].works_number + '/bigCover.jpg'
 			this.work = res.data.data.list[0]
-			this.converPreviews.push(this.baseURL +  '/file/getfilestream/' + this.work.wjid+ '?token=' + this.token)
+			this.converPreviews.push(this.baseURL +  '/file/getfilestreamNvyouWork/' + this.work.id+ '?token=' + this.token)
 			this.$msg.clear()
 			// 磁力数据
 			this.initMagnet();

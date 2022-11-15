@@ -31,6 +31,7 @@
       <!-- <img class="bg" src="./1.jpg" alt=""> -->
 	  <!-- <van-image fit="cover" class="bg" src="../../../assets/beijing.jpg" /> -->
 	  <img class="bg" src="@/assets/beijing.jpg" style="object-fit:none;" alt="">
+	  <!-- <img class="bg" :src="baseURL + '/file/getfilestreamNvyou/'+  userInfo.id +'?token='" style="object-fit:none;" alt=""> -->
     </div>
     <scroll class="bottom"
             :probeType="3"
@@ -43,7 +44,8 @@
       <div class="profile">
         <div class="avatar-wrap">
           <!-- <img class="avatar" :src="`${baseURL}${userInfo.userAvatar}`" alt=""> -->
-		  <img src="@/assets/user_1.png"  class="avatar" >
+		  <!-- <img src="@/assets/user_1.png"  class="avatar" > -->
+		  <img :src="baseURL + '/file/getfilestreamNvyou/'+  userInfo.id +'?token='"  class="avatar">
         </div>
         <div class="name-wrap">
           <p class="name" v-text="userInfo.person_name" style="text-align:left"></p>
@@ -54,7 +56,7 @@
           <p class="desc" v-text="userInfo.userDesc"></p>
           <div class="gender">
             <!-- <div class="icon iconfont" ></div> -->
-            {{userInfo.person_nationality}}
+            {{userInfo.person_nationality_name}}
           </div>、
 		  <div style="position: absolute;
     top: 0;
@@ -224,7 +226,7 @@ export default {
 		  pageSize: 10,
 		  personType:this.$route.params.type,
 		  personId: this.$route.params.id,
-		  personLabel:'avperformer_91'
+		  // personLabel:'avperformer_91'
 		})
 		console.log(res)
 		this.userInfo = res.data.data.list[0]

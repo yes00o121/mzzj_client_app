@@ -1,7 +1,8 @@
 <template>
   <div class="home" >
 	<van-sticky>
-		<van-cell  style="z-index:999;width:100%;"  icon="arrow-left" class="van-ellipsis" title="漫画"  @click="returnPage">
+		<van-cell  style="z-index:999;width:100%;"  icon="arrow-left" class="van-ellipsis"  @click="returnPage">
+			<van-search v-model="searchText" style="position: absolute;max-height:44px;width:80%" placeholder="请输入搜索关键词" />
 			<van-icon
 			    slot="right-icon"
 			    name="wap-home-o"
@@ -70,6 +71,7 @@ import backTop from '@/components/backTop'
 export default {
   data() {
     return {
+		searchText:'',// 搜索内容
 		showSwipe:true,
 		token: 'Bearer ' + localStorage.token,
 	  curScroll:{},
