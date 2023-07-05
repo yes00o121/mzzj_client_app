@@ -1,16 +1,6 @@
 <template>
   <div class="home" >
-	<van-sticky>
-		<van-cell  style="z-index:999;width:100%;"  icon="arrow-left" class="van-ellipsis" title="百科"  @click="returnPage">
-			<van-icon
-			    slot="right-icon"
-			    name="wap-home-o"
-				size="1.2rem"
-			    style="line-height: inherit;"
-				@click.stop="$router.push('/')"
-			  />
-		</van-cell>
-	</van-sticky>
+	 <nav-bar :title="'百科'" :rightButtonType="'search'" @onSearch="onSearch"></nav-bar>
 	<!-- home -->
     <div class="categorytab"  v-show="tabActive == 0" >
 		<back-top :showHeight="300" ref="backtop"></back-top>
@@ -58,6 +48,7 @@
 </template>	
 
 <script>
+import navBar from "@/components/base/NavBar.vue";
 import cover from "./cover";
 import backTop from '@/components/backTop'
 import personSearchTool from '@/components/personSearchTool'
@@ -65,6 +56,7 @@ export default {
   data() {
     return {
 	    personParams:{},// 人员参数
+		workParams : {},// 作品参数
 		token: 'Bearer ' + localStorage.token,
 	  curScroll:{},
       category: [],
@@ -72,8 +64,6 @@ export default {
 	  beforetabActive:0,// 之前选中的底部
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
-	  // websocket:null
-	  // videoStatus:true, // 视频状态,用于子组件刷新
     };
   },
   // 跳转其他页面之前
@@ -88,7 +78,8 @@ export default {
   components: {
     cover,
 	personSearchTool,
-	backTop
+	backTop,
+	navBar
 	// shortvideo
   },
   activated() {
@@ -97,6 +88,13 @@ export default {
 	
   },
   methods: {
+	  onSearch(text){
+		  console.log(text)
+		  console.log(this.personParams)
+		  this.personParams.personName = text
+		  this.workParams.worksName = text;
+		  this.selectCategory();
+	  },
 	  returnPage(){
 	  	this.curScroll = document.documentElement.scrollTop || document.body.scrollTop;document.body.scrollTop;
 	  	this.$router.go(-1)
@@ -216,11 +214,11 @@ export default {
 			this.selectPerson(this.personParams)
 			return;
 		}else if(categoryitem.CODE_VALUE == 7){
-			const res = await this.$http.post("/person/queryPersonWorks", {
+			const res = await this.$http.post("/person/queryPersonWorks",Object.assign({
 			  pageNum: categoryitem.page,
 			  pageSize: categoryitem.pagesize,
 			  loadMode: categoryitem.CODE_VALUE
-			})
+			},this.workParams) )
 			categoryitem.list.push(...res.data.data.list);
 			categoryitem.loading = false;
 			if (res.data.data.list.length < categoryitem.pagesize) {

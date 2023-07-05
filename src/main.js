@@ -32,20 +32,19 @@ Vue.use(Panel);
 Vue.use(VCharts)
 Vue.use(VueClipboard)
  Vue.prototype.$NoSleep = NoSleep;
-
 // import VueVideoPlayer from 'vue-video-player'
 // 添加全局请求头
 videojs.Vhs.xhr.beforeRequest = function (options) {
-	console.log('................')
   let headers = options.headers || {};
   // headers["headers1"] = "headers1";
   // headers["headers2"] = "headers2";
   // headers["uuid"] = '78DC5E3B-3952-4CE9-8224-69C78D03103C';
   options.uri += '?token=' + localStorage.token
-
+  console.log(localStorage.curPixel)
+  if(localStorage.curPixel){
+	  headers["pixel"] = localStorage.curPixel
+  }
   options.headers = headers;
-
-  console.log("options", options);
 
   return options;
 };

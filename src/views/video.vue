@@ -121,6 +121,7 @@ import MyVideo from '@/components/MyVideo/MyVideo'
         data() {
             let u = navigator.userAgent;
             return {
+				isSingle:false,// 是否单个视频
 				lineNum:0.3,
 				lineInterval:null,
 				showPageTool:this.showPageTool,// 隐藏除视频和工具栏外的所有东西
@@ -168,8 +169,30 @@ import MyVideo from '@/components/MyVideo/MyVideo'
         },
 		created(){
 			this.$nextTick(()=>{
-				this.loadData()
+			
+				if(!this.$route.query.id){
+					this.loadData()
+				}
 			})
+		},
+		activated(){
+			if(this.$route.query.id){
+				if(!this.isSingle){
+					this.init();
+					this.isSingle = true;
+				}
+				
+				this.loadData()
+			}else{
+				if(this.isSingle){
+					this.isSingle = false;
+					this.init();
+					this.loadData()
+				}else{
+					// this.startPlay();
+				}
+				
+			}
 		},
 		components:{
 			comment,
@@ -229,6 +252,10 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 
         },
         methods: {
+			init(){
+				this.currentY = 0;
+				this.playList = [];
+			},
 			// openToolsMethod(item){
 			// 	console.log('点击工具.....')
 			// 	console.log(item)
@@ -266,12 +293,23 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				this.$router.push('/videosearch')
 			},
 			returnPage(){
+				console.log(this.currentY)
+				console.log(this.clientHeight)
 				let index = this.currentY / this.clientHeight
 				this.$refs.videos[index].stopProcess()
-				this.$router.push('/home')
+				// this.$router.push('/home')
+				this.$router.go(-1)
+			},
+			startPlay(){
+				let index = this.currentY / this.clientHeight
+				this.$refs.videos[index].startProcess()
 			},
 			scroll (pos) {
-
+			  // 单独加载视频,滚动失效
+			  if(this.$route.query.id){
+				  this.$refs.scroll.scrollTo(0,0)
+				  return;
+			  }
 			  if(this.currentHeight > 0){
 				  return;
 			  }
@@ -320,11 +358,13 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 			
 			},
 			scrollEnd (pos) {
+				// 单个视频不让滚动
+				if(this.$route.query.id){
+					return;
+				}
 				// 结束将当前高度设置为0
 				let totalHeight  = -(this.clientHeight * (this.playList.length - 1)) // 总高度
 				if(pos.y == totalHeight){
-					console.log(pos.y)
-					console.log(totalHeight)
 					if(this.lineInterval){
 						return;
 					}
@@ -628,7 +668,6 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 			},
 			clearLineTransform(){
 				if(this.lineInterval){
-					console.log('................')
 					clearInterval(this.lineInterval)
 					this.lineInterval = null;
 				}
@@ -693,7 +732,8 @@ import MyVideo from '@/components/MyVideo/MyVideo'
 				  pageSize: this.pageSize,
 				  // loadMode:'5',
 				  loadMode:'4',
-				  search: ''
+				  search: '',
+				  id : this.$route.query.id ? this.$route.query.id : ''
 				})
 				// console.log(res)
 				// // 追加数据

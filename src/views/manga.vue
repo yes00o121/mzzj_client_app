@@ -1,26 +1,13 @@
 <template>
   <div class="home" >
-	<van-sticky>
-		<van-cell  style="z-index:999;width:100%;"  icon="arrow-left" class="van-ellipsis"  @click="returnPage">
-			<van-search v-model="searchText" style="position: absolute;max-height:44px;width:80%" placeholder="请输入搜索关键词" />
-			<van-icon
-			    slot="right-icon"
-			    name="wap-home-o"
-				size="1.2rem"
-			    style="line-height: inherit;"
-				@click.stop="$router.push('/')"
-			  />
-		</van-cell>
-	</van-sticky>
-	<!-- home -->
+	  <nav-bar :title="'漫画'" :rightButtonType="'search'" @onSearch="onSearch"></nav-bar>
     <div class="categorytab"  v-show="tabActive == 0" >
 		<back-top :showHeight="300" ref="backtop"></back-top>
-      <!-- <div class="category-ico" @click="$router.push('/editcategory')"><van-icon name="setting-o" /></div> -->
       <van-tabs v-model="active" swipeable sticky  animated offset-top="40">
         <van-tab v-for="(item,index) in category" :key="index" :title="item.DICT_NAME" scrollspy  >
 			<!-- 嵌套一层div做内容滚动区域, 一定要有确定高度，可以使用高度100%或calc(100vh - ?px) -->
 			<div style="height: calc(100vh - 10vh); overflow: auto;-webkit-overflow-scrolling: touch;" :ref="'pageScroll'" @scroll="scrolls">
-				<back-top :showHeight="100"></back-top>
+				<!-- <back-top :showHeight="100"></back-top> -->
           <van-pull-refresh v-model="isLoading" @refresh="onRefresh" >
 			  <van-swipe :autoplay="5000" id="swipeId" v-if="showSwipe">
 			    <van-swipe-item v-for="(image, index) in item.flowData" :key="index" :loop="false" :width="300">
@@ -65,7 +52,7 @@
 </template>	
 
 <script>
-import NavBar from "@/components/common/Navbar.vue";
+import navBar from "@/components/base/NavBar.vue";
 import cover from "./cover";
 import backTop from '@/components/backTop'
 export default {
@@ -80,21 +67,7 @@ export default {
 	  beforetabActive:0,// 之前选中的底部
       active: 0,
       isLoading: false,   //是否处于下拉刷新状态
-	  // websocket:null
-	  // videoStatus:true, // 视频状态,用于子组件刷新
     };
-  },
-  filters:{
-	  filterTime(val) {
-	   if(val){
-	   		var date = new Date(val);
-	   		var year = date.getYear() + 1900
-	   		var month = date.getMonth() + 1
-	   		var day = date.getDate();
-	   		return year + '-' + month + '-' + day
-	   }
-	   return "";
-	  }
   },
   // 跳转其他页面之前
   beforeRouteLeave(to, from ,next){
@@ -106,11 +79,16 @@ export default {
   },
   components: {
     cover,
-	backTop
-	// shortvideo
+	backTop,
+	navBar
   },
   activated() {},
   methods: {
+	  // 查询
+	  onSearch(text){
+		this.searchText = text;
+		this.selectCategory()
+	  },
 	  returnPage(){
 		  this.$router.go(-1)
 	  },
@@ -204,7 +182,7 @@ export default {
 		  typeId: categoryitem.CODE_VALUE,
 		  pageNum: categoryitem.page,
 		  pageSize: categoryitem.pagesize,
-		  search: '',
+		  search: this.searchText,
 		  loadMode:categoryitem.CODE_MODE_TYPE
 		})
 		categoryitem.list.push(...res.data.data.list);

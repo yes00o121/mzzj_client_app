@@ -7,26 +7,6 @@
 	      top: 0rem;z-index:9999;padding:1rem;
 	      right: 0rem;" @click.stop="openTools(VideoItem)" v-show="!showPageTool"/>
   <div class="my-video" :id="'div_' + VideoItem.id" :style="VideoItemHeightStyle" @click.stop="playVideo()" >
-    <!-- <video class="video" :src="baseURL + VideoItem.videoPath"
-      :poster="VideoItem.videoCover"
-      webkit-playsinline
-      playsinline
-      x5-video-player-type="h5"
-      preload="none"
-      @click="playHandler($event)"
-      @loadeddata="watchHandler"
-      ref="video"></video> -->
-	 <!-- <video ref = "videoPlayer" :id="VideoItem.id" v-if="VideoItem.videoType == 'm3u8'"  class="video"
-	  style="width:100%;height:100%;visibility: hidden;" -->
-<!-- 	  <video ref = "videoPlayer" :id="VideoItem.id" v-if="VideoItem.videoType == 'm3u8'"  class="video"
-	  style="width:100%;height:100%;"
-	  :poster="baseURL +  VideoItem.previewImg + '&token=' + token"
-	  webkit-playsinline="true" x5-video-player-type="h5-page"
-	  x5-playsinline  x-webkit-airplay="allow"
-	  x5-video-player-fullscreen="true" playsinline="true" preload="auto"
-	  :controls="false" :videoType="VideoItem.videoType"   :playUrl="VideoItem.url"
-	  object-fit="fill"
-	  ></video> -->
     <div class="side-bar">	
       <div class="avatar" @click.stop="" style="border:none" v-show="showPageTool">
        <!-- <img :src="`${baseURL}${VideoItem.userAvatar}`" alt="" width="40" height="40"
@@ -58,33 +38,12 @@
 	  <div class="comment1 iconfont icon-message" @click.stop="changeComment()" v-show="showPageTool">
         <span class="commentnum">{{commentNum}}</span>
       </div>
-<!--      <div class="share iconfont icon-share" @click.stop="$msg.fail('分享功能关闭')">
-		<span class="sharenum">0</span>
-      </div> -->
+	 
 	  <!-- 工具栏 -->
 	  <div class="share iconfont icon-ellipsis" @click.stop="openTools(VideoItem)" v-show="showPageTool">
 
 	  </div>
-
     </div>
-	<!-- <div class="label-wrap"> -->
-	<!-- 	<div style="text-align: left;margin-right: 20px;box-sizing: border-box;
-    margin-right: 8px;
-	margin-top: 10px;
-    padding: 3px 6px;
-	float: left;
-    font-size: 12px;
-    background-color: #fff;
-    border: 1px solid #eaeaef;
-    height: 24px;
-    line-height: 17px;
-    border-radius: 2px;
-    display: inline-block;" :key="item.code" v-for="item in VideoItem.labelList" @click.stop="labelSave(item)">
-	<span :style="item.status == '1' ? ('color: #F8355F;') : ('color: #5094d5;')">
-			{{item.name}} 
-	</span>
-		</div> -->
-	<!-- </div> -->
 
     <div class="text-wrap" v-show="showPageTool">
       <div class="name" style="text-align: left;"><span v-if="VideoItem.personName">@</span>{{VideoItem.personName}}</div>
@@ -110,12 +69,7 @@
 	left:10px">
 	<input class="input" style="width:100%;background:none;"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国'" type="text">
 	</div>
-     
-	 <!-- <input class="input"  readonly :placeholder="'富强、民主、文明、和谐、自由、平等、公正、法治、爱国'" type="text"> -->
-	 <!-- <span>.....fdsfdsfdsf</span> -->
-      <!-- <span class="iconfont icon-at" ></span> -->
-      <!-- <span class="iconfont icon-check"></span> -->
-    <!-- </div> -->
+
 	<img v-show="!playStatus" class="icon_play"
 	     src="@/assets/play.png"/>
 		
@@ -128,12 +82,12 @@
     :overlay-style="{background:'rgba(255,255,255,0)',zIndex:'2000'}"
     round
     position="bottom"
-    :style="{ height: '10%',position: 'absolute'}"
+    :style="{ height: '20%',position: 'absolute'}"
   >
   <van-row  justify="space-around" style="padding-top:5%">
     <van-col span="6" @click="fullVideo()">
   		<span >
-			<van-icon name="exchange" size="1.5rem" />
+			<van-icon name="expand-o" size="1.5rem" />
 			<p style="padding-top:.5rem">全屏</p>
 		</span>
 	</van-col>
@@ -157,9 +111,32 @@
 			<p style="padding-top:.5rem" >刷新</p>
 		</span>
 	</van-col>
+	<van-col span="6" @click.stop="update" style="padding-top: 25px;">
+		<span>
+			<van-icon name="closed-eye" size="1.5rem" />
+			<p style="padding-top:.25rem" >关闭弹幕</p>
+		</span>
+	</van-col>
+	<van-col span="6" @click.stop="pixelClick"  style="padding-top: 25px;" v-if="VideoItem.videoPixel">
+		<span>
+			<van-icon name="photo-o" size="1.5rem" />
+			<p style="padding-top:.25rem" >{{curPixel}}</p>
+		</span>
+	</van-col>
   </van-row>
   </van-popup>
   
+  <!-- 分辨率 -->
+<!--  <van-popup
+    v-model="toolShow"
+    :overlay-style="{background:'rgba(255,255,255,0)',zIndex:'2000'}"
+    round
+    position="bottom"
+    :style="{ height: '20%',position: 'absolute'}"
+  >
+	<van-action-sheet v-model="imgShow" :actions="actions" @select="onSelect"  description="请选择画质"/>
+  </van-popup> -->
+
   <!-- 分享弹出窗口 -->
   <van-popup
 	   round
@@ -207,9 +184,10 @@
   			</div>
   		</div>
   </van-popup>
-  
+
   </div>
-  
+  <!--分辨率选择 -->
+    <van-action-sheet v-model="pixelWindow" :actions="videoPixelList" @select="onSelectPixel"  description="请选择清晰度"/>
   </v-touch>
 
   </div>
@@ -239,6 +217,20 @@ export default {
 	showPageTool:{
 		type:Boolean
 	}
+  },
+  created(){
+	  localStorage.curPixel = ''
+	  // 获取分辨率数据
+	  if(this.VideoItem.videoPixel){
+	  			  let arr = this.VideoItem.videoPixel.split(',')
+	  			  for(let i =0;i<arr.length;i++){
+	  				  this.videoPixelList.push({
+	  					  name:arr[i],
+	  					  value:arr[i]
+	  				  })
+	  			  }
+	  			  console.log(this.videoPixelList)
+	  }
   },
   activated(){
 	// console.log('显示了.....' + this.index)  
@@ -301,8 +293,11 @@ export default {
 	  upOrDown:false, // 是否上下滑动,用于控制左右滑动失效
 	  showFull:false,// 显示全屏按钮
 	  userListView:false,// 用户列表显示控制
-	  userList:[] // 用户数组
-    }
+	  userList:[], // 用户数组
+	  videoPixelList:[],// 视频分辨率
+	  curPixel:'',// 当前分辨率
+	  pixelWindow:false // 分辨率窗口
+	}
   },
   watch:{
   	commentPop(cur){
@@ -357,6 +352,31 @@ export default {
     ])
   },
   methods: {
+	  onSelectPixel(e){
+		  console.log(e)
+		  this.curPixel = e.value;
+		  localStorage.curPixel = this.curPixel
+		  this.pixelWindow = false;
+		  
+			 
+			 // 更改当前画质
+	  		  // 判断选择的时候和当前的一直，一直退出,不一直修改配置信息
+	  		//  if(e.value == this.imgQuality.configValue){
+	  		// 	 return;
+	  		//  }
+	  		 
+	  		//  this.imgQuality.configValue = e.value;
+	  		//  // 修改图片画质配置
+	  		//  this.changeConfig(this.imgQuality)
+	  		//  this.setCurrentImage()
+	  		// this.value = 1
+	  		
+	  },
+	  pixelClick(){
+		// 打开分辨率窗口  
+		this.pixelWindow = true
+		this.toolShow = false
+	  },
 	  update(){
 		location.reload()
 	  },
